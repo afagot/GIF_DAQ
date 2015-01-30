@@ -1,0 +1,83 @@
+// ****************************************************************************************************
+// *   v1190aDecoder
+// *   Alexis Fagot
+// *   26/01/2015
+// ****************************************************************************************************
+#ifndef __LINUX
+#define __LINUX
+#endif
+
+#include <iostream>
+#include <cstdlib>
+#include <fstream>
+#include <ostream>
+#include <sstream>
+#include <cmath>
+#include <vector>
+#include <string>
+#include <iomanip>
+#include <map>
+
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/io.h>
+#include <sys/timeb.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
+
+#include "CAENVMElib.h"
+#include "CAENVMEoslib.h"
+#include "CAENVMEtypes.h"
+
+using namespace std;
+
+#ifndef V1190ADECODER_H
+#define V1190ADECODER_H
+
+typedef enum V1190DataType {
+  V1190A_Measurement        = 0x00,
+  V1190A_TdcHeader          = 0x01,
+  V1190A_TdcTrailer         = 0x03,
+  V1190A_TdcError           = 0x04,
+  V1190A_GlobalHeader       = 0x08,
+  V1190A_GlobalTrailer      = 0x10,
+  V1190A_TriggerTimeTag     = 0x11,
+  V1190A_Filler             = 0x18,
+  V1190A_InvalidData        = 0x1F
+} V1190DataType;
+
+class v1190aDecoder {
+private:
+    void                    _DecodeDatum();
+    void                    _DecodeGlobalHeader();
+    void                    _DecodeGlobalTrailer();
+    void                    _DecodeTdcTrailer();
+    void                    _DecodeTdcHeader();
+
+    Data32                  Data;
+    Data32                  Measurement;
+    Data32                  Channel;
+    Data32                  EventCount;
+    Data32                  Geo;
+    Data32                  WordCount;
+    Data16                  Tdc;
+    Data32                  EventId;
+    Data32                  BunchId;
+
+  public:
+    v1190aDecoder();
+    v1190aDecoder( Data32 data );
+    virtual ~v1190aDecoder();
+    Data32 GetDataType();
+    void Decode();
+    void SetData( Data32 data );
+    bool IsMeasurement();
+    bool IsTdcHeader();
+    Data32 GetChannel();
+    Data32 GetMeasurement();
+    Data16 GetTdc();
+};
+
+#endif // V1190ADECODER_H
