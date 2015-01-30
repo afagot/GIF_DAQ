@@ -1,7 +1,15 @@
 // *************************************************************************************************************
-// *   CAEN v1718 VME USB interface
+// *   v1718
+// *   Alexis Fagot
+// *   20/01/2015
+// *   Based on v1718 file from :
 // *   Y. Benhammou
-// *   27/07/2009
+// *   27/07/09
+// *
+// *   Documentation about this VME TDC module can be found at the followin url
+// *   http://www.caen.it/servlet/checkCaenManualFile?Id=5385
+// *
+// *   Comments will often refer to this user manual
 // *************************************************************************************************************
 
 #ifndef __LINUX
@@ -37,18 +45,18 @@
 
 using namespace std;
 
-v1718::v1718(IniFile * inifile)
+v1718::v1718(IniFile *inifile)
 {
    MSG_INFO("Initialization VME...");
 
    Data32 baseaddress = inifile->Long("VMEInterface","BaseAddress",BASEV1718) ;
-  
+
    if( CAENVME_Init(cvV1718, baseaddress, 0, &Handle) != cvSuccess )
    {
       perror("\n\nError opening the v1718 controller device\n");
       exit(1);
    }
-   
+
    CAENVME_SetFIFOMode(Handle,1);
    this->SetLevel(cvIRQ1);
    this->SetAM(cvA24_U_DATA);
@@ -269,14 +277,14 @@ long v1718::GetHandle(void)
 int v1718::WriteToVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWidth dtsize)
 {
    CVErrorCodes ret;
-  
+
    if(dtsize == cvD64)
    {
       perror("Can't execute a D64 Write Cycle");
       return -1;
    }
    ret = CAENVME_WriteCycle(Handle,Address,&Data,AM,DataSize);
-   
+
    switch (ret)
    {
       case cvSuccess       : printf("Cycle(s) completed normally\n");
@@ -296,19 +304,19 @@ int v1718::WriteToVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWid
 int v1718::ReadFromVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWidth dtsize)
 {
    CVErrorCodes ret;
-  
+
    Address=address;
    Data=data;
    AM=am;
    DataSize=dtsize;
-   
+
    if(dtsize == cvD64)
    {
       perror("Can't execute a D64 Read Cycle");
       return -1;
    }
    ret = CAENVME_ReadCycle(Handle,Address,&Data,AM,DataSize);
-   
+
    switch (ret)
    {
       case cvSuccess       : printf("Cycle(s) completed normally\n");
@@ -317,7 +325,7 @@ int v1718::ReadFromVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWi
          if ( dtsize == cvD8 )   printf("Data Read : %d\n",data & 0xff);
          break ;
       case cvBusError	   : perror("Bus Error !!!\n");
-         break ;				   
+         break ;
       case cvCommError     : perror("Communication Error !!!\n");
          break ;
       default              : perror("Unknown Error !!!\n");
@@ -328,33 +336,33 @@ int v1718::ReadFromVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWi
 
 // *************************************************************************************************************
 
-int v1718::GetIrqStatus(void) 
+int v1718::GetIrqStatus(void)
 {
    CVErrorCodes	ret ;
-  
+
    printf("CHECK IRQ\n");
    CAENVME_IRQCheck(Handle,&IrqStatus);		// Check IRQ Status
-  
+
    printf("IRQ status: %i\n",IrqStatus);
-   
+
    if(IrqStatus & (1<<(Level-1)))
    {
       ret = CAENVME_IACKCycle(Handle,Level,&Data,DataSize);
       switch (ret)
-	   {
-	      case cvSuccess    : printf("Cycle completed normally\n");
+       {
+          case cvSuccess    : printf("Cycle completed normally\n");
              printf("Int. Ack. on IRQ : %x  : StatusID = %d\n",Level,Data);
-	         break ;
-	      case cvBusError   : perror("Bus Error !!!\n");
-	         break ;				   
-	      case cvCommError  : perror("Communication Error !!!\n");
-	         break ;
-	      default           : perror("Unknown Error !!!\n");
-	         break ;
-	  
-	   }
+             break ;
+          case cvBusError   : perror("Bus Error !!!\n");
+             break ;
+          case cvCommError  : perror("Communication Error !!!\n");
+             break ;
+          default           : perror("Unknown Error !!!\n");
+             break ;
+
+       }
    }
    else
       printf("Interrupt request IRQ %x not active\n",Level);
-   return 0;	
+   return 0;
 }

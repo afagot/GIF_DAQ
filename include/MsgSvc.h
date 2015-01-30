@@ -1,11 +1,13 @@
 #ifndef _MSGSVC_H_
 #define _MSGSVC_H_
-//*****************************************
-// MsgSvc.h
-// Simplified msg service to allow output
-// supression
-// Created by Nir Amram on 6/21/10.
-//*****************************************
+//***************************************************************
+// *   MsgSvc.h
+// *   Alexis Fagot
+// *   20/01/2015
+// *   Simplified msg service to allow output supression
+// *   Created by Nir Amram
+// *   06/21/2010
+//***************************************************************
 
 #include <iostream>
 

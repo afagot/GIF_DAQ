@@ -1,8 +1,16 @@
-// **********************************************************************
-// *   v1718 
-// *   y.benhammou
+// **********************************************************************************
+// *   v1718
+// *   Alexis Fagot
+// *   20/01/2015
+// *   Based on v1718 file from :
+// *   Y. Benhammou
 // *   26/07/09
-// **********************************************************************
+// *
+// *   Documentation about this VME TDC module can be found at the followin url
+// *   http://www.caen.it/servlet/checkCaenManualFile?Id=5385
+// *
+// *   Comments will often refer to this user manual
+// **********************************************************************************
 #ifndef __LINUX
 #define __LINUX
 #endif
@@ -42,10 +50,10 @@ using namespace std;
 
 class v1718
 {
-	private : 
+    private :
         int32_t                         Handle;
         short 	 		                Device;
-		
+
         Data32                          Address ;			// Address
         Data32                          Data ;          	// Data
         CVIRQLevels		                Level ;             // Interrupt level
@@ -57,9 +65,9 @@ class v1718
         Data16                          NbCycles ;          // Number of cycles
         CVErrorCodes                    Status;
 
-		
-	public:
-        v1718(IniFile * inifile);
+
+    public:
+        v1718(IniFile *inifile);
         ~v1718();
         Data8 ReadChar( Data32 address );
         Data16 ReadShort( Data32 address );
@@ -73,23 +81,23 @@ class v1718
         Data16 GetAddress(void);
         int SetData(Data16 data);
         Data16 GetData(void);
-		int SetAM(CVAddressModifier am);
-		CVAddressModifier GetAM(void);
-		int SetDatasize(CVDataWidth datasize);
-		CVDataWidth GetDataSize(void);
+        int SetAM(CVAddressModifier am);
+        CVAddressModifier GetAM(void);
+        int SetDatasize(CVDataWidth datasize);
+        CVDataWidth GetDataSize(void);
         int SetBaseAddress(Data16 baseaddress);
         Data16 GetBaseAddress(void);
         int SetBlockSize(Data16 blocksize);
         Data16 GetBlockSize(void);
         int SetNbCycles(Data16 nbcycles);
         Data16 GetNbCycles(void);
-		int SetLevel(CVIRQLevels level);
-		CVIRQLevels GetLevel(void);
+        int SetLevel(CVIRQLevels level);
+        CVIRQLevels GetLevel(void);
         int SetDevice(Data16 device);
         Data16 GetDevice(void);
         long GetHandle(void);
         int WriteToVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWidth dtsize) ;
         int ReadFromVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWidth dtsize) ;
-		int GetIrqStatus(void) ;
-};		
+        int GetIrqStatus(void) ;
+};
 #endif

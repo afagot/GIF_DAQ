@@ -1,10 +1,15 @@
 // ****************************************************************************************************
-// *   v1190a 
+// *   v1190a
 // *   Alexis Fagot
 // *   20/01/2015
 // *   Based on v1290a file from :
 // *   Avia Raviv & Y. Benhammou
 // *   14/03/2011
+// *
+// *   Documentation about this VME TDC module can be found at the followin url
+// *   http://www.caen.it/servlet/checkCaenManualFile?Id=8657
+// *
+// *   Comments will often refer to this user manual
 // ****************************************************************************************************
 #ifndef __LINUX
 #define __LINUX
@@ -146,7 +151,7 @@ using namespace std;
 
 typedef enum
 {
-	// Micro register opcodes: ACQUISITION MODE
+    // Micro register opcodes: ACQUISITION MODE
      OPCODE_TRG_MATCH_V1190A				= 0x0000,		/* Trigger matching mode */
      OPCODE_CONT_STORE_V1190A				= 0x0100,		/* Continuous storage */
      OPCODE_READ_ACQ_MOD_V1190A				= 0x0200,		/* Read acquisition mode */
@@ -158,7 +163,7 @@ typedef enum
      OPCODE_AUTOLOAD_USER_CONFIG_V1190A		= 0x0800,		/* Set auto load User configuration */
      OPCODE_AUTOLOAD_DEF_CONFIG_V1190A		= 0x0900,		/* Set auto load default configuration */
 
-	// Micro register opcodes: TRIGGER
+    // Micro register opcodes: TRIGGER
      OPCODE_SET_WIN_WIDTH_V1190A			= 0x1000,		/* Set window width */
      OPCODE_SET_WIN_OFFSET_V1190A			= 0x1100,		/* Set window offset */
      OPCODE_SET_SW_MARGIN_V1190A			= 0x1200,		/* Set extra search margin */
@@ -167,7 +172,7 @@ typedef enum
      OPCODE_DIS_SUB_TRG_V1190A				= 0x1500,		/* Disable subtraction of trigger time */
      OPCODE_READ_TRG_CONF_V1190A			= 0x1600,		/* Read trigger configuration */
 
-	// Micro register opcodes: TDC EDGE DETECTION & RESOLUTION
+    // Micro register opcodes: TDC EDGE DETECTION & RESOLUTION
      OPCODE_SET_DETECTION_V1190A			= 0x2200,		/* Enable paired meas. leading/trailing edge */
      OPCODE_READ_DETECTION_V1190A			= 0x2300,		/* Read edge detection configuration */
      OPCODE_SET_TR_LEAD_LSB_V1190A			= 0x2400,		/* Set LSB of leading/trailing edge */
@@ -176,7 +181,7 @@ typedef enum
      OPCODE_SET_DEAD_TIME_V1190A			= 0x2800,		/* Set channel dead time between hits */
      OPCODE_READ_DEAD_TIME_V1190A			= 0x2900,		/* Read channel dead time between hits */
 
-	// Micro register opcodes: TDC READOUT
+    // Micro register opcodes: TDC READOUT
      OPCODE_EN_HEAD_TRAILER_V1190A			= 0x3000,		/* Enable TDC header and trailer */
      OPCODE_DIS_HEAD_TRAILER_V1190A			= 0x3100,		/* Disable TDC header and trailer */
      OPCODE_READ_HEAD_TRAILER_V1190A		= 0x3200,		/* Read status TDC header and trailer */
@@ -191,7 +196,7 @@ typedef enum
      OPCODE_SET_FIFO_SIZE_V1190A			= 0x3B00,		/* Set effective size of readout FIFO */
      OPCODE_READ_FIFO_SIZE_V1190A			= 0x3C00,		/* Read effective size of readout FIFO */
 
-	// Micro register opcodes: CHANNEL ENABLE
+    // Micro register opcodes: CHANNEL ENABLE
      OPCODE_EN_CHANNEL_V1190A				= 0x4000,		/* Enable channel nn */
      OPCODE_DIS_CHANNEL_V1190A				= 0x4100,		/* Disable channel nn */
      OPCODE_EN_ALL_CH_V1190A				= 0x4200,		/* Enable all channels */
@@ -201,7 +206,7 @@ typedef enum
      OPCODE_WRITE_EN_PATTERN32_V1190A		= 0x4600,		/* Write 32 bit enable pattern for channels */
      OPCODE_READ_EN_PATTERN32_V1190A		= 0x4700,		/* Read 32 bit enable pattern for channels */
 
-	// Micro register opcodes: ADJUST
+    // Micro register opcodes: ADJUST
      OPCODE_SET_GLOB_OFFSET_V1190A			= 0x5000,		/* Set global offset */
      OPCODE_READ_GLOB_OFFSET_V1190A			= 0x5100,		/* Read global offset */
      OPCODE_SET_ADJUST_CH_V1190A			= 0x5200,		/* Set channel nn adjust */
@@ -210,12 +215,12 @@ typedef enum
      OPCODE_READ_RC_ADJ_V1190A				= 0x5500,		/* Read RC adjust of tdc 0n */
      OPCODE_SAVE_RC_ADJ_V1190A				= 0x5600,		/* Save RC adjust on EEPROM */
 
-	// Micro register opcodes: MISCELLANEOUS
+    // Micro register opcodes: MISCELLANEOUS
      OPCODE_READ_TDC_ID_V1190A				= 0x6000,		/* Read programmed ID of TDC 0n */
      OPCODE_READ_MICRO_REV_V1190A			= 0x6100,		/* Read firmware revision of microcontroller */
      OPCODE_RESET_DLL_PLL_V1190A			= 0x6200,		/* Reset DLL and PLL */
 
-	// Micro register opcodes: ADVANCED
+    // Micro register opcodes: ADVANCED
      OPCODE_WRITE_SETUP_REG_V1190A			= 0x7000,		/* Write word nn into the scan path setup */
      OPCODE_READ_SETUP_REG_V1190A			= 0x7100,		/* Read word nn into the scan path setup */
      OPCODE_UPDATE_SETUP_REG_V1190A			= 0x7200,		/* Load the scan path setup */
@@ -225,7 +230,7 @@ typedef enum
      OPCODE_READ_STATUS_STREAM_V1190A		= 0x7600,		/* Read the TDC 0n status */
      OPCODE_UPDATE_SETUP_TDC_V1190A			= 0x7700,		/* Load the scan path setup on TDC nn */
 
-	// Micro register opcodes: DEBUG AND TEST
+    // Micro register opcodes: DEBUG AND TEST
      OPCODE_WRITE_EEPROM_V1190A				= 0xC000,		/* Write 1 byte into the EEPROM */
      OPCODE_READ_EEPROM_V1190A				= 0xC100,		/* Read 1 byte from the EEPROM */
      OPCODE_MICROCONTROLLER_FW_V1190A		= 0xC200,		/* Read the controller firmware revision/date */
@@ -247,7 +252,7 @@ typedef enum _EdgeMode {
     EdgeMode_Trailing                         = 0b01,
     EdgeMode_Leading                          = 0b10,
     EdgeMode_Both                             = 0b11
-  
+
 } EdgeMode;
 
 typedef enum _Resolution {
@@ -311,13 +316,13 @@ typedef struct
 
 class v1190a
 {
- private : 
+ private :
     long                                    Handle;
     Data32                                  Address;
     CVDataWidth                             DataWidth;
     CVAddressModifier                       AddressModifier;
  public:
-   
+
     v1190a(long handle, IniFile *inifile);
     ~v1190a();
     Data16 write_op_reg(Data32 address, int code);
@@ -348,4 +353,4 @@ class v1190a
 
 
 #endif
-		
+
