@@ -76,10 +76,11 @@ class IniFile{
         int             Write();
 
         // Data readout methods
-        long            Int(const string groupname,const string keyname,const long defaultvalue);
-        long long       Long( const string groupname, const string keyname, const long long defaultvalue );
-        string          String( const string groupname, const string keyname, const string defaultvalue );
-        float           Float( const string groupname, const string keyname, const float defaultvalue );
+        Data32          addressType(const string groupname, const string keyname, const Data32 defaultvalue);
+        long            intType(const string groupname,const string keyname,const long defaultvalue);
+        long long       longType( const string groupname, const string keyname, const long long defaultvalue );
+        string          stringType( const string groupname, const string keyname, const string defaultvalue );
+        float           floatType( const string groupname, const string keyname, const float defaultvalue );
 
         // Error methods
         string          GetErrorMsg();

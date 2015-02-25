@@ -52,7 +52,7 @@ int main (int argc ,char *argv[])
   
   DR->Run();
 
-  MSG_INFO("To finish the run press Ctrl-z\n");
+  MSG_INFO("RUN FINISHED\n");
     
   return 0;
 }

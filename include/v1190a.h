@@ -48,7 +48,7 @@ using namespace std;
 
 // ****************************************************************************************************
 
-/*** Base address (A24) of the model V1190A ***/
+/*** Base address (A32) of the model V1190A ***/
 
 #define BASEV1190A                          0xEEEE0000
 
@@ -138,7 +138,7 @@ using namespace std;
 #define TRIG_SRCH_MARGIN_V1190A             0x04
 #define TRIG_REJ_MARGIN_V1190A              0x04
 
-#define MAXSPILLS_V1190A                    1000
+#define MAXTRIGGERS_V1190A                  1000
 
 // ****************************************************************************************************
 
@@ -329,10 +329,10 @@ class v1190a
     void SetTDCTestMode(Data16 mode);
     void SetTrigMatching();
     void SetTrigTimeSubstraction(Data16 mode);
-    void SetTrigWindowWidth(IniFile *inifile);
-    void SetTrigWindowOffset(IniFile *inifile);
-    void SetTrigSearchMargin(IniFile *inifile);
-    void SetTrigRejectionMargin(IniFile *inifile);
+    void SetTrigWindowWidth(long  windowWidth);
+    void SetTrigWindowOffset(long windowOffset);
+    void SetTrigSearchMargin(long searchMargin);
+    void SetTrigRejectionMargin(long rejectMargin);
     void SetTrigConfiguration(IniFile *inifile);
     void GetTrigConfiguration();
     void SetTDCDetectionMode(Data16 mode);
@@ -340,7 +340,7 @@ class v1190a
     void SetTDCDeadTime(Data16 time);
     void SetTDCHeadTrailer(Data16 mode);
     void SetTDCEventSize(Data16 size);
-    void SwitchChannels(Data16 mode);
+    void SwitchChannels(IniFile *inifile);
     void Set(IniFile *inifile);
     bool IsSetStatusReg(Data32 aBit,v1718 *vme);
     Uint Read(v1718 *vme);

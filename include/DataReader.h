@@ -43,13 +43,19 @@ class DataReader
 {
     private:
         bool            StopFlag;
-        Data32          MaxSpills;
+        IniFile         *iniFile;
+        Data32          MaxTriggers;
         v1718           *VME;
         v1190a          *TDC;
 
     public:
         DataReader();
         virtual ~DataReader();
+        void SetIniFile(string inifilename);
+        void SetMaxTriggers();
+        Data32 GetMaxTriggers();
+        void SetVME();
+        void SetTDC();
         void Init(string inifilename);
         void Run();
 };

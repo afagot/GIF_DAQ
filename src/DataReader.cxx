@@ -39,7 +39,7 @@ using namespace std;
 
 DataReader::DataReader()
 {
-    StopFlag = false;
+    this->StopFlag = false;
 }
 
 // ****************************************************************************************************
@@ -51,18 +51,51 @@ DataReader::~DataReader()
 
 // ****************************************************************************************************
 
-void DataReader::Init(string inifilename)
+void DataReader::SetIniFile(string inifilename)
 {
-    IniFile* inifile = new IniFile(inifilename);
-    inifile->Read();
+    this->iniFile = new IniFile(inifilename);
+    this->iniFile->Read();
+}
 
-    MaxSpills = inifile->Long("General","MaxSpills",MAXSPILLS_V1190A);
+// ****************************************************************************************************
 
-    VME = new v1718(inifile);
-    TDC = new v1190a(VME->GetHandle(),inifile);
+void DataReader::SetMaxTriggers()
+{
+    this->MaxTriggers = this->iniFile->intType("General","MaxTriggers",MAXTRIGGERS_V1190A);
+}
+
+// ****************************************************************************************************
+
+Data32 DataReader::GetMaxTriggers()
+{
+    return this->MaxTriggers;
+}
+
+// ****************************************************************************************************
+
+void DataReader::SetVME()
+{
+    this->VME = new v1718(this->iniFile);
+}
+
+// ****************************************************************************************************
+
+void DataReader::SetTDC()
+{
+    this->TDC = new v1190a(this->VME->GetHandle(),this->iniFile);
 
     /*********** initialize the TDC 1190a ***************************/
-    TDC->Set(inifile);
+    this->TDC->Set(this->iniFile);
+}
+
+// ****************************************************************************************************
+
+void DataReader::Init(string inifilename)
+{
+    this->SetIniFile(inifilename);
+    this->SetMaxTriggers();
+    this->SetVME();
+    this->SetTDC();
 }
 
 // ****************************************************************************************************
@@ -71,9 +104,9 @@ void DataReader::Run()
 {
     cout << "Starting data acquisition." << endl;
 
-    Uint spillcount = 0;
+    Uint triggercount = 0;
 
-    while(spillcount < MaxSpills){
-        spillcount += TDC->Read(this->VME);
+    while(triggercount < this->GetMaxTriggers()){
+        triggercount += this->TDC->Read(this->VME);
     }
 }

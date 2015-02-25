@@ -41,7 +41,7 @@ v1718::v1718(IniFile * inifile)
 {
    MSG_INFO("Initialization VME...");
 
-   Data32 baseaddress = inifile->Long("VMEInterface","BaseAddress",BASEV1718) ;
+   Data32 baseaddress = inifile->addressType("VMEInterface","BaseAddress",BASEV1718) ;
   
    if( CAENVME_Init(cvV1718, baseaddress, 0, &Handle) != cvSuccess )
    {

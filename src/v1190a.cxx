@@ -38,7 +38,7 @@ using namespace std;
   
 v1190a::v1190a(long handle, IniFile * inifile)
 {
-   Address=inifile->Long("TDC","BaseAddress",BASEV1190A); //See page 35
+   Address=inifile->addressType("TDC","BaseAddress",BASEV1190A); //See page 35
    DataWidth=cvD16;              //See in CAENVMEtypes.h CVDataWidth enum
    AddressModifier=cvA24_U_DATA; //See in CAENVMEtypes.h CVAddressModifier enum
    Handle=handle;
@@ -170,46 +170,54 @@ void v1190a::SetTrigTimeSubstraction(Data16 mode){//Enable/Disable substraction 
 
 // *************************************************************************************************************
 
-void v1190a::SetTrigWindowWidth(IniFile *inifile){
+void v1190a::SetTrigWindowWidth(long windowWidth){
     // Time unit = 25ns
-    long int timewindow = inifile->Long("TDC","TriggerWindowWidth",TRIG_WIN_WIDTH_V1990A);
-    long int timewindowus = timewindow*25;
-    printf("Window width is set to 0x%02X          (%dus)\n",timewindow,timewindowus);
+    long windowWidthns = windowWidth*25;
+    printf("Window width is set to 0x%02X          (%dns)\n",windowWidth,windowWidthns);
     write_op_reg(Address, OPCODE_SET_WIN_WIDTH_V1190A);
-    write_op_reg(Address, timewindow);
+    write_op_reg(Address, windowWidth);
 }
 
 // *************************************************************************************************************
 
-void v1190a::SetTrigWindowOffset(IniFile *inifile){
+void v1190a::SetTrigWindowOffset(long windowOffset){
     // Time unit = 25ns
-    long int timewindow = inifile->Long("TDC","TriggerWindowOffset",TRIG_WIN_OFFSET_V1190A);
-    long int timewindowus = timewindow*25;
-    printf("Window Offset is set to 0x%8X   (%dus)\n",timewindow,timewindowus);
+    long windowOffsetns = windowOffset*25;
+    printf("Window Offset is set to 0x%8X   (%dns)\n",windowOffset,windowOffsetns);
     write_op_reg(Address, OPCODE_SET_WIN_OFFSET_V1190A);
-    write_op_reg(Address, timewindow);
+    write_op_reg(Address, windowOffset);
 }
 
 // *************************************************************************************************************
 
-void v1190a::SetTrigSearchMargin(IniFile *inifile){
+void v1190a::SetTrigSearchMargin(long searchMargin){
     // Time unit = 25ns
-    long int timewindow = inifile->Long("TDC","TriggerExtraSearchMargin",TRIG_SRCH_MARGIN_V1190A);
-    long int timewindowns = timewindow*25;
-    printf("Extra search margin is set to 0x%02X   (%dns)\n",timewindow,timewindowns);
+    long searchMarginns = searchMargin*25;
+    printf("Extra search margin is set to 0x%02X   (%dns)\n",searchMargin,searchMarginns);
     write_op_reg(Address, OPCODE_SET_SW_MARGIN_V1190A);
-    write_op_reg(Address, timewindow);
+    write_op_reg(Address, searchMargin);
 }
 
 // *************************************************************************************************************
 
-void v1190a::SetTrigRejectionMargin(IniFile *inifile){
+void v1190a::SetTrigRejectionMargin(long rejectMargin){
     // Time unit = 25ns
-    long int timewindow = inifile->Long("TDC","TriggerRejectMargin",TRIG_REJ_MARGIN_V1190A);
-    long int timewindowns = timewindow*25;
-    printf("Rejection margin is set to 0x%02X      (%dns)\n",timewindow,timewindowns);
+    long rejectMarginns = rejectMargin*25;
+    printf("Rejection margin is set to 0x%02X      (%dns)\n",rejectMargin,rejectMarginns);
     write_op_reg(Address, OPCODE_SET_REJ_MARGIN_V1190A);
-    write_op_reg(Address, timewindow);
+    write_op_reg(Address, rejectMargin);
+}
+
+// *************************************************************************************************************
+
+void v1190a::SetTrigConfiguration(IniFile *inifile){ //Set and print trigger configuration
+    // Each parameter is defined taking into account that the time unit is 25ns
+    this->SetTrigWindowWidth(inifile->intType("TDC","TriggerWindowWidth",TRIG_WIN_WIDTH_V1990A));
+    this->SetTrigWindowOffset(inifile->intType("TDC","TriggerWindowOffset",TRIG_WIN_OFFSET_V1190A));
+    this->SetTrigSearchMargin(inifile->intType("TDC","TriggerExtraSearchMargin",TRIG_SRCH_MARGIN_V1190A));
+    this->SetTrigRejectionMargin(inifile->intType("TDC","TriggerRejectMargin",TRIG_REJ_MARGIN_V1190A));
+
+    this->GetTrigConfiguration();
 }
 
 // *************************************************************************************************************
@@ -225,22 +233,10 @@ void v1190a::GetTrigConfiguration(){ //Read and print trigger configuration
     TriggerTimeSubtraction  =read_op_reg(Address);
 
     printf("Match Window Width :                 0x%02X\n"  ,MatchWindowWidth);
-    printf("Window Offset :                      0x%8X\n"    ,WindowOffset);
+    printf("Window Offset :                      0x%8X\n"   ,WindowOffset);
     printf("Extra Search Window Width :          0x%02X\n"  ,ExtraSearchWindowWidth);
     printf("Reject Margin :                      0x%02X\n"  ,RejectMargin);
     printf("Trigger Time Subtraction :           %d\n\n"    ,TriggerTimeSubtraction);
-}
-
-// *************************************************************************************************************
-
-void v1190a::SetTrigConfiguration(IniFile *inifile){ //Set and print trigger configuration
-    // Each parameter is defined taking into account that the time unit is 25ns
-    this->SetTrigWindowWidth(inifile);
-    this->SetTrigWindowOffset(inifile);
-    this->SetTrigSearchMargin(inifile);
-    this->SetTrigRejectionMargin(inifile);
-
-    this->GetTrigConfiguration();
 }
 
 // *************************************************************************************************************
@@ -296,18 +292,47 @@ void v1190a::SetTDCEventSize(Data16 size){ //Maximum number of hits per event re
 
 // *************************************************************************************************************
 
-void v1190a::SwitchChannels(Data16 mode){ //Enable all channels
-    if(mode == 1){
-        write_op_reg(Address,OPCODE_EN_ALL_CH_V1190A);
+void v1190a::SwitchChannels(IniFile *inifile){
+    char Connectors[5]="ABCD";
+    int StatusList[8];
+    int firstchannel = 0;
+    int lastchannel = 0;
 
-        write_op_reg(Address,OPCODE_READ_EN_PATTERN_V1190A);
-        for(int i = 0; i<8; i++){
-            int first = i*16;
-            int last = (i+1)*16-1;
-            printf("Channels enabled (%03d-%03d):           0x%4X\n", first, last, (read_op_reg(Address) & 0xFFFF));
+    //Enable - Disable channels according to configuration file
+
+    write_op_reg(Address,OPCODE_WRITE_EN_PATTERN_V1190A);
+    for(int c = 0; c < 4; c++){
+        for(int ch = 0; ch < 2; ch++){
+            firstchannel = ch*16;
+            lastchannel = firstchannel+15;
+
+            char keyname[15];
+            sprintf(keyname,"Status%c%02u-%02u",Connectors[c],firstchannel,lastchannel);
+
+            int status = inifile->intType("TDC",keyname,ENABLE);
+
+            if(status == ENABLE)
+                StatusList[2*c+ch] = 0xFFFF;
+            else if(status == DISABLE)
+                StatusList[2*c+ch] = 0x0000;
+
+            write_op_reg(Address,StatusList[2*c+ch]);
         }
-    } else if (mode == 0)
-        write_op_reg(Address,OPCODE_DIS_ALL_CH_V1190A);
+    }
+
+    //Read status of channels
+
+    write_op_reg(Address,OPCODE_READ_EN_PATTERN_V1190A);
+    for(int c = 0; c<4; c++){
+        for(int ch = 0; ch<2; ch++){
+            firstchannel = ch*16;
+            lastchannel = firstchannel+15;
+
+            char name[15];
+            sprintf(name,"%c%02u-%02u",Connectors[c],firstchannel,lastchannel);
+            printf("Channels enabled (%s):            0x%04X\n",name,(read_op_reg(Address) & 0xFFFF));
+        }
+    }
 }
 
 // *************************************************************************************************************
@@ -320,28 +345,28 @@ void v1190a::Set(IniFile * inifile)
     TestWR(TEST_WR);
     CheckStatus();
     CheckCommunication();
-    SetTDCTestMode(inifile->Int("TDC","TdcTestMode",DISABLE));
+    SetTDCTestMode(inifile->intType("TDC","TdcTestMode",DISABLE));
 	
     cout << "************   Trigger configuration   *************\n\n";
 
     SetTrigMatching();
-    SetTrigTimeSubstraction(inifile->Int("TDC","TriggerTimeSubstraction",ENABLE));
+    SetTrigTimeSubstraction(inifile->intType("TDC","TriggerTimeSubstraction",ENABLE));
     SetTrigConfiguration(inifile);
 
     cout << "********   TDC edge detection/resolution   *********\n\n";
 
-    SetTDCDetectionMode(inifile->Int("TDC","TdcDetectionMode",EdgeMode_Both));
-    SetTDCResolution(inifile->Int("TDC","TdcResolution",Res_100ps));
-    SetTDCDeadTime(inifile->Int("TDC","TdcDeadTime",DT_5ns));
+    SetTDCDetectionMode(inifile->intType("TDC","TdcDetectionMode",EdgeMode_Both));
+    SetTDCResolution(inifile->intType("TDC","TdcResolution",Res_100ps));
+    SetTDCDeadTime(inifile->intType("TDC","TdcDeadTime",DT_5ns));
 
     cout << "*****************   TDC readout   ******************\n\n";
 
-    SetTDCHeadTrailer(inifile->Int("TDC","TdcHeadTrailer",ENABLE));
-    SetTDCEventSize(inifile->Int("TDC","TdcEventSize",HITS_UNLIMITED));
+    SetTDCHeadTrailer(inifile->intType("TDC","TdcHeadTrailer",ENABLE));
+    SetTDCEventSize(inifile->intType("TDC","TdcEventSize",HITS_UNLIMITED));
 
     cout << "************   Enabling the channels   *************\n\n";
 
-    SwitchChannels(ENABLE);
+    SwitchChannels(inifile);
 }
 
 // *************************************************************************************************************

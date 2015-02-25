@@ -161,10 +161,32 @@ int IniFile::Write(){
 // *************************************************************************************************************
 
 
-long IniFile::Int(const string groupname, const string keyname, const long defaultvalue ){
+Data32 IniFile::addressType(const string groupname, const string keyname, const Data32 defaultvalue ){
+    stringstream sstr;
+    string key;
+    long addressValue = defaultvalue;
+
+    IniFileDataIter Iter;
+
+    if(groupname.size() > 0)
+        key = groupname + "." + keyname;
+
+    Iter = FileData.find(key);
+
+    if(Iter != FileData.end())
+        addressValue = strtoul(Iter->second.c_str(),NULL,16);
+
+    return addressValue;
+}
+
+// *************************************************************************************************************
+
+
+long IniFile::intType(const string groupname, const string keyname, const long defaultvalue ){
     stringstream sstr;
     string key;
     long intValue = defaultvalue;
+    string fileValue;
 
 	IniFileDataIter Iter;
 
@@ -174,8 +196,16 @@ long IniFile::Int(const string groupname, const string keyname, const long defau
     Iter = FileData.find(key);
 
     if(Iter != FileData.end()){
-          sstr << Iter->second;	
-          sstr >> intValue;
+        int base = 0;
+        fileValue = Iter->second;
+        if(fileValue[1] == 'x')
+            base = 16;
+        else if(fileValue[1] == 'b'){
+            base = 2;                   //In the case of binary values, the function doesn't
+            fileValue.erase(0,2);       //understand 0b as a integer literals -> erase it
+        }
+
+        intValue = strtol(fileValue.c_str(),NULL,base);
 	}
 
     return intValue;
@@ -183,10 +213,11 @@ long IniFile::Int(const string groupname, const string keyname, const long defau
 
 // *************************************************************************************************************
 
-long long IniFile::Long(const string groupname, const string keyname, const long long defaultvalue ){
-    stringstream sstr;
+long long IniFile::longType(const string groupname, const string keyname, const long long defaultvalue ){
+    //stringstream sstr;
     string key;
     long long longValue = defaultvalue;
+    string fileValue;
 
     IniFileDataIter Iter;
 
@@ -196,8 +227,16 @@ long long IniFile::Long(const string groupname, const string keyname, const long
     Iter = FileData.find(key);
 
     if(Iter != FileData.end()){
-        sstr << Iter->second;
-        sstr >> longValue;
+        int base = 0;
+        fileValue = Iter->second;
+        if(fileValue[1] == 'x')
+            base = 16;
+        else if(fileValue[1] == 'b'){
+            base = 2;                   //In the case of binary values, the function doesn't
+            fileValue.erase(0,2);       //understand 0b as a integer literals -> erase it
+        }
+
+        longValue = strtoll(fileValue.c_str(),NULL,base);
     }
 
     return longValue;
@@ -205,7 +244,7 @@ long long IniFile::Long(const string groupname, const string keyname, const long
 
 // *************************************************************************************************************
 
-string IniFile::String( const string groupname, const string keyname, const string defaultvalue ){
+string IniFile::stringType( const string groupname, const string keyname, const string defaultvalue ){
     string key;
     string stringChain = defaultvalue;
 
@@ -216,16 +255,15 @@ string IniFile::String( const string groupname, const string keyname, const stri
 
     Iter = FileData.find(key);
 
-    if(Iter != FileData.end()){
+    if(Iter != FileData.end())
         stringChain = Iter->second;
-	}
 
     return stringChain;
 }
 
 // *************************************************************************************************************
 
-float IniFile::Float( const string groupname, const string keyname, const float defaultvalue ){
+float IniFile::floatType( const string groupname, const string keyname, const float defaultvalue ){
     stringstream sstr;
     string key;
     float floatValue = defaultvalue;
@@ -237,10 +275,8 @@ float IniFile::Float( const string groupname, const string keyname, const float 
 
     Iter = FileData.find(key);
 
-    if(Iter != FileData.end()){
-        sstr << Iter->second;
-        sstr >> floatValue;
-	}
+    if(Iter != FileData.end())
+        floatValue = strtof(Iter->second.c_str(),NULL);
 
     return floatValue;
 }
