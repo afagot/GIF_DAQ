@@ -1,10 +1,15 @@
 // *************************************************************************************************************
-// *   v1190a 
+// *   v1190a
 // *   Alexis Fagot
 // *   20/01/2015
 // *   Based on v1290a file from :
 // *   Avia Raviv & Y. Benhammou
 // *   14/03/2012
+// *
+// *   Documentation about this VME TDC module can be found at the followin url
+// *   http://www.caen.it/servlet/checkCaenManualFile?Id=8657
+// *
+// *   Comments will often refer to this user manual
 // *************************************************************************************************************
 
 #include <iostream>
@@ -33,9 +38,9 @@
 
 #include "../include/v1190a.h"
 #include "../include/v1718.h"
-   
+
 using namespace std;
-  
+
 v1190a::v1190a(long handle, IniFile * inifile)
 {
    Address=inifile->addressType("TDC","BaseAddress",BASEV1190A); //See page 35
@@ -45,7 +50,7 @@ v1190a::v1190a(long handle, IniFile * inifile)
 }
 
 // *************************************************************************************************************
- 
+
 v1190a::~v1190a()
 {
 
@@ -346,7 +351,7 @@ void v1190a::Set(IniFile * inifile)
     CheckStatus();
     CheckCommunication();
     SetTDCTestMode(inifile->intType("TDC","TdcTestMode",DISABLE));
-	
+
     cout << "************   Trigger configuration   *************\n\n";
 
     SetTrigMatching();
