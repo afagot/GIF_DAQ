@@ -348,7 +348,7 @@ class v1190a
     void SwitchChannels(IniFile *inifile);
     void Set(IniFile *inifile);
     bool IsSetStatusReg(Data32 aBit,v1718 *vme);
-    Uint Read(v1718 *vme);
+    Uint Read(v1718 *vme, string outputfilename);
 };
 
 

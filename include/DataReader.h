@@ -57,6 +57,7 @@ class DataReader
         void SetVME();
         void SetTDC();
         void Init(string inifilename);
+        string GetFileName();
         void Run();
 };
 

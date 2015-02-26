@@ -67,7 +67,7 @@ TriggerTimeSubstraction=0b1
 #********************* TDC parameters **********************
 #
 #Page 54 (CODE 22xx)
-TdcDetectionMode=0b11
+TdcDetectionMode=0b01
 #Page 55 (CODE 24xx)
 TdcResolution=0b10
 #Page 56 (CODE 28xx)

@@ -247,17 +247,17 @@ void v1190a::GetTrigConfiguration(){ //Read and print trigger configuration
 // *************************************************************************************************************
 
 void v1190a::SetTDCDetectionMode(Data16 mode){
-    cout << "Edge detection set to trailing and leading (0b11)\n";
+    cout << "Set edge detection\n";
     write_op_reg(Address,OPCODE_SET_DETECTION_V1190A);              //Edge detection selection
     write_op_reg(Address,mode);
     write_op_reg(Address,OPCODE_READ_DETECTION_V1190A);             //Edge detection readout
-    printf("Edge readout :                       %1X\n",(read_op_reg(Address) & 0b11));
+    printf("Edge readout :                       %1X\n\n",(read_op_reg(Address) & 0b11));
 }
 
 // *************************************************************************************************************
 
 void v1190a::SetTDCResolution(Data16 lsb){ //Resolution readout
-    cout << "Channel resolution set to 100ps (10)\n";
+    cout << "Set channel resolution\n";
     write_op_reg(Address,OPCODE_SET_TR_LEAD_LSB_V1190A);              //Set channel dead time
     write_op_reg(Address,lsb);
     write_op_reg(Address,OPCODE_READ_RES_V1190A);
@@ -267,7 +267,7 @@ void v1190a::SetTDCResolution(Data16 lsb){ //Resolution readout
 // *************************************************************************************************************
 
 void v1190a::SetTDCDeadTime(Data16 time){
-    cout << "Channel dead time between hits set to 5ns (00)\n";
+    cout << "Set channel dead time between hits\n";
     write_op_reg(Address,OPCODE_SET_DEAD_TIME_V1190A);              //Set channel dead time
     write_op_reg(Address,time);
     write_op_reg(Address,OPCODE_READ_DEAD_TIME_V1190A);             //Channel dead time readout
@@ -335,7 +335,7 @@ void v1190a::SwitchChannels(IniFile *inifile){
 
             char name[15];
             sprintf(name,"%c%02u-%02u",Connectors[c],firstchannel,lastchannel);
-            printf("Channels enabled (%s):            0x%04X\n",name,(read_op_reg(Address) & 0xFFFF));
+            printf("Channels enabled (%s):           0x%04X\n",name,(read_op_reg(Address) & 0xFFFF));
         }
     }
 }
@@ -387,7 +387,7 @@ bool v1190a::IsSetStatusReg(Data32 aBit,v1718 * vme){
 
 // *************************************************************************************************************
 
-Uint v1190a::Read(v1718 * vme){
+Uint v1190a::Read(v1718 * vme, string outputfilename){
 
     //printf("Status register :     %X\n",IsSetStatusReg(0b11,vme));
 
@@ -400,39 +400,53 @@ Uint v1190a::Read(v1718 * vme){
     Uint Spills = 0;
 
     bool IsPrinted(false);
+    int Event = EventStored;
 
-    while( EventStored != 0)
-    {
-        CAENVME_ReadCycle(Handle,Address+ADD_OUT_BUFFER_V1190A,&data,cvA32_U_DATA,cvD32);
+    ofstream outputFile(outputfilename.c_str(),ios::app|ios::ate);
 
-        switch(data & STATUS_TDC_V1190A)
+    if(outputFile.is_open()){
+        while( EventStored != 0)
         {
-            case(GLOBAL_HEADER_V1190A):
-                cout << "GLOBAL HEADER " ;
-                cout << " Event Count : " << ((data>>5) & 0x3FFFFF)<<endl;
-                Spills++;
-                break;
-            case(GLOBAL_TRAILER_V1190A):
-                cout <<"GLOBAL TRAILER ";
-                cout <<"Word Count " << (data & 0xFFF)<<endl;
-                break;
-            case(TDC_HEADER_V1190A):
-                if(!IsPrinted){
-                    cout <<"TDC HEADER ";
-                    cout <<"Event id : " << ( (data>>12) & 0xFFF)<<endl;
-                    IsPrinted = true;
-                }
-                break;
-            case(TDC_DATA_V1190A):
-                cout <<"Data ";
-                cout << " Rise/Fall : "<< ((data>>26) & 0x1) ;
-                cout << " Channel : "<<((data>>19) & 0x7F ) ;
-                cout << " Value : "<< ( data & 0x7FFFF)<<endl ;
-                break;
+            CAENVME_ReadCycle(Handle,Address+ADD_OUT_BUFFER_V1190A,&data,cvA32_U_DATA,cvD32);
 
+            switch(data & STATUS_TDC_V1190A)
+            {
+                case(GLOBAL_HEADER_V1190A):
+                    cout << "GLOBAL HEADER " ;
+                    cout << " Event Count : " << ((data>>5) & 0x3FFFFF) + 1<<endl;
+                    Spills++;
+                    break;
+                case(GLOBAL_TRAILER_V1190A):
+                    cout <<"GLOBAL TRAILER ";
+                    cout <<"Word Count " << (data & 0xFFF)<<endl;
+                    break;
+                case(TDC_HEADER_V1190A):
+                    if(!IsPrinted){
+                        cout <<"TDC HEADER ";
+                        cout <<"Event id : " << ( (data>>12) & 0xFFF) + 1<<endl;
+                        IsPrinted = true;
+                    }
+                    break;
+                case(TDC_DATA_V1190A):
+                    cout <<"Data ";
+                    cout << " Rise/Fall : "<< ((data>>26) & 0x1) ;
+                    cout << " Channel : "<<((data>>19) & 0x7F ) ;
+                    cout << " Value : "<< ( data & 0x7FFFF)<<endl ;
+
+                    Data32 channel = (data>>19) & 0x7F;
+                    Data32 timing = data & 0x7FFFF;
+
+                    outputFile << channel << '\t' << timing << '\n';
+                    break;
+
+            }
+
+            CAENVME_ReadCycle(Handle, Address+ADD_EVENT_STORED_V1190A, &EventStored, cvA32_U_DATA, cvD16 );
+            if(EventStored == (Event-1)){
+                outputFile << 0 << '\t' << 0 << '\n';
+                Event = EventStored;
+            }
         }
-
-        CAENVME_ReadCycle(Handle, Address+ADD_EVENT_STORED_V1190A, &EventStored, cvA32_U_DATA, cvD16 );
     }
     return Spills;
 }
