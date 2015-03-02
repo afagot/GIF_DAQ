@@ -111,7 +111,7 @@ string DataReader::GetFileName(){
     int s = Time->tm_sec;
 
     stringstream NameStream;
-    NameStream << "Run_test_" << setfill('0') << setw(4) << Y
+    NameStream << "datarun/Run_test_PK044_cosmics_9000V_" << setfill('0') << setw(4) << Y
                               << setfill('0') << setw(2) << M
                               << setfill('0') << setw(2) << D
                               << setfill('0') << setw(2) << h
