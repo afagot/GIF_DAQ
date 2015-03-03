@@ -403,6 +403,9 @@ Uint v1190a::Read(v1718 * vme, string outputfilename){
     int Event = EventStored;
 
     ofstream outputFile(outputfilename.c_str(),ios::app|ios::ate);
+    vector< pair<int,int> > Hits;
+    Hits.clear();
+    int EventCount = 0;
 
     if(outputFile.is_open()){
         while( EventStored != 0)
@@ -414,6 +417,7 @@ Uint v1190a::Read(v1718 * vme, string outputfilename){
                 case(GLOBAL_HEADER_V1190A):
                     cout << "GLOBAL HEADER " ;
                     cout << " Event Count : " << ((data>>5) & 0x3FFFFF) + 1<<endl;
+                    EventCount = ((data>>5) & 0x3FFFFF) + 1;
                     Spills++;
                     break;
                 case(GLOBAL_TRAILER_V1190A):
@@ -436,14 +440,17 @@ Uint v1190a::Read(v1718 * vme, string outputfilename){
                     Data32 channel = (data>>19) & 0x7F;
                     Data32 timing = data & 0x7FFFF;
 
-                    outputFile << channel << '\t' << timing << '\n';
+                    Hits.push_back(make_pair(channel,timing));
                     break;
 
             }
 
             CAENVME_ReadCycle(Handle, Address+ADD_EVENT_STORED_V1190A, &EventStored, cvA32_U_DATA, cvD16 );
             if(EventStored == (Event-1)){
-                outputFile << 0 << '\t' << 0 << '\n';
+                outputFile << EventCount << '\t' << Hits.size() << '\n';
+                for(int i=0; i<Hits.size(); i++)
+                    outputFile << Hits[i].first << '\t' << Hits[i].second << '\n';
+                Hits.clear();
                 Event = EventStored;
             }
         }
