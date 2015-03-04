@@ -15,6 +15,7 @@
 // *   interface of the same name. A lot of private members and public method
 // *   using them are implemented but not necessarily used.
 // **********************************************************************************
+
 #ifndef __LINUX
 #define __LINUX
 #endif
