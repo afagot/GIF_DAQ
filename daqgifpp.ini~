@@ -13,7 +13,13 @@
 #***********************************************************
 #
 Tdcs=1
+RunType=DAQTest_DualTimer
+#ChamberType=RE2-2
 MaxTriggers=100
+#TriggerType=Random
+#ElectronicsType=NewPreamp
+#Threshold=55
+#Voltage=9000
 #
 #***********************************************************
 [VMEInterface]
@@ -43,8 +49,8 @@ Name=Tdc
 #
 #16 channels per connector
 StatusA00-15=0
-StatusA16-31=1
-StatusB00-15=0
+StatusA16-31=0
+StatusB00-15=1
 StatusB16-31=0
 StatusC00-15=0
 StatusC16-31=0

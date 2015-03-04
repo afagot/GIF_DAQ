@@ -101,6 +101,19 @@ void DataReader::Init(string inifilename)
 // ****************************************************************************************************
 
 string DataReader::GetFileName(){
+    string fNameParts[7];
+    fNameParts[0] = this->iniFile->stringType("General","RunType","");
+    fNameParts[1] = this->iniFile->stringType("General","ChamberType","");
+    fNameParts[2] = this->iniFile->stringType("General","MaxTrigger","");
+    fNameParts[3] = this->iniFile->stringType("General","TriggerType","");
+    fNameParts[4] = this->iniFile->stringType("General","ElectronicsType","");
+    fNameParts[5] = this->iniFile->stringType("General","Threshold","");
+    fNameParts[6] = this->iniFile->stringType("General","ChamberType","");
+
+    for(int i=0; i<7;i++)
+        if(fNameParts[i] != "")
+            fNameParts[i] += "_";
+
     time_t t = time(0);
     struct tm *Time = localtime(&t);
     int Y = Time->tm_year + 1900;
@@ -110,19 +123,23 @@ string DataReader::GetFileName(){
     int m = Time->tm_min;
     int s = Time->tm_sec;
 
-    stringstream NameStream;
-    NameStream << "datarun/Run_test_dual_timer_" << setfill('0') << setw(4) << Y
-                              << setfill('0') << setw(2) << M
-                              << setfill('0') << setw(2) << D
-                              << setfill('0') << setw(2) << h
-                              << setfill('0') << setw(2) << m
-                              << setfill('0') << setw(2) << s
-                              << ".dat";
+    stringstream fNameStream;
+    fNameStream << "datarun/";                      //destination
+    for(int i=0; i<7;i++)
+        fNameStream << fNameParts[i];               //informations about chamber, trigger and electronics
+    fNameStream << "run"
+                << setfill('0') << setw(4) << Y     //run number
+                << setfill('0') << setw(2) << M
+                << setfill('0') << setw(2) << D
+                << setfill('0') << setw(2) << h
+                << setfill('0') << setw(2) << m
+                << setfill('0') << setw(2) << s
+                << ".dat";                          //file type
 
-    string outputFileName;
-    NameStream >> outputFileName;
+    string outputfName;
+    fNameStream >> outputfName;
 
-    return outputFileName;
+    return outputfName;
 }
 
 // ****************************************************************************************************
