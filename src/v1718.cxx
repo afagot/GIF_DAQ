@@ -10,6 +10,9 @@
 // *   http://www.caen.it/servlet/checkCaenManualFile?Id=5385
 // *
 // *   Comments will often refer to this user manual
+// *
+// *   This file declares defines the public methods of the v1718 class. A lot
+// *   of methods are available but not used.
 // *************************************************************************************************************
 
 #ifndef __LINUX
@@ -45,37 +48,40 @@
 
 using namespace std;
 
-v1718::v1718(IniFile *inifile)
-{
+v1718::v1718(IniFile *inifile){
    MSG_INFO("Initialization VME...");
 
-   Data32 baseaddress = inifile->addressType("VMEInterface","BaseAddress",BASEV1718) ;
+   //Get the base address from the configuration file
+   Data32 baseaddress = inifile->addressType("VMEInterface","BaseAddress",BASEV1718);
 
-   if( CAENVME_Init(cvV1718, baseaddress, 0, &Handle) != cvSuccess )
-   {
+   //Initialisation of the module. See CAENVMElib.h & CAENVMEtypes.h .
+   if( CAENVME_Init(cvV1718, baseaddress, 0, &Handle) != cvSuccess ){
       perror("\n\nError opening the v1718 controller device\n");
       exit(1);
    }
 
+   //Enable FIFO mode. See CAENVMElib.h .
    CAENVME_SetFIFOMode(Handle,1);
+
+
    this->SetLevel(cvIRQ1);
    this->SetAM(cvA24_U_DATA);
    this->SetDatasize(cvD16);
    this->SetBaseAddress(baseaddress);
    this->SetBlockSize(256);
    this->SetNbCycles(1);
-   this->SetAddress(baseaddress);
    MSG_INFO(" OK\n\n");
 }
 
 // *************************************************************************************************************
 
-v1718::~v1718()
-{
-  CAENVME_End(Handle);
+v1718::~v1718(){
+    CAENVME_End(Handle);
 }
 
 // *************************************************************************************************************
+// This function is an implementation of the CAENVME_ReadCycle function for
+// 8-bits long data. See CAENVMElib.h .
 
 Data8 v1718::ReadChar( Data32 address ){
     Data8 Data;
@@ -84,6 +90,8 @@ Data8 v1718::ReadChar( Data32 address ){
 }
 
 // *************************************************************************************************************
+// This function is an implementation of the CAENVME_ReadCycle function for
+// 16-bits long data. See CAENVMElib.h .
 
 Data16 v1718::ReadShort( Data32 address ){
     Data16 Data;
@@ -92,6 +100,8 @@ Data16 v1718::ReadShort( Data32 address ){
 }
 
 // *************************************************************************************************************
+// This function is an implementation of the CAENVME_ReadCycle function for
+// 32-bits long data. See CAENVMElib.h .
 
 Data32 v1718::ReadLong( Data32 address ){
     Data32 Data;
@@ -100,52 +110,47 @@ Data32 v1718::ReadLong( Data32 address ){
 }
 
 // *************************************************************************************************************
+// This function is an implementation of the CAENVME_WriteCycle function for
+// 8-bits long data. See CAENVMElib.h .
 
 void v1718::WriteChar( Data32 address, Data8 data ){
     Status = CAENVME_WriteCycle( Handle, address, &data, cvA32_U_DATA, cvD8 );
 }
 
 // *************************************************************************************************************
+// This function is an implementation of the CAENVME_WriteCycle function for
+// 16-bits long data. See CAENVMElib.h .
 
 void v1718::WriteShort( Data32 address, Data16 data ){
     Status = CAENVME_WriteCycle( Handle, address, &data, cvA32_U_DATA, cvD16 );
 }
 
 // *************************************************************************************************************
+// This function is an implementation of the CAENVME_WriteCycle function for
+// 32-bits long data. See CAENVMElib.h .
 
 void v1718::WriteLong( Data32 address, Data32 data ){
     Status = CAENVME_WriteCycle( Handle, address, &data, cvA32_U_DATA, cvD32 );
 }
 
 // *************************************************************************************************************
-
+// Get the error code returned by the latest Read or Write used.
 CVErrorCodes v1718::GetStatus(void)
 {
   return Status;
 }
 
 // *************************************************************************************************************
+// As the name says, it decodes the error code previously returned and saved
+// into Status. Returns a string describing the error code. See CAEMVMElib.h .
 
 string v1718::GetError(void){
     return CAENVME_DecodeError(Status);
 }
 
 // *************************************************************************************************************
-
-int v1718::SetAddress(Data16 address)
-{
-  Address=address;
-  return 0;
-}
-
-// *************************************************************************************************************
-
-Data16 v1718::GetAddress(void)
-{
-  return Address;
-}
-
-// *************************************************************************************************************
+// Data represents what you want to write or read from your VME bus (depending
+// on which CAEN method you call
 
 int v1718::SetData(Data16 data)
 {
@@ -154,6 +159,8 @@ int v1718::SetData(Data16 data)
 }
 
 // *************************************************************************************************************
+// Return the value of Data. To use in case you read data from the VME bus
+// using CAEN's methods.
 
 Data16 v1718::GetData(void)
 {
@@ -161,6 +168,8 @@ Data16 v1718::GetData(void)
 }
 
 // *************************************************************************************************************
+// See the list of address modifiers in the CVAddressModifier enum of
+// CAENVMEtypes.h . More explanation on Page 34 (4.4.1) and Page 35 (4.4.3).
 
 int v1718::SetAM(CVAddressModifier am)
 {
@@ -169,6 +178,7 @@ int v1718::SetAM(CVAddressModifier am)
 }
 
 // *************************************************************************************************************
+// Return the value of the address modifier
 
 CVAddressModifier v1718::GetAM(void)
 {
@@ -176,6 +186,8 @@ CVAddressModifier v1718::GetAM(void)
 }
 
 // *************************************************************************************************************
+// As you can understand it, this specifies the data width you are using. A
+// list is available in CVDataWidth enum of CAENVMEtypes.h .
 
 int v1718::SetDatasize(CVDataWidth datasize)
 {
@@ -184,6 +196,7 @@ int v1718::SetDatasize(CVDataWidth datasize)
 }
 
 // *************************************************************************************************************
+// Return the data width used.
 
 CVDataWidth v1718::GetDataSize(void)
 {
@@ -191,7 +204,10 @@ CVDataWidth v1718::GetDataSize(void)
 }
 
 // *************************************************************************************************************
-
+// Allows to set the base address of the VME interface. This is available at
+// Page 32 (Fig.3.3) or on Page 35 of the V1190A users manual. A little
+// explanation is also given in the header file v1718.h
+.
 int v1718::SetBaseAddress(Data16 baseaddress)
 {
   BaseAddress=baseaddress;
@@ -199,6 +215,7 @@ int v1718::SetBaseAddress(Data16 baseaddress)
 }
 
 // *************************************************************************************************************
+// Return the base address of the vme interface.
 
 Data16 v1718::GetBaseAddress(void)
 {
@@ -206,6 +223,10 @@ Data16 v1718::GetBaseAddress(void)
 }
 
 // *************************************************************************************************************
+// In the case you communicate with the VME interface using Chain Block
+// Transfer (CBLT) readout instead of using the Base Address, you specify
+// the block size. This is the same than specifying the data width when you
+// use the Base Address.
 
 int v1718::SetBlockSize(Data16 blocksize)
 {
@@ -214,6 +235,7 @@ int v1718::SetBlockSize(Data16 blocksize)
 }
 
 // *************************************************************************************************************
+// Return the block size.
 
 Data16 v1718::GetBlockSize(void)
 {
@@ -221,6 +243,8 @@ Data16 v1718::GetBlockSize(void)
 }
 
 // *************************************************************************************************************
+// Number of block transfer cycles used to transfert the memory content of the
+// module.
 
 int v1718::SetNbCycles(Data16 nbcycles)
 {
@@ -229,6 +253,7 @@ int v1718::SetNbCycles(Data16 nbcycles)
 }
 
 // *************************************************************************************************************
+// Return the number of cycles.
 
 Data16 v1718::GetNbCycles(void)
 {
@@ -236,6 +261,8 @@ Data16 v1718::GetNbCycles(void)
 }
 
 // *************************************************************************************************************
+// Set the Interrupt Request level. The IRQ Status register is a word of 7 bits
+// each bit representing a level from IRQ1 to IRQ7.
 
 int v1718::SetLevel(CVIRQLevels level)
 {
@@ -244,6 +271,7 @@ int v1718::SetLevel(CVIRQLevels level)
 }
 
 // *************************************************************************************************************
+// Return the level of the eventual IRQs.
 
 CVIRQLevels v1718::GetLevel(void)
 {
@@ -251,6 +279,7 @@ CVIRQLevels v1718::GetLevel(void)
 }
 
 // *************************************************************************************************************
+// Set the device (not currently used).
 
 int v1718::SetDevice(Data16 device)
 {
@@ -259,6 +288,7 @@ int v1718::SetDevice(Data16 device)
 }
 
 // *************************************************************************************************************
+// Return the value of the device.
 
 Data16 v1718::GetDevice(void)
 {
@@ -266,6 +296,7 @@ Data16 v1718::GetDevice(void)
 }
 
 // *************************************************************************************************************
+// Return the handle that identifies the device.
 
 long v1718::GetHandle(void)
 {
@@ -273,6 +304,9 @@ long v1718::GetHandle(void)
 }
 
 // *************************************************************************************************************
+// Write into the VME bus. Could be implemented to make use of the private
+// member Status and of the methods WriteChar, WriteShort & WriteLong. Here
+// the message corresponding to the returned error code is printed.
 
 int v1718::WriteToVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWidth dtsize)
 {
@@ -283,7 +317,7 @@ int v1718::WriteToVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWid
       perror("Can't execute a D64 Write Cycle");
       return -1;
    }
-   ret = CAENVME_WriteCycle(Handle,Address,&Data,AM,DataSize);
+   ret = CAENVME_WriteCycle(Handle,BaseAddress,&Data,AM,DataSize);
 
    switch (ret)
    {
@@ -300,12 +334,15 @@ int v1718::WriteToVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWid
 }
 
 // *************************************************************************************************************
+// Read the VME bus. Could be implemented to make use of the private member
+// Status and of the methods ReadChar, ReadShort & ReadLong.  Here the message
+// corresponding to the returned error code is printed.
 
 int v1718::ReadFromVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWidth dtsize)
 {
    CVErrorCodes ret;
 
-   Address=address;
+   BaseAddress=address;
    Data=data;
    AM=am;
    DataSize=dtsize;
@@ -315,7 +352,7 @@ int v1718::ReadFromVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWi
       perror("Can't execute a D64 Read Cycle");
       return -1;
    }
-   ret = CAENVME_ReadCycle(Handle,Address,&Data,AM,DataSize);
+   ret = CAENVME_ReadCycle(Handle,BaseAddress,&Data,AM,DataSize);
 
    switch (ret)
    {
@@ -335,6 +372,7 @@ int v1718::ReadFromVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWi
 }
 
 // *************************************************************************************************************
+// Get the Interrupt Request Status and print whether they are active or not.
 
 int v1718::GetIrqStatus(void)
 {

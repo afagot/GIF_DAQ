@@ -6,10 +6,14 @@
 // *   Y. Benhammou
 // *   26/07/09
 // *
-// *   Documentation about this VME TDC module can be found at the followin url
+// *   Documentation about this VME TDC module can be found at the following url
 // *   http://www.caen.it/servlet/checkCaenManualFile?Id=5385
 // *
 // *   Comments will often refer to this user manual
+// *
+// *   This header file declares the class v1718 that controls the USB VME
+// *   interface of the same name. A lot of private members and public method
+// *   using them are implemented but not necessarily used.
 // **********************************************************************************
 #ifndef __LINUX
 #define __LINUX
@@ -46,15 +50,19 @@ using namespace std;
 #ifndef _v1718_h
 #define _v1718_h
 
-#define BASEV1718 0x000000
-
+#define BASEV1718 0x000000              //Page 32 Fig.3.3
+                                        //The address is given by 2 rotary
+                                        //switches where hexadecimal digits
+                                        //are written. The position of the
+                                        //switches gives you the base address.
+                                        //Good example is given in the v1190a
+                                        //users manual at page 35.
 class v1718
 {
     private :
         int32_t                         Handle;
         short 	 		                Device;
 
-        Data32                          Address ;			// Address
         Data32                          Data ;          	// Data
         CVIRQLevels		                Level ;             // Interrupt level
         Data8                           IrqStatus;          // IRQ status
@@ -63,7 +71,7 @@ class v1718
         Data32                          BaseAddress ;		// Base Address
         Data32                          BlockSize ;         // Block size for blt (bytes)
         Data16                          NbCycles ;          // Number of cycles
-        CVErrorCodes                    Status;
+        CVErrorCodes                    Status;             // Error code returned
 
 
     public:
@@ -77,8 +85,6 @@ class v1718
         void WriteLong( Data32 address, Data32 data );
         CVErrorCodes GetStatus(void);
         string GetError(void);
-        int SetAddress(Data16 address);
-        Data16 GetAddress(void);
         int SetData(Data16 data);
         Data16 GetData(void);
         int SetAM(CVAddressModifier am);
