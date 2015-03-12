@@ -152,9 +152,9 @@ void v1190a::CheckCommunication(){//Check the communication with the micro contr
 // *************************************************************************************************************
 
 void v1190a::SetTDCTestMode(Data16 mode){//Enable/Disable TDC test mode
-    if(mode == 1)
+    if(mode == ENABLE)
         write_op_reg(Address, OPCODE_EN_TEST_MODE_V1190A);
-    else if(mode == 0)
+    else if(mode == DISABLE)
         write_op_reg(Address, OPCODE_DIS_TEST_MODE_V1190A);
 }
 
@@ -167,9 +167,9 @@ void v1190a::SetTrigMatching(){//Set trigger matching mode
 // *************************************************************************************************************
 
 void v1190a::SetTrigTimeSubstraction(Data16 mode){//Enable/Disable substraction of trigger time
-    if(mode == 1)
+    if(mode == ENABLE)
         write_op_reg(Address, OPCODE_EN_SUB_TRG_V1190A);
-    else if(mode == 0)
+    else if(mode == DISABLE)
         write_op_reg(Address, OPCODE_DIS_SUB_TRG_V1190A);
 }
 

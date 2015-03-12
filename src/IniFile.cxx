@@ -183,7 +183,6 @@ Data32 IniFile::addressType(const string groupname, const string keyname, const 
 
 
 long IniFile::intType(const string groupname, const string keyname, const long defaultvalue ){
-    stringstream sstr;
     string key;
     long intValue = defaultvalue;
     string fileValue;
@@ -214,7 +213,6 @@ long IniFile::intType(const string groupname, const string keyname, const long d
 // *************************************************************************************************************
 
 long long IniFile::longType(const string groupname, const string keyname, const long long defaultvalue ){
-    //stringstream sstr;
     string key;
     long long longValue = defaultvalue;
     string fileValue;
@@ -264,7 +262,6 @@ string IniFile::stringType( const string groupname, const string keyname, const 
 // *************************************************************************************************************
 
 float IniFile::floatType( const string groupname, const string keyname, const float defaultvalue ){
-    stringstream sstr;
     string key;
     float floatValue = defaultvalue;
 

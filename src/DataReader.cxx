@@ -101,14 +101,16 @@ void DataReader::Init(string inifilename)
 // ****************************************************************************************************
 
 string DataReader::GetFileName(){
-    string fNameParts[7];
+    string fNameParts[9];
     fNameParts[0] = this->iniFile->stringType("General","RunType","");
     fNameParts[1] = this->iniFile->stringType("General","ChamberType","");
-    fNameParts[2] = this->iniFile->stringType("General","MaxTrigger","");
-    fNameParts[3] = this->iniFile->stringType("General","TriggerType","");
-    fNameParts[4] = this->iniFile->stringType("General","ElectronicsType","");
-    fNameParts[5] = this->iniFile->stringType("General","Threshold","");
-    fNameParts[6] = this->iniFile->stringType("General","ChamberType","");
+    fNameParts[2] = this->iniFile->stringType("General","Mode","");
+    fNameParts[3] = this->iniFile->stringType("General","Partition","");
+    fNameParts[4] = this->iniFile->stringType("General","MaxTrigger","");
+    fNameParts[5] = this->iniFile->stringType("General","TriggerType","");
+    fNameParts[6] = this->iniFile->stringType("General","ElectronicsType","");
+    fNameParts[7] = this->iniFile->stringType("General","Threshold","");
+    fNameParts[8] = this->iniFile->stringType("General","Voltage","");
 
     for(int i=0; i<7;i++)
         if(fNameParts[i] != "")

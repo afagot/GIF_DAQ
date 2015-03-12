@@ -207,7 +207,7 @@ CVDataWidth v1718::GetDataSize(void)
 // Allows to set the base address of the VME interface. This is available at
 // Page 32 (Fig.3.3) or on Page 35 of the V1190A users manual. A little
 // explanation is also given in the header file v1718.h
-.
+
 int v1718::SetBaseAddress(Data16 baseaddress)
 {
   BaseAddress=baseaddress;
