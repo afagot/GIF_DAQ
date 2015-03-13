@@ -112,7 +112,7 @@ string DataReader::GetFileName(){
     fNameParts[7] = this->iniFile->stringType("General","Threshold","");
     fNameParts[8] = this->iniFile->stringType("General","Voltage","");
 
-    for(int i=0; i<7;i++)
+    for(int i=0; i<9;i++)
         if(fNameParts[i] != "")
             fNameParts[i] += "_";
 
@@ -127,7 +127,7 @@ string DataReader::GetFileName(){
 
     stringstream fNameStream;
     fNameStream << "datarun/";                      //destination
-    for(int i=0; i<7;i++)
+    for(int i=0; i<9;i++)
         fNameStream << fNameParts[i];               //informations about chamber, trigger and electronics
     fNameStream << "run"
                 << setfill('0') << setw(4) << Y     //run number
