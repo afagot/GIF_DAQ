@@ -108,6 +108,7 @@ typedef enum CVErrorCodes {
         cvGenericError  = -3,           /* Unspecified error                            */
         cvInvalidParam  = -4,           /* Invalid parameter                            */
         cvTimeoutError  = -5,           /* Timeout error                                */
+        cvDefault       = -6            /* Default meaningless value                    */
 } CVErrorCodes;
 
 /*

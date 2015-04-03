@@ -328,6 +328,7 @@ class v1190a
     Data16 write_op_reg(Data32 address, int code);
     Data16 read_op_reg(Data32 address);
     void Reset();
+    void Clear();
     void TestWR(Data16 value);
     void CheckStatus();
     void CheckCommunication();
@@ -348,6 +349,7 @@ class v1190a
     void SwitchChannels(IniFile *inifile);
     void Set(IniFile *inifile);
     bool IsSetStatusReg(Data32 aBit,v1718 *vme);
+    Data16 getDready();
     Uint Read(v1718 *vme, string outputfilename);
 };
 

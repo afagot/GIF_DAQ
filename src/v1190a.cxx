@@ -38,6 +38,7 @@
 
 #include "../include/v1190a.h"
 #include "../include/v1718.h"
+#include "../include/MsgSvc.h"
 
 using namespace std;
 
@@ -116,8 +117,17 @@ Data16 v1190a::write_op_reg(Data32 address, int code)
 void v1190a::Reset(){ //Reset the TDC (Software clear) and wait 2 s
     cout << "Reset the TDC...\n\n";
     int reset=0x0;
-    CAENVME_WriteCycle(Handle,Address+ADD_SW_CLEAR_V1190A,&reset,AddressModifier,DataWidth);
+    CAENVME_WriteCycle(Handle,Address+ADD_MOD_RESET_V1190A,&reset,AddressModifier,DataWidth);
     sleep(2);
+}
+
+// *************************************************************************************************************
+
+void v1190a::Clear(){ //Clear the TDC Buffer and wait 1 second
+    cout << "Clear the Buffer...\n\n";
+    int reset=0x0;
+    CAENVME_WriteCycle(Handle,Address+ADD_SW_CLEAR_V1190A,&reset,AddressModifier,DataWidth);
+    sleep(1);
 }
 
 // *************************************************************************************************************
@@ -387,20 +397,27 @@ bool v1190a::IsSetStatusReg(Data32 aBit,v1718 * vme){
 
 // *************************************************************************************************************
 
+Data16 v1190a::getDready(){
+    Data16 data;
+    if (CAENVME_ReadCycle(Handle,Address+ADD_STATUS_V1190A,&data,AddressModifier,DataWidth)==1)
+        return (data & NO_BUFFER_EMPTY_V1190A);
+    else
+        return (-1);
+}
+
+// *************************************************************************************************************
+
 Uint v1190a::Read(v1718 * vme, string outputfilename){
 
-    //printf("Status register :     %X\n",IsSetStatusReg(0b11,vme));
-
-    Data16 EventStored;
+    Data16 EventStored = 0;
     CAENVME_ReadCycle(Handle, Address+ADD_EVENT_STORED_V1190A, &EventStored, cvA32_U_DATA, cvD16 );
+
     if(EventStored > 0)
         printf("N Event stored :      %d\n", EventStored);
 
     Data32 data;
     Uint Spills = 0;
-
-    bool IsPrinted(false);
-    int Event = EventStored;
+    Uint Count = EventStored;
 
     ofstream outputFile(outputfilename.c_str(),ios::app|ios::ate);
     vector< pair<int,int> > Hits;
@@ -408,50 +425,61 @@ Uint v1190a::Read(v1718 * vme, string outputfilename){
     int EventCount = 0;
 
     if(outputFile.is_open()){
-        while( EventStored != 0)
+        while( Count > 0)
         {
             CAENVME_ReadCycle(Handle,Address+ADD_OUT_BUFFER_V1190A,&data,cvA32_U_DATA,cvD32);
 
-            switch(data & STATUS_TDC_V1190A)
-            {
-                case(GLOBAL_HEADER_V1190A):
-                    cout << "GLOBAL HEADER " ;
-                    cout << " Event Count : " << ((data>>5) & 0x3FFFFF) + 1<<endl;
-                    EventCount = ((data>>5) & 0x3FFFFF) + 1;
-                    Spills++;
-                    break;
-                case(GLOBAL_TRAILER_V1190A):
-                    cout <<"GLOBAL TRAILER ";
-                    cout <<"Word Count " << (data & 0xFFF)<<endl;
-                    break;
-                case(TDC_HEADER_V1190A):
-                    if(!IsPrinted){
-                        cout <<"TDC HEADER ";
-                        cout <<"Event id : " << ( (data>>12) & 0xFFF) + 1<<endl;
-                        IsPrinted = true;
-                    }
-                    break;
-                case(TDC_DATA_V1190A):
-                    cout <<"Data ";
-                    cout << " Rise/Fall : "<< ((data>>26) & 0x1) ;
-                    cout << " Channel : "<<((data>>19) & 0x7F ) ;
-                    cout << " Value : "<< ( data & 0x7FFFF)<<endl ;
+            switch(data & STATUS_TDC_V1190A){
 
-                    Data32 channel = (data>>19) & 0x7F;
-                    Data32 timing = data & 0x7FFFF;
+            case GLOBAL_HEADER_V1190A: {
+                Hits.clear();
+                EventCount = ((data>>5) & 0x3FFFFF) + 1;
+                Spills++;
 
-                    Hits.push_back(make_pair(channel,timing));
-                    break;
+                cout << "GLOBAL HEADER " ;
+                cout << " Event Count : " << EventCount <<endl;
+                break;
+            }
+            case GLOBAL_TRAILER_V1190A: {
+                Count--;
+                break;
+            }
+            case TDC_DATA_V1190A: {
+                Data32 channel = (data>>19) & 0x7F;
+                Data32 timing = data & 0x7FFFF;
+                Data32 risefall = (data>>26) & 0x1;
+
+                cout <<"Data ";
+                cout << " Rise/Fall : "<< risefall;
+                cout << " Channel : "<< channel;
+                cout << " Value : "<< timing << endl;
+
+                Hits.push_back(make_pair(channel,timing));
+                break;
+            }
+            case TDC_HEADER_V1190A:{
+                break;
+            }
+            case TDC_ERROR_V1190A:{
+                break;
+            }
+            case TDC_TRAILER_V1190A:{
+                break;
+            }
+            case GLOBAL_TRIGGER_TIME_TAG_V1190A:{
+                break;
+            }
+            default:{
+                MSG_ERROR("Encountered unknown word type while processing events\n");
+            }
 
             }
 
             CAENVME_ReadCycle(Handle, Address+ADD_EVENT_STORED_V1190A, &EventStored, cvA32_U_DATA, cvD16 );
-            if(EventStored == (Event-1)){
+            if(EventStored == Count){
                 outputFile << EventCount << '\t' << Hits.size() << '\n';
                 for(int i=0; i<Hits.size(); i++)
                     outputFile << Hits[i].first << '\t' << Hits[i].second << '\n';
-                Hits.clear();
-                Event = EventStored;
             }
         }
     }

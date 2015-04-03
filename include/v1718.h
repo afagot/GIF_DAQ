@@ -58,6 +58,8 @@ using namespace std;
                                         //switches gives you the base address.
                                         //Good example is given in the v1190a
                                         //users manual at page 35.
+
+
 class v1718
 {
     private :
@@ -105,6 +107,6 @@ class v1718
         long GetHandle(void);
         int WriteToVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWidth dtsize) ;
         int ReadFromVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWidth dtsize) ;
-        int GetIrqStatus(void) ;
+        CVErrorCodes CheckIrqStatus(void);
 };
 #endif

@@ -41,12 +41,12 @@ remove:
 	-rm $(DAQ_OBJ_DIR)/*.o
 
 daq.o:
-	g++ -c $(CFLAGS) $(DAQ_SRC_DIR)/daq.cxx -o $(DAQ_OBJ_DIR)/daq.o
+	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/daq.cxx -o $(DAQ_OBJ_DIR)/daq.o
 v1718.o:
-	g++ -c $(CFLAGS) $(DAQ_SRC_DIR)/v1718.cxx -o $(DAQ_OBJ_DIR)/v1718.o
+	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/v1718.cxx -o $(DAQ_OBJ_DIR)/v1718.o
 v1190a.o:
-	g++ -c $(CFLAGS) $(DAQ_SRC_DIR)/v1190a.cxx -o $(DAQ_OBJ_DIR)/v1190a.o
+	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/v1190a.cxx -o $(DAQ_OBJ_DIR)/v1190a.o
 DataReader.o:
-	g++ -c $(CFLAGS) $(DAQ_SRC_DIR)/DataReader.cxx -o $(DAQ_OBJ_DIR)/DataReader.o
+	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/DataReader.cxx -o $(DAQ_OBJ_DIR)/DataReader.o
 IniFile.o:
-	g++ -c $(CFLAGS) $(DAQ_SRC_DIR)/IniFile.cxx -o $(DAQ_OBJ_DIR)/IniFile.o
+	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/IniFile.cxx -o $(DAQ_OBJ_DIR)/IniFile.o
