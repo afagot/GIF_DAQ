@@ -351,6 +351,37 @@ void v1190a::SwitchChannels(IniFile *inifile){
 }
 
 // *************************************************************************************************************
+// Set the chosen IRQ
+void v1190a::SetIRQ(Data32 level, Data32 count) {
+    // IRQ lines go from 1 to 7, so line 0 disables the IRQ function
+    if (level == DISABLE){
+        CAENVME_WriteCycle(Handle,Address+ADD_INT_LEVEL_V1190A,&level,AddressModifier,DataWidth);
+        return;
+    }
+
+    // The VME bus has IRQ lines numbered 1 to 7
+    if (level < 1 || level > 7) {
+        MSG_ERROR("Tried to enable invalid IRQ\n");
+        return;
+    }
+
+    // Setting 0 makes no sense, and the output buffer can hold 32735 words
+    if (count < 1 || count > 32735) {
+        unsigned int new_count = count < 1 ? 1 : 32735;
+        MSG_WARNING("Tried to enable invalid Almost Full Level\n");
+        MSG_INFO("Level capped to : ");
+        cout << new_count << endl;
+        count = new_count;
+    }
+
+    // Set the IRQ line we want the module to use
+    CAENVME_WriteCycle(Handle,Address+ADD_INT_LEVEL_V1190A,&level,AddressModifier,DataWidth);
+
+    // Set the output buffer word count we want to be notified at
+    CAENVME_WriteCycle(Handle,Address+ADD_ALMOST_FULL_LVL_V1190A,&count,AddressModifier,DataWidth);
+}
+
+// *************************************************************************************************************
 
 void v1190a::Set(IniFile * inifile)
 {
@@ -382,27 +413,14 @@ void v1190a::Set(IniFile * inifile)
     cout << "************   Enabling the channels   *************\n\n";
 
     SwitchChannels(inifile);
-}
 
-// *************************************************************************************************************
+    cout << "\n**************   Enable IRQ level 1   **************\n\n";
 
-bool v1190a::IsSetStatusReg(Data32 aBit,v1718 * vme){
-    Data16 Data;
-    Data = vme->ReadShort(Address + ADD_STATUS_V1190A);
-    if(vme->GetStatus() != cvSuccess )
-        cerr << "\n[ERR:ModuleV1190A]: Cannot read status register.\n"<< vme->GetError() << endl;
+    SetIRQ(1,1000);
 
-    return ( Data & ( 1 << aBit ) ) != 0;
-}
+    cout << "\n*********   Clear buffer before starting   *********\n\n";
 
-// *************************************************************************************************************
-
-Data16 v1190a::getDready(){
-    Data16 data;
-    if (CAENVME_ReadCycle(Handle,Address+ADD_STATUS_V1190A,&data,AddressModifier,DataWidth)==1)
-        return (data & NO_BUFFER_EMPTY_V1190A);
-    else
-        return (-1);
+    Clear();
 }
 
 // *************************************************************************************************************
@@ -424,54 +442,54 @@ Uint v1190a::Read(v1718 * vme, string outputfilename){
     Hits.clear();
     int EventCount = 0;
 
-    if(outputFile.is_open()){
+    if(outputFile.is_open() && vme->CheckIRQ(1)){
         while( Count > 0)
         {
             CAENVME_ReadCycle(Handle,Address+ADD_OUT_BUFFER_V1190A,&data,cvA32_U_DATA,cvD32);
 
             switch(data & STATUS_TDC_V1190A){
 
-            case GLOBAL_HEADER_V1190A: {
-                Hits.clear();
-                EventCount = ((data>>5) & 0x3FFFFF) + 1;
-                Spills++;
+                case GLOBAL_HEADER_V1190A: {
+                    Hits.clear();
+                    EventCount = ((data>>5) & 0x3FFFFF) + 1;
+                    Spills++;
 
-                cout << "GLOBAL HEADER " ;
-                cout << " Event Count : " << EventCount <<endl;
-                break;
-            }
-            case GLOBAL_TRAILER_V1190A: {
-                Count--;
-                break;
-            }
-            case TDC_DATA_V1190A: {
-                Data32 channel = (data>>19) & 0x7F;
-                Data32 timing = data & 0x7FFFF;
-                Data32 risefall = (data>>26) & 0x1;
+                    cout << "GLOBAL HEADER " ;
+                    cout << " Event Count : " << EventCount <<endl;
+                    break;
+                }
+                case GLOBAL_TRAILER_V1190A: {
+                    Count--;
+                    break;
+                }
+                case TDC_DATA_V1190A: {
+                    Data32 channel = (data>>19) & 0x7F;
+                    Data32 timing = data & 0x7FFFF;
+                    Data32 risefall = (data>>26) & 0x1;
 
-                cout <<"Data ";
-                cout << " Rise/Fall : "<< risefall;
-                cout << " Channel : "<< channel;
-                cout << " Value : "<< timing << endl;
+                    cout <<"Data ";
+                    cout << " Rise/Fall : "<< risefall;
+                    cout << " Channel : "<< channel;
+                    cout << " Value : "<< timing << endl;
 
-                Hits.push_back(make_pair(channel,timing));
-                break;
-            }
-            case TDC_HEADER_V1190A:{
-                break;
-            }
-            case TDC_ERROR_V1190A:{
-                break;
-            }
-            case TDC_TRAILER_V1190A:{
-                break;
-            }
-            case GLOBAL_TRIGGER_TIME_TAG_V1190A:{
-                break;
-            }
-            default:{
-                MSG_ERROR("Encountered unknown word type while processing events\n");
-            }
+                    Hits.push_back(make_pair(channel,timing));
+                    break;
+                }
+                case TDC_HEADER_V1190A:{
+                    break;
+                }
+                case TDC_ERROR_V1190A:{
+                    break;
+                }
+                case TDC_TRAILER_V1190A:{
+                    break;
+                }
+                case GLOBAL_TRIGGER_TIME_TAG_V1190A:{
+                    break;
+                }
+                default:{
+                    MSG_ERROR("Encountered unknown word type while processing events\n");
+                }
 
             }
 

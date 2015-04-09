@@ -68,14 +68,12 @@ class v1718
 
         Data32                          Data ;          	// Data
         CVIRQLevels		                Level ;             // Interrupt level
-        Data8                           IrqStatus;          // IRQ status
         CVAddressModifier	            AM ;			    // Addressing Mode
         CVDataWidth 		            DataSize ;          // Data Format
         Data32                          BaseAddress ;		// Base Address
         Data32                          BlockSize ;         // Block size for blt (bytes)
         Data16                          NbCycles ;          // Number of cycles
         CVErrorCodes                    Status;             // Error code returned
-
 
     public:
         v1718(IniFile *inifile);
@@ -105,8 +103,8 @@ class v1718
         int SetDevice(Data16 device);
         Data16 GetDevice(void);
         long GetHandle(void);
+        bool CheckIRQ(Data32 level);
         int WriteToVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWidth dtsize) ;
         int ReadFromVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWidth dtsize) ;
-        CVErrorCodes CheckIrqStatus(void);
 };
 #endif

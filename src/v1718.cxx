@@ -304,6 +304,22 @@ long v1718::GetHandle(void)
 }
 
 // *************************************************************************************************************
+// Get the Interrupt Request Status and print whether they are active or not.
+
+bool v1718::CheckIRQ(Data32 level){
+   if (level < 1 || level > 7) {
+        MSG_ERROR("Tried to read invalid IRQ\n");
+        return false;
+    }
+
+    Data8 data = 0;
+    CAENVME_IRQCheck(Handle, &data);
+
+    // Pick the requested IRQ line from the data and return its status
+    return (((data>>level-1) & 1) > 0);
+}
+
+// *************************************************************************************************************
 // Write into the VME bus. Could be implemented to make use of the private
 // member Status and of the methods WriteChar, WriteShort & WriteLong. Here
 // the message corresponding to the returned error code is printed.
@@ -368,39 +384,4 @@ int v1718::ReadFromVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWi
          break ;
    }
    return 0;
-}
-
-// *************************************************************************************************************
-// Get the Interrupt Request Status and print whether they are active or not.
-
-CVErrorCodes v1718::CheckIrqStatus(void){
-    printf("CHECK IRQ... ");
-    CAENVME_IRQCheck(Handle,&IrqStatus);		// Check IRQ Status
-
-    printf("%i\n",IrqStatus);
-
-    CVErrorCodes ErrorCode = cvDefault;
-
-    if(IrqStatus & (1<<(Level-1))){
-        ErrorCode = CAENVME_IACKCycle(Handle,Level,&Data,DataSize);
-        switch (ErrorCode){
-            case cvSuccess    : printf("Cycle completed normally\n");
-                printf("Int. Ack. on IRQ : %x  : StatusID = %lu\n",Level,Data);
-                break ;
-            case cvBusError:
-                throw runtime_error("VME bus error\n");
-            case cvCommError:
-                throw runtime_error("Communication error\n");
-            case cvGenericError:
-                throw runtime_error("General VME library error\n");
-            case cvInvalidParam:
-                throw runtime_error("Invalid parameter passed to VME library\n");
-            case cvTimeoutError:
-                throw runtime_error("Request timed out\n");
-            default:
-                throw runtime_error("Unknown Error !!!\n");
-        }
-    } else
-        printf("Interrupt request IRQ %x not active\n",Level);
-    return ErrorCode;
 }

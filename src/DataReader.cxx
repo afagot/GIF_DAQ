@@ -155,8 +155,6 @@ void DataReader::Run()
 
     while(TriggerCount < this->GetMaxTriggers()){
         usleep(200000);
-        cout << this->TDC->getDready() << endl;
-        if(this->VME->CheckIrqStatus() == cvSuccess)
-            TriggerCount += this->TDC->Read(this->VME,outputFileName);
+        TriggerCount += this->TDC->Read(this->VME,outputFileName);
     }
 }

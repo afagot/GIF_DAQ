@@ -347,9 +347,8 @@ class v1190a
     void SetTDCHeadTrailer(Data16 mode);
     void SetTDCEventSize(Data16 size);
     void SwitchChannels(IniFile *inifile);
+    void SetIRQ(Data32 level, Data32 count);
     void Set(IniFile *inifile);
-    bool IsSetStatusReg(Data32 aBit,v1718 *vme);
-    Data16 getDready();
     Uint Read(v1718 *vme, string outputfilename);
 };
 
