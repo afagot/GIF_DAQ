@@ -416,7 +416,7 @@ void v1190a::Set(IniFile * inifile)
 
     cout << "\n**************   Enable IRQ level 1   **************\n\n";
 
-    SetIRQ(1,1000);
+    SetIRQ(1,10000);
 
     cout << "\n*********   Clear buffer before starting   *********\n\n";
 
@@ -425,7 +425,7 @@ void v1190a::Set(IniFile * inifile)
 
 // *************************************************************************************************************
 
-Uint v1190a::Read(v1718 * vme, string outputfilename){
+Uint v1190a::Read(string outputfilename){
 
     Data16 EventStored = 0;
     CAENVME_ReadCycle(Handle, Address+ADD_EVENT_STORED_V1190A, &EventStored, cvA32_U_DATA, cvD16 );
@@ -442,7 +442,9 @@ Uint v1190a::Read(v1718 * vme, string outputfilename){
     Hits.clear();
     int EventCount = 0;
 
-    if(outputFile.is_open() && vme->CheckIRQ(1)){
+    bool End = false;
+
+    if(outputFile.is_open()){
         while( Count > 0)
         {
             CAENVME_ReadCycle(Handle,Address+ADD_OUT_BUFFER_V1190A,&data,cvA32_U_DATA,cvD32);
@@ -454,23 +456,24 @@ Uint v1190a::Read(v1718 * vme, string outputfilename){
                     EventCount = ((data>>5) & 0x3FFFFF) + 1;
                     Spills++;
 
-                    cout << "GLOBAL HEADER " ;
-                    cout << " Event Count : " << EventCount <<endl;
+                    //cout << "GLOBAL HEADER " ;
+                    //cout << " Event Count : " << EventCount <<endl;
                     break;
                 }
                 case GLOBAL_TRAILER_V1190A: {
                     Count--;
+                    End = true;
                     break;
                 }
                 case TDC_DATA_V1190A: {
                     Data32 channel = (data>>19) & 0x7F;
                     Data32 timing = data & 0x7FFFF;
-                    Data32 risefall = (data>>26) & 0x1;
+                    //Data32 risefall = (data>>26) & 0x1;
 
-                    cout <<"Data ";
-                    cout << " Rise/Fall : "<< risefall;
-                    cout << " Channel : "<< channel;
-                    cout << " Value : "<< timing << endl;
+                    //cout <<"Data ";
+                    //cout << " Rise/Fall : "<< risefall;
+                    //cout << " Channel : "<< channel;
+                    //cout << " Value : "<< timing << endl;
 
                     Hits.push_back(make_pair(channel,timing));
                     break;
@@ -494,7 +497,8 @@ Uint v1190a::Read(v1718 * vme, string outputfilename){
             }
 
             CAENVME_ReadCycle(Handle, Address+ADD_EVENT_STORED_V1190A, &EventStored, cvA32_U_DATA, cvD16 );
-            if(EventStored == Count){
+            if(End){
+                End = false;
                 outputFile << EventCount << '\t' << Hits.size() << '\n';
                 for(int i=0; i<Hits.size(); i++)
                     outputFile << Hits[i].first << '\t' << Hits[i].second << '\n';

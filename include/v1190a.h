@@ -349,7 +349,7 @@ class v1190a
     void SwitchChannels(IniFile *inifile);
     void SetIRQ(Data32 level, Data32 count);
     void Set(IniFile *inifile);
-    Uint Read(v1718 *vme, string outputfilename);
+    Uint Read(string outputfilename);
 };
 
 
