@@ -13,32 +13,19 @@
 // *************************************************************************************************************
 
 #include <iostream>
+#include <cstdio>
 #include <cstdlib>
 #include <fstream>
-#include <ostream>
-#include <sstream>
-#include <cmath>
 #include <vector>
 #include <string>
-#include <iomanip>
-#include <map>
-
-#include <errno.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/io.h>
-#include <sys/timeb.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
 
 #include "../include/CAENVMElib.h"
 #include "../include/CAENVMEoslib.h"
-#include "../include/CAENVMEtypes.h"
 
 #include "../include/v1190a.h"
-#include "../include/v1718.h"
 #include "../include/MsgSvc.h"
+
+#define BLOCK_SIZE 10240
 
 using namespace std;
 
@@ -139,7 +126,7 @@ void v1190a::TestWR(Data16 value){ //Test : try to write/read 16 bit word
     test=0;
     CAENVME_ReadCycle(Handle,Address+ADD_DUMMY16_V1190A,&test,AddressModifier,DataWidth);
 
-    printf("The result of W/R test is : %d (%d tested)\n\n",test,value);
+    printf("The result of W/R test is : %X (%X tested)\n\n",test,value);
 }
 
 // *************************************************************************************************************
@@ -383,6 +370,13 @@ void v1190a::SetIRQ(Data32 level, Data32 count) {
 
 // *************************************************************************************************************
 
+void v1190a::SetBlockTransferMode(Data16 mode) {
+    Data16 num = (Data16) (mode==ENABLE ? (BLOCK_SIZE / 20) : 0);
+    CAENVME_WriteCycle(Handle,Address+ADD_BLT_EVENT_NUM_V1190A,&num,AddressModifier,DataWidth);
+}
+
+// *************************************************************************************************************
+
 void v1190a::Set(IniFile * inifile)
 {
     cout << "*************   START TO SET THE TDC   *************\n\n";
@@ -392,6 +386,7 @@ void v1190a::Set(IniFile * inifile)
     CheckStatus();
     CheckCommunication();
     SetTDCTestMode(inifile->intType("TDC","TdcTestMode",DISABLE));
+    SetBlockTransferMode(inifile->intType("TDC","BLTMode",ENABLE));
 
     cout << "************   Trigger configuration   *************\n\n";
 
@@ -425,39 +420,50 @@ void v1190a::Set(IniFile * inifile)
 
 // *************************************************************************************************************
 
-Uint v1190a::Read(string outputfilename){
+int v1190a::ReadBlockD32(const Data16 address, Data32 *data, const int words, bool ignore_berr) {
+    int read;
 
+    CVErrorCodes ret = CAENVME_BLTReadCycle(Handle, address + Address, data, words * 4, cvA32_U_BLT, cvD32, &read);
+    if (!ignore_berr || ret < cvBusError)
+        cerr << "Error code : " << ret << endl;
+
+    return read / 4;
+}
+
+// *************************************************************************************************************
+
+Uint v1190a::Read(string outputfilename){
     Data16 EventStored = 0;
     CAENVME_ReadCycle(Handle, Address+ADD_EVENT_STORED_V1190A, &EventStored, cvA32_U_DATA, cvD16 );
 
     if(EventStored > 0)
         printf("N Event stored :      %d\n", EventStored);
 
-    Data32 data;
+    Data32 words[BLOCK_SIZE] = {0};
     Uint Spills = 0;
     Uint Count = EventStored;
+    Data32 channel, timing;
 
     ofstream outputFile(outputfilename.c_str(),ios::app|ios::ate);
     vector< pair<int,int> > Hits;
     Hits.clear();
-    int EventCount = 0;
+    Data32 EventCount = 0;
 
     bool End = false;
 
     if(outputFile.is_open()){
         while( Count > 0)
         {
-            CAENVME_ReadCycle(Handle,Address+ADD_OUT_BUFFER_V1190A,&data,cvA32_U_DATA,cvD32);
+            int words_read = ReadBlockD32(ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
 
-            switch(data & STATUS_TDC_V1190A){
+            for(int w=0; w<words_read; w++){
+                switch(words[w] & STATUS_TDC_V1190A){
 
                 case GLOBAL_HEADER_V1190A: {
                     Hits.clear();
                     EventCount = ((data>>5) & 0x3FFFFF) + 1;
                     Spills++;
 
-                    //cout << "GLOBAL HEADER " ;
-                    //cout << " Event Count : " << EventCount <<endl;
                     break;
                 }
                 case GLOBAL_TRAILER_V1190A: {
@@ -466,14 +472,8 @@ Uint v1190a::Read(string outputfilename){
                     break;
                 }
                 case TDC_DATA_V1190A: {
-                    Data32 channel = (data>>19) & 0x7F;
-                    Data32 timing = data & 0x7FFFF;
-                    //Data32 risefall = (data>>26) & 0x1;
-
-                    //cout <<"Data ";
-                    //cout << " Rise/Fall : "<< risefall;
-                    //cout << " Channel : "<< channel;
-                    //cout << " Value : "<< timing << endl;
+                    channel = (data>>19) & 0x7F;
+                    timing = data & 0x7FFFF;
 
                     Hits.push_back(make_pair(channel,timing));
                     break;
@@ -494,14 +494,14 @@ Uint v1190a::Read(string outputfilename){
                     MSG_ERROR("Encountered unknown word type while processing events\n");
                 }
 
-            }
+                }
 
-            CAENVME_ReadCycle(Handle, Address+ADD_EVENT_STORED_V1190A, &EventStored, cvA32_U_DATA, cvD16 );
-            if(End){
-                End = false;
-                outputFile << EventCount << '\t' << Hits.size() << '\n';
-                for(int i=0; i<Hits.size(); i++)
-                    outputFile << Hits[i].first << '\t' << Hits[i].second << '\n';
+                if(End){
+                    End = false;
+                    outputFile << EventCount << '\t' << Hits.size() << '\n';
+                    for(int i=0; i<Hits.size(); i++)
+                        outputFile << Hits[i].first << '\t' << Hits[i].second << '\n';
+                }
             }
         }
     }

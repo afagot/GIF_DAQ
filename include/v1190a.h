@@ -15,31 +15,7 @@
 #define __LINUX
 #endif
 
-#include <iostream>
-#include <cstdlib>
-#include <fstream>
-#include <ostream>
-#include <sstream>
-#include <cmath>
-#include <vector>
-#include <string>
-#include <iomanip>
-#include <map>
-
-#include <errno.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/io.h>
-#include <sys/timeb.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
-
-#include "CAENVMElib.h"
-#include "CAENVMEoslib.h"
 #include "CAENVMEtypes.h"
-
-#include "v1718.h"
 #include "IniFile.h"
 
 using namespace std;
@@ -136,7 +112,7 @@ using namespace std;
 
 #define MAXDATA                             1024
 
-#define TEST_WR                             365
+#define TEST_WR                             0xBEEF
 
 #define TRIG_WIN_WIDTH_V1990A               0x50
 #define TRIG_WIN_OFFSET_V1190A              -0x28
@@ -348,7 +324,9 @@ class v1190a
     void SetTDCEventSize(Data16 size);
     void SwitchChannels(IniFile *inifile);
     void SetIRQ(Data32 level, Data32 count);
+    void SetBlockTransferMode(Data16 mode);
     void Set(IniFile *inifile);
+    int ReadBlockD32(const Data16 address, Data32 *data, const int words, bool ignore_berr);
     Uint Read(string outputfilename);
 };
 

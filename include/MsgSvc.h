@@ -30,8 +30,6 @@
 #define LVL_VERBOSE 0
 #define OUTPUTLEVEL LVL_INFO
 
-/** printing macros; private use */
-//#define MSG_LVL_NOCHK_(name, ...) { printf("%10s: ",name); printf(__VA_ARGS__);}
 #define MSG_LVL_NOCHK_(name, ...) { printf("%s",name); printf(__VA_ARGS__); printf("%s",NC);}
 #define MSG_LVL_(lvl, name, ...)            \
 do {                                        \

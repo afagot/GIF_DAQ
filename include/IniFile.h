@@ -7,28 +7,8 @@
 // *   29/01/2015
 // *************************************************************************************************************
 
-#include <iostream>
-#include <cstdlib>
-#include <fstream>
-#include <ostream>
-#include <sstream>
-#include <cmath>
-#include <vector>
 #include <string>
-#include <iomanip>
-#include <map>
 
-#include <errno.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/io.h>
-#include <sys/timeb.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
-
-#include "CAENVMElib.h"
-#include "CAENVMEoslib.h"
 #include "CAENVMEtypes.h"
 
 #ifndef __INIFILE_H_

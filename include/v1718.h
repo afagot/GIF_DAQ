@@ -20,30 +20,7 @@
 #define __LINUX
 #endif
 
-#include <iostream>
-#include <cstdlib>
-#include <fstream>
-#include <ostream>
-#include <sstream>
-#include <cmath>
-#include <vector>
-#include <string>
-#include <iomanip>
-#include <map>
-
-#include <errno.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/io.h>
-#include <sys/timeb.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
-
-#include "CAENVMElib.h"
-#include "CAENVMEoslib.h"
 #include "CAENVMEtypes.h"
-
 #include "IniFile.h"
 
 using namespace std;
@@ -63,7 +40,7 @@ using namespace std;
 class v1718
 {
     private :
-        int32_t                         Handle;
+        long                            Handle;
         short 	 		                Device;
 
         Data32                          Data ;          	// Data

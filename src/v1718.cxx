@@ -19,29 +19,11 @@
 #define __LINUX
 #endif
 
-#include <iostream>
+#include <cstdio>
 #include <cstdlib>
-#include <fstream>
-#include <ostream>
-#include <sstream>
-#include <cmath>
-#include <vector>
-#include <string>
-#include <iomanip>
-#include <map>
-
-#include <errno.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/io.h>
-#include <sys/timeb.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
 
 #include "../include/CAENVMElib.h"
 #include "../include/CAENVMEoslib.h"
-#include "../include/CAENVMEtypes.h"
 
 #include "../include/v1718.h"
 #include "../include/MsgSvc.h"

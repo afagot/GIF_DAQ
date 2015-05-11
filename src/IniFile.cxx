@@ -10,26 +10,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
-#include <ostream>
 #include <sstream>
-#include <cmath>
-#include <vector>
-#include <string>
-#include <iomanip>
-#include <map>
-
-#include <errno.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/io.h>
-#include <sys/timeb.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
-
-#include "../include/CAENVMElib.h"
-#include "../include/CAENVMEoslib.h"
-#include "../include/CAENVMEtypes.h"
 
 #include "../include/IniFile.h"
 
@@ -113,36 +94,36 @@ int IniFile::Read(){
 
     Error = INI_OK;
 
-	// Loading the file into the parser
+    // Loading the file into the parser
     if(ini){
-		parser << ini.rdbuf();
-		ini.close();
-	} else {
+        parser << ini.rdbuf();
+        ini.close();
+    } else {
         Error = INI_ERROR_CANNOT_OPEN_READ_FILE;
         cerr << "CANNOT OPEN INI FILE\n\n";
         return Error;
-	}
+    }
 
-	group = "";
-	
+    group = "";
+
     while(getline(parser,line) && (Error == INI_OK)){
-		// Check if the line is comment
+        // Check if the line is comment
         if(!CheckIfComment(line) ){
-			// Check for group
+            // Check for group
             if(!CheckIfGroup(line,group)){
-				// Check for token
+                // Check for token
                 if(CheckIfToken(line,token,value)){
-					// Make the key in format group.key if the group is not empty
+                    // Make the key in format group.key if the group is not empty
                     if(group.size() > 1)
                         token = group + "." + token;
                     FileData[token] = value;
                 } else {
                     Error = INI_ERROR_WRONG_FORMAT;
                     return Error;
-				}
-			}	
-		}			
-	}
+                }
+            }
+        }
+    }
 
     for(IniFileDataIter Iter = FileData.begin(); Iter != FileData.end(); Iter++)
         cout << "INI: " << Iter->first << " = " << Iter->second << endl;
@@ -154,7 +135,7 @@ int IniFile::Read(){
 
 int IniFile::Write(){
     Error = INI_OK;
-	
+
     return Error;
 }
 
@@ -187,7 +168,7 @@ long IniFile::intType(const string groupname, const string keyname, const long d
     long intValue = defaultvalue;
     string fileValue;
 
-	IniFileDataIter Iter;
+    IniFileDataIter Iter;
 
     if(groupname.size() > 0)
         key = groupname + "." + keyname;
@@ -205,7 +186,7 @@ long IniFile::intType(const string groupname, const string keyname, const long d
         }
 
         intValue = strtol(fileValue.c_str(),NULL,base);
-	}
+    }
 
     return intValue;
 }
@@ -246,7 +227,7 @@ string IniFile::stringType( const string groupname, const string keyname, const 
     string key;
     string stringChain = defaultvalue;
 
-	IniFileDataIter Iter;
+    IniFileDataIter Iter;
 
     if(groupname.size() > 0)
         key = groupname + "." + keyname;
@@ -265,7 +246,7 @@ float IniFile::floatType( const string groupname, const string keyname, const fl
     string key;
     float floatValue = defaultvalue;
 
-	IniFileDataIter Iter;
+    IniFileDataIter Iter;
 
     if(groupname.size() > 0)
         key = groupname + "." + keyname;
@@ -281,6 +262,6 @@ float IniFile::floatType( const string groupname, const string keyname, const fl
 // *************************************************************************************************************
 
 string IniFile::GetErrorMsg(){
-	return "";
+    return "";
 }
 
