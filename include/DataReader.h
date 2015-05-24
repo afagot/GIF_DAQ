@@ -29,14 +29,14 @@ class DataReader
     public:
         DataReader();
         virtual ~DataReader();
-        void SetIniFile(string inifilename);
-        void SetMaxTriggers();
-        Data32 GetMaxTriggers();
-        void SetVME();
-        void SetTDC();
-        void Init(string inifilename);
-        string GetFileName();
-        void Run();
+        void            SetIniFile(string inifilename);
+        void            SetMaxTriggers();
+        Data32          GetMaxTriggers();
+        void            SetVME();
+        void            SetTDC();
+        void            Init(string inifilename);
+        string          GetFileName();
+        void            Run();
 };
 
 #endif // DATAREADER_H

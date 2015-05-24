@@ -17,7 +17,7 @@ using namespace std;
 
 DataReader::DataReader()
 {
-    this->StopFlag = false;
+    StopFlag = false;
 }
 
 // ****************************************************************************************************
@@ -31,64 +31,64 @@ DataReader::~DataReader()
 
 void DataReader::SetIniFile(string inifilename)
 {
-    this->iniFile = new IniFile(inifilename);
-    this->iniFile->Read();
+    iniFile = new IniFile(inifilename);
+    iniFile->Read();
 }
 
 // ****************************************************************************************************
 
 void DataReader::SetMaxTriggers()
 {
-    this->MaxTriggers = this->iniFile->intType("General","MaxTriggers",MAXTRIGGERS_V1190A);
+    MaxTriggers = iniFile->intType("General","MaxTriggers",MAXTRIGGERS_V1190A);
 }
 
 // ****************************************************************************************************
 
 Data32 DataReader::GetMaxTriggers()
 {
-    return this->MaxTriggers;
+    return MaxTriggers;
 }
 
 // ****************************************************************************************************
 
 void DataReader::SetVME()
 {
-    this->VME = new v1718(this->iniFile);
+    VME = new v1718(iniFile);
 }
 
 // ****************************************************************************************************
 
 void DataReader::SetTDC()
 {
-    this->TDC = new v1190a(this->VME->GetHandle(),this->iniFile);
+    TDC = new v1190a(VME->GetHandle(),iniFile);
 
     /*********** initialize the TDC 1190a ***************************/
-    this->TDC->Set(this->iniFile);
+    TDC->Set(iniFile);
 }
 
 // ****************************************************************************************************
 
 void DataReader::Init(string inifilename)
 {
-    this->SetIniFile(inifilename);
-    this->SetMaxTriggers();
-    this->SetVME();
-    this->SetTDC();
+    SetIniFile(inifilename);
+    SetMaxTriggers();
+    SetVME();
+    SetTDC();
 }
 
 // ****************************************************************************************************
 
 string DataReader::GetFileName(){
     string fNameParts[9];
-    fNameParts[0] = this->iniFile->stringType("General","RunType","");
-    fNameParts[1] = this->iniFile->stringType("General","ChamberType","");
-    fNameParts[2] = this->iniFile->stringType("General","Mode","");
-    fNameParts[3] = this->iniFile->stringType("General","Partition","");
-    fNameParts[4] = this->iniFile->stringType("General","MaxTrigger","");
-    fNameParts[5] = this->iniFile->stringType("General","TriggerType","");
-    fNameParts[6] = this->iniFile->stringType("General","ElectronicsType","");
-    fNameParts[7] = this->iniFile->stringType("General","Threshold","");
-    fNameParts[8] = this->iniFile->stringType("General","Voltage","");
+    fNameParts[0] = iniFile->stringType("General","RunType","");
+    fNameParts[1] = iniFile->stringType("General","ChamberType","");
+    fNameParts[2] = iniFile->stringType("General","Mode","");
+    fNameParts[3] = iniFile->stringType("General","Partition","");
+    fNameParts[4] = iniFile->stringType("General","MaxTrigger","");
+    fNameParts[5] = iniFile->stringType("General","TriggerType","");
+    fNameParts[6] = iniFile->stringType("General","ElectronicsType","");
+    fNameParts[7] = iniFile->stringType("General","Threshold","");
+    fNameParts[8] = iniFile->stringType("General","Voltage","");
 
     for(int i=0; i<9;i++)
         if(fNameParts[i] != "")
@@ -129,12 +129,11 @@ void DataReader::Run()
     cout << "Starting data acquisition." << endl;
 
     Uint TriggerCount = 0;
-    string outputFileName = this->GetFileName();
+    string outputFileName = GetFileName();
 
-    while(TriggerCount < this->GetMaxTriggers()){
+    while(TriggerCount < GetMaxTriggers()){
         usleep(20000);
-        if(this->VME->CheckIRQ(1))
-            TriggerCount += this->TDC->Read(outputFileName);
+        if(VME->CheckIRQ(1)) TriggerCount += TDC->Read(outputFileName);
 
         cout << TriggerCount << endl;
     }

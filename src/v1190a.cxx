@@ -25,8 +25,6 @@
 #include "../include/v1190a.h"
 #include "../include/MsgSvc.h"
 
-#define BLOCK_SIZE 10240
-
 using namespace std;
 
 v1190a::v1190a(long handle, IniFile * inifile)
@@ -214,12 +212,12 @@ void v1190a::SetTrigRejectionMargin(long rejectMargin){
 
 void v1190a::SetTrigConfiguration(IniFile *inifile){ //Set and print trigger configuration
     // Each parameter is defined taking into account that the time unit is 25ns
-    this->SetTrigWindowWidth(inifile->intType("TDC","TriggerWindowWidth",TRIG_WIN_WIDTH_V1990A));
-    this->SetTrigWindowOffset(inifile->intType("TDC","TriggerWindowOffset",TRIG_WIN_OFFSET_V1190A));
-    this->SetTrigSearchMargin(inifile->intType("TDC","TriggerExtraSearchMargin",TRIG_SRCH_MARGIN_V1190A));
-    this->SetTrigRejectionMargin(inifile->intType("TDC","TriggerRejectMargin",TRIG_REJ_MARGIN_V1190A));
+    SetTrigWindowWidth(inifile->intType("TDC","TriggerWindowWidth",TRIG_WIN_WIDTH_V1990A));
+    SetTrigWindowOffset(inifile->intType("TDC","TriggerWindowOffset",TRIG_WIN_OFFSET_V1190A));
+    SetTrigSearchMargin(inifile->intType("TDC","TriggerExtraSearchMargin",TRIG_SRCH_MARGIN_V1190A));
+    SetTrigRejectionMargin(inifile->intType("TDC","TriggerRejectMargin",TRIG_REJ_MARGIN_V1190A));
 
-    this->GetTrigConfiguration();
+    GetTrigConfiguration();
 }
 
 // *************************************************************************************************************

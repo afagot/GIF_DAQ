@@ -37,51 +37,35 @@ using namespace std;
                                         //users manual at page 35.
 
 
-class v1718
-{
-    private :
-        long                            Handle;
-        short 	 		                Device;
+class v1718{
 
-        Data32                          Data ;          	// Data
-        CVIRQLevels		                Level ;             // Interrupt level
-        CVAddressModifier	            AM ;			    // Addressing Mode
-        CVDataWidth 		            DataSize ;          // Data Format
-        Data32                          BaseAddress ;		// Base Address
-        Data32                          BlockSize ;         // Block size for blt (bytes)
-        Data16                          NbCycles ;          // Number of cycles
-        CVErrorCodes                    Status;             // Error code returned
+    private :
+        long                Handle;
+
+        Data32              Data ;          	// Data
+        CVIRQLevels		    Level ;             // Interrupt level
+        CVAddressModifier	AM ;			    // Addressing Mode
+        CVDataWidth 		DataSize ;          // Data Format
+        Data32              BaseAddress ;		// Base Address
 
     public:
         v1718(IniFile *inifile);
         ~v1718();
-        Data8 ReadChar( Data32 address );
-        Data16 ReadShort( Data32 address );
-        Data32 ReadLong( Data32 address );
-        void WriteChar( Data32 address, Data8 data );
-        void WriteShort( Data32 address, Data16 data );
-        void WriteLong( Data32 address, Data32 data );
-        CVErrorCodes GetStatus(void);
-        string GetError(void);
-        int SetData(Data16 data);
-        Data16 GetData(void);
-        int SetAM(CVAddressModifier am);
-        CVAddressModifier GetAM(void);
-        int SetDatasize(CVDataWidth datasize);
-        CVDataWidth GetDataSize(void);
-        int SetBaseAddress(Data16 baseaddress);
-        Data16 GetBaseAddress(void);
-        int SetBlockSize(Data16 blocksize);
-        Data16 GetBlockSize(void);
-        int SetNbCycles(Data16 nbcycles);
-        Data16 GetNbCycles(void);
-        int SetLevel(CVIRQLevels level);
-        CVIRQLevels GetLevel(void);
-        int SetDevice(Data16 device);
-        Data16 GetDevice(void);
-        long GetHandle(void);
-        bool CheckIRQ(Data32 level);
-        int WriteToVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWidth dtsize) ;
-        int ReadFromVME(Data32 address, Data32 data,CVAddressModifier am,CVDataWidth dtsize) ;
+
+        long                GetHandle(void) const;
+
+        int                 SetData(Data16 data);
+        Data16              GetData(void);
+        int                 SetLevel(CVIRQLevels level);
+        CVIRQLevels         GetLevel(void);
+        int                 SetAM(CVAddressModifier am);
+        CVAddressModifier   GetAM(void);
+        int                 SetDatasize(CVDataWidth datasize);
+        CVDataWidth         GetDataSize(void);
+        int                 SetBaseAddress(Data16 baseaddress);
+        Data16              GetBaseAddress(void);
+        void                CheckStatus(CVErrorCodes status) const;
+
+        bool                CheckIRQ();
 };
 #endif
