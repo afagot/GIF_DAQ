@@ -436,7 +436,7 @@ Uint v1190a::Read(string outputfilename){
     CAENVME_ReadCycle(Handle, Address+ADD_EVENT_STORED_V1190A, &EventStored, cvA32_U_DATA, cvD16 );
 
     if(EventStored > 0)
-        printf("N Event stored :      %d\n", EventStored);
+        MSG_INFO("N Event stored : \t%d\n", EventStored);
 
     Data32 words[BLOCK_SIZE] = {0};
     Uint Spills = 0;
@@ -451,10 +451,9 @@ Uint v1190a::Read(string outputfilename){
     bool End = false;
 
     if(outputFile.is_open()){
-        while( Count > 0)
-        {
+        while( Count > 0){
             int words_read = ReadBlockD32(ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
-
+            MSG_INFO("\t%d",words_read);
             for(int w=0; w<words_read; w++){
 
                 switch(words[w] & STATUS_TDC_V1190A){
@@ -492,7 +491,7 @@ Uint v1190a::Read(string outputfilename){
                     break;
                 }
                 default:{
-                    //MSG_ERROR("%d : Encountered unknown word type while processing events\n",words[w]);
+                    MSG_ERROR("%d : Encountered unknown word type while processing events\n",words[w]);
                     break;
                 }
 
