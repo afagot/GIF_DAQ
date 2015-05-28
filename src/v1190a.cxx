@@ -456,6 +456,8 @@ Uint v1190a::Read(string outputfilename){
             int words_read = ReadBlockD32(ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
 
             for(int w=0; w<words_read; w++){
+                cout << words[w] << " : ";
+
                 switch(words[w] & STATUS_TDC_V1190A){
 
                 case GLOBAL_HEADER_V1190A: {
