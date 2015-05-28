@@ -453,7 +453,7 @@ Uint v1190a::Read(string outputfilename){
     if(outputFile.is_open()){
         while( Count > 0){
             int words_read = ReadBlockD32(ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
-            MSG_INFO("\t%d",words_read);
+            MSG_INFO("\t%d\n",words_read);
             for(int w=0; w<words_read; w++){
 
                 switch(words[w] & STATUS_TDC_V1190A){
@@ -468,7 +468,7 @@ Uint v1190a::Read(string outputfilename){
                 case GLOBAL_TRAILER_V1190A: {
                     Count--;
                     End = true;
-                    if(Count%100==0) MSG_INFO("%d",Count);
+                    if(Count==0) return Spills;
                     break;
                 }
                 case TDC_DATA_V1190A: {
@@ -491,7 +491,7 @@ Uint v1190a::Read(string outputfilename){
                     break;
                 }
                 default:{
-                    MSG_ERROR("%d : Encountered unknown word type while processing events\n",words[w]);
+                    //MSG_ERROR("%d : Encountered unknown word type while processing events\n",words[w]);
                     break;
                 }
 
