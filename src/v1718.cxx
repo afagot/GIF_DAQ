@@ -37,12 +37,7 @@ v1718::v1718(IniFile *inifile){
    Data32 baseaddress = inifile->addressType("VMEInterface","BaseAddress",BASEV1718);
 
    //Initialisation of the module. See CAENVMElib.h & CAENVMEtypes.h
-   try{
-       CheckStatus(CAENVME_Init(cvV1718, baseaddress, 0, &Handle)) != cvSuccess )
-   } catch(exception &e){
-      MSG_ERROR("v1718: \t Error when trying to initialise the device\n");
-      throw MSG_ERROR(e.what());
-   }
+   CheckStatus(CAENVME_Init(cvV1718, baseaddress, 0, &Handle));
 
    SetLevel(cvIRQ1);
    SetAM(cvA24_U_DATA);
@@ -156,15 +151,15 @@ void v1718::CheckStatus(CVErrorCodes status) const{
     // This provides more flexible error handling, as the return value method is more of a C-ism
     switch (status){
         case cvBusError:
-            throw MSG_ERROR("v1718: \t VME bus error");
+            MSG_ERROR("v1718: \t VME bus error");
         case cvCommError:
-            throw MSG_ERROR("v1718: \t Communication error");
+            MSG_ERROR("v1718: \t Communication error");
         case cvGenericError:
-            throw MSG_ERROR("v1718: \t General VME library error");
+            MSG_ERROR("v1718: \t General VME library error");
         case cvInvalidParam:
-            throw MSG_ERROR("v1718: \t Invalid parameter passed to VME library");
+            MSG_ERROR("v1718: \t Invalid parameter passed to VME library");
         case cvTimeoutError:
-            throw MSG_ERROR("v1718: \t Request timed out");
+            MSG_ERROR("v1718: \t Request timed out");
         default:
             return;
     }
