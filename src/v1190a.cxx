@@ -491,7 +491,8 @@ Uint v1190a::Read(string outputfilename){
                     break;
                 }
                 default:{
-                    MSG_ERROR("%d : Encountered unknown word type while processing events\n",words[w]);
+                    //MSG_ERROR("%d : Encountered unknown word type while processing events\n",words[w]);
+                    break;
                 }
 
                 }

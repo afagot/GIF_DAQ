@@ -138,6 +138,6 @@ void DataReader::Run()
         usleep(20000);
         if(VME->CheckIRQ()) TriggerCount += TDC->Read(outputFileName);
 
-        cout << TriggerCount << endl;
+        MSG_INFO("%d / %d taken\n", TriggerCount, GetMaxTriggers());
     }
 }
