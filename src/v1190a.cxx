@@ -469,6 +469,7 @@ Uint v1190a::Read(string outputfilename){
                 case GLOBAL_TRAILER_V1190A: {
                     Count--;
                     End = true;
+                    if(Count%100==0) MSG_INFO("%d",Count);
                     break;
                 }
                 case TDC_DATA_V1190A: {
