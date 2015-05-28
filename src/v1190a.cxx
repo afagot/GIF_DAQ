@@ -456,7 +456,6 @@ Uint v1190a::Read(string outputfilename){
             int words_read = ReadBlockD32(ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
 
             for(int w=0; w<words_read; w++){
-                cout << words[w] << " : ";
 
                 switch(words[w] & STATUS_TDC_V1190A){
 
@@ -492,7 +491,7 @@ Uint v1190a::Read(string outputfilename){
                     break;
                 }
                 default:{
-                    MSG_ERROR("Encountered unknown word type while processing events\n");
+                    MSG_ERROR("%d : Encountered unknown word type while processing events\n",words[w]);
                 }
 
                 }
