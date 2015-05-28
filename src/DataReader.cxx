@@ -8,6 +8,7 @@
 #include <sstream>
 #include <iomanip>
 #include <ctime>
+#include <unistd.h>
 
 #include "../include/DataReader.h"
 
@@ -133,7 +134,7 @@ void DataReader::Run()
 
     while(TriggerCount < GetMaxTriggers()){
         usleep(20000);
-        if(VME->CheckIRQ(1)) TriggerCount += TDC->Read(outputFileName);
+        if(VME->CheckIRQ()) TriggerCount += TDC->Read(outputFileName);
 
         cout << TriggerCount << endl;
     }

@@ -44,6 +44,7 @@ using namespace std;
 #define ADD_BLT_EVENT_NUM_V1190A			0x1024			/* BLT event number register */
 #define ADD_MICRO_V1190A					0x102E			/* Micro register */
 #define ADD_MICRO_HND_V1190A				0x1030			/* Micro handshake register */
+#define ADD_DUMMY16_V1190A                  0x1204          /* Dummy 16bit */
 
 // ****************************************************************************************************
 

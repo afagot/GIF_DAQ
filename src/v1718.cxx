@@ -169,8 +169,9 @@ void v1718::CheckStatus(CVErrorCodes status) const{
 // Get the Interrupt Request Status and print whether they are active or not.
 
 bool v1718::CheckIRQ(){
-    CheckStatus(CAENVME_IRQCheck(Handle, &Data));
+    Data8 data;
+    CheckStatus(CAENVME_IRQCheck(Handle, &data));
 
     // Pick the requested IRQ line from the data and return its status
-    return (((Data>>Level-1) & 1) > 0);
+    return (((data>>(Level-1)) & 1) > 0);
 }

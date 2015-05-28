@@ -40,7 +40,7 @@ using namespace std;
 class v1718{
 
     private :
-        long                Handle;
+        int                Handle;
 
         Data32              Data ;          	// Data
         CVIRQLevels		    Level ;             // Interrupt level

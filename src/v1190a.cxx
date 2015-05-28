@@ -18,6 +18,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <unistd.h>
 
 #include "../include/CAENVMElib.h"
 #include "../include/CAENVMEoslib.h"
@@ -459,7 +460,7 @@ Uint v1190a::Read(string outputfilename){
 
                 case GLOBAL_HEADER_V1190A: {
                     Hits.clear();
-                    EventCount = ((data>>5) & 0x3FFFFF) + 1;
+                    EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
                     Spills++;
 
                     break;
@@ -470,8 +471,8 @@ Uint v1190a::Read(string outputfilename){
                     break;
                 }
                 case TDC_DATA_V1190A: {
-                    channel = (data>>19) & 0x7F;
-                    timing = data & 0x7FFFF;
+                    channel = (words[w]>>19) & 0x7F;
+                    timing = words[w] & 0x7FFFF;
 
                     Hits.push_back(make_pair(channel,timing));
                     break;
