@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "../include/DataReader.h"
+#include "../include/MsgSvc.h"
 
 using namespace std;
 
@@ -127,7 +128,8 @@ string DataReader::GetFileName(){
 
 void DataReader::Run()
 {
-    cout << "Starting data acquisition." << endl;
+    MSG_INFO("Starting data acquisition\n");
+    MSG_INFO("%d triggers will be taken\n", GetMaxTriggers());
 
     Uint TriggerCount = 0;
     string outputFileName = GetFileName();
