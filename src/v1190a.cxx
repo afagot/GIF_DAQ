@@ -453,7 +453,6 @@ Uint v1190a::Read(string outputfilename){
     if(outputFile.is_open()){
         while( Count > 0){
             int words_read = ReadBlockD32(ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
-            MSG_INFO("\t%d\n",words_read);
             for(int w=0; w<words_read; w++){
 
                 switch(words[w] & STATUS_TDC_V1190A){

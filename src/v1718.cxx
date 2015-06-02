@@ -151,15 +151,15 @@ void v1718::CheckStatus(CVErrorCodes status) const{
     // This provides more flexible error handling, as the return value method is more of a C-ism
     switch (status){
         case cvBusError:
-            MSG_ERROR("v1718: \t VME bus error");
+            MSG_ERROR("v1718: \t VME bus error\n");
         case cvCommError:
-            MSG_ERROR("v1718: \t Communication error");
+            MSG_ERROR("v1718: \t Communication error\n");
         case cvGenericError:
-            MSG_ERROR("v1718: \t General VME library error");
+            MSG_ERROR("v1718: \t General VME library error\n");
         case cvInvalidParam:
-            MSG_ERROR("v1718: \t Invalid parameter passed to VME library");
+            MSG_ERROR("v1718: \t Invalid parameter passed to VME library\n");
         case cvTimeoutError:
-            MSG_ERROR("v1718: \t Request timed out");
+            MSG_ERROR("v1718: \t Request timed out\n");
         default:
             return;
     }
