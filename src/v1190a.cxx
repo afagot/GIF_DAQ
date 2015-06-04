@@ -500,7 +500,7 @@ Uint v1190a::Read(string outputfilename){
                     End = false;
                     outputFile << EventCount << '\t' << Hits.size() << '\n';
                     for(int i=0; i<Hits.size(); i++)
-                        outputFile << Hits[i].first << '\t' << Hits[i].second << '\n';
+                        outputFile << Hits[i].first << '\t' << (float)Hits[i].second/10. << '\n';
                 }
             }
         }
