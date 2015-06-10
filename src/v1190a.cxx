@@ -456,7 +456,7 @@ Uint v1190a::Read(TTree *RAWDataTree, int EventCount,int nHits,vector<int> *TDCC
 
     //bool End = false;
 
-    if(outputFile.is_open()){
+    //if(outputFile.is_open()){
         while( Count > 0){
             int words_read = ReadBlockD32(ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
             for(int w=0; w<words_read; w++){
@@ -521,6 +521,6 @@ Uint v1190a::Read(TTree *RAWDataTree, int EventCount,int nHits,vector<int> *TDCC
                 */
             }
         }
-    }
+    //}
     return Spills;
 }
