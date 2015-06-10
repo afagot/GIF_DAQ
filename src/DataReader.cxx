@@ -116,7 +116,8 @@ string DataReader::GetFileName(){
                 << setfill('0') << setw(2) << h
                 << setfill('0') << setw(2) << m
                 << setfill('0') << setw(2) << s
-                << ".dat";                          //file type
+                << ".root";
+                //<< ".dat";                          //file type
 
     string outputfName;
     fNameStream >> outputfName;
@@ -134,10 +135,32 @@ void DataReader::Run()
     Uint TriggerCount = 0;
     string outputFileName = GetFileName();
 
+    TFile *outputFile = new TFile(outputFileName.c_str(), "recreate");
+    TTree *RAWDataTree = new TTree("RAWData","RAWData");
+
+    int               EventCount = -1;
+    int               nHits       = -2;
+    vector<int>      *TDCCh       = new vector<int>;
+    vector<float>    *TDCTS       = new vector<float>;
+
+    RAWDataTree->Branch("EventNumber",    &EventCount,   "EventNumber/I");
+    RAWDataTree->Branch("number_of_hits", &nHits,         "number_of_hits/I");
+    RAWDataTree->Branch("TDC_channel",    &TDCCh,         "Hit_profile");
+    RAWDataTree->Branch("TDC_TimeStamp",  &TDCTS,         "Time_profile");
+
     while(TriggerCount < GetMaxTriggers()){
         usleep(20000);
-        if(VME->CheckIRQ()) TriggerCount += TDC->Read(outputFileName);
 
-        MSG_INFO("%d / %d taken\n", TriggerCount, GetMaxTriggers());
+        Uint lastCount = TriggerCount;
+        //if(VME->CheckIRQ()) TriggerCount += TDC->Read(outputFileName);
+        if(VME->CheckIRQ()) TriggerCount += TDC->Read(RAWDataTree,EventCount,nHits,TDCCh,TDCTS);
+
+        if(TriggerCount != lastCount) MSG_INFO("%d / %d taken\n", TriggerCount, GetMaxTriggers());
     }
+
+    RAWDataTree->Print();
+    outputFile = RAWDataTree->GetCurrentFile();
+    outputFile->Write(0, TObject::kWriteDelete);
+
+    delete outputFile;
 }

@@ -431,7 +431,8 @@ int v1190a::ReadBlockD32(const Data16 address, Data32 *data, const int words, bo
 
 // *************************************************************************************************************
 
-Uint v1190a::Read(string outputfilename){
+//Uint v1190a::Read(string outputfilename){
+Uint v1190a::Read(TTree *RAWDataTree, int EventCount,int nHits,vector<int> *TDCCh,vector<float> *TDCTS){
     Data16 EventStored = 0;
     CAENVME_ReadCycle(Handle, Address+ADD_EVENT_STORED_V1190A, &EventStored, cvA32_U_DATA, cvD16 );
 
@@ -443,22 +444,27 @@ Uint v1190a::Read(string outputfilename){
     Uint Count = EventStored;
     Data32 channel, timing;
 
-    ofstream outputFile(outputfilename.c_str(),ios::app|ios::ate);
-    vector< pair<int,int> > Hits;
-    Hits.clear();
-    Data32 EventCount = 0;
+    //ofstream outputFile(outputfilename.c_str(),ios::app|ios::ate);
+    //vector< pair<int,int> > Hits;
+    //Hits.clear();
+    //Data32 EventCount = -99;
 
-    bool End = false;
+    EventCount = -99;
+    nHits = -88;
+    TDCCh.clear();
+    TDCTS.clear();
+
+    //bool End = false;
 
     if(outputFile.is_open()){
         while( Count > 0){
             int words_read = ReadBlockD32(ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
             for(int w=0; w<words_read; w++){
-
                 switch(words[w] & STATUS_TDC_V1190A){
 
                 case GLOBAL_HEADER_V1190A: {
-                    Hits.clear();
+                    TDCCh.clear();
+                    TDCTS.clear();
                     EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
                     Spills++;
 
@@ -466,15 +472,25 @@ Uint v1190a::Read(string outputfilename){
                 }
                 case GLOBAL_TRAILER_V1190A: {
                     Count--;
-                    End = true;
-                    if(Count==0) return Spills;
+                    //End = true;
+                    if(TDCCh.size() == TDCTS.size()) nHits = TDCCh.size();
+                    RAWDataTree->Fill();
+
+                    EventCount = -99;
+                    nHit = -88;
+
+                    if(Count==0) return Spills; //This is just temporary cause normally this should be
+                                                //already happening thanks to the while loop but not working
                     break;
                 }
                 case TDC_DATA_V1190A: {
                     channel = (words[w]>>19) & 0x7F;
-                    timing = words[w] & 0x7FFFF;
+                    TDCCh.push_back(channel);
 
-                    Hits.push_back(make_pair(channel,timing));
+                    timing = words[w] & 0x7FFFF;
+                    TDCTS.push_back(timing);
+
+                    //Hits.push_back(make_pair(channel,timing));
                     break;
                 }
                 case TDC_HEADER_V1190A:{
@@ -495,13 +511,14 @@ Uint v1190a::Read(string outputfilename){
                 }
 
                 }
-
+                /*
                 if(End){
                     End = false;
                     outputFile << EventCount << '\t' << Hits.size() << '\n';
                     for(int i=0; i<Hits.size(); i++)
                         outputFile << Hits[i].first << '\t' << (float)Hits[i].second/10. << '\n';
                 }
+                */
             }
         }
     }

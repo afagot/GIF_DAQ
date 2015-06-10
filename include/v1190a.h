@@ -18,6 +18,12 @@
 #include "CAENVMEtypes.h"
 #include "IniFile.h"
 
+#include <TChain.h>
+#include <TFile.h>
+#include <TString.h>
+#include <TTree.h>
+#include <TString.h>
+
 using namespace std;
 
 #ifndef _v1190a_h
@@ -200,7 +206,8 @@ class v1190a
     void                SetBlockTransferMode(Data16 mode);
     void                Set(IniFile *inifile);
     int                 ReadBlockD32(const Data16 address, Data32 *data, const int words, bool ignore_berr);
-    Uint                Read(string outputfilename);
+    //Uint                Read(string outputfilename);
+    Uint                Read(TTree *RAWDataTree,int EventCount,int nHits,vector<int> *TDCCh,vector<float> *TDCTS);
 };
 
 
