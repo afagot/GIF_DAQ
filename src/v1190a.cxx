@@ -477,7 +477,7 @@ Uint v1190a::Read(TTree *RAWDataTree, int EventCount,int nHits,vector<int> *TDCC
                     RAWDataTree->Fill();
 
                     EventCount = -99;
-                    nHit = -88;
+                    nHits = -88;
 
                     if(Count==0) return Spills; //This is just temporary cause normally this should be
                                                 //already happening thanks to the while loop but not working
