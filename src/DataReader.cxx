@@ -153,7 +153,8 @@ void DataReader::Run()
 
         Uint lastCount = TriggerCount;
         //if(VME->CheckIRQ()) TriggerCount += TDC->Read(outputFileName);
-        if(VME->CheckIRQ()) TriggerCount += TDC->Read(RAWDataTree,EventCount,nHits,TDCCh,TDCTS);
+        //if(VME->CheckIRQ()) TriggerCount += TDC->Read(RAWDataTree,EventCount,nHits,TDCCh,TDCTS);
+        if(VME->CheckIRQ()) TriggerCount += TDC->Read(EventCount,nHits,TDCCh,TDCTS);
 
         if(TriggerCount != lastCount) MSG_INFO("%d / %d taken\n", TriggerCount, GetMaxTriggers());
     }
