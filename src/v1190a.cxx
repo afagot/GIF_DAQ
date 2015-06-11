@@ -451,8 +451,8 @@ Uint v1190a::Read(TTree *RAWDataTree, int &EventCount,int &nHits,vector<int> &TD
 
     EventCount = -99;
     nHits = -88;
-    TDCCh->clear();
-    TDCTS->clear();
+    TDCCh.clear();
+    TDCTS.clear();
 
     //bool End = false;
 
@@ -463,8 +463,8 @@ Uint v1190a::Read(TTree *RAWDataTree, int &EventCount,int &nHits,vector<int> &TD
                 switch(words[w] & STATUS_TDC_V1190A){
 
                 case GLOBAL_HEADER_V1190A: {
-                    TDCCh->clear();
-                    TDCTS->clear();
+                    TDCCh.clear();
+                    TDCTS.clear();
                     EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
                     Spills++;
 
@@ -473,7 +473,7 @@ Uint v1190a::Read(TTree *RAWDataTree, int &EventCount,int &nHits,vector<int> &TD
                 case GLOBAL_TRAILER_V1190A: {
                     Count--;
                     //End = true;
-                    if(TDCCh->size() == TDCTS->size()) nHits = TDCCh->size();
+                    if(TDCCh.size() == TDCTS.size()) nHits = TDCCh.size();
                     RAWDataTree->Fill();
 
                     EventCount = -99;
@@ -485,10 +485,10 @@ Uint v1190a::Read(TTree *RAWDataTree, int &EventCount,int &nHits,vector<int> &TD
                 }
                 case TDC_DATA_V1190A: {
                     channel = (words[w]>>19) & 0x7F;
-                    TDCCh->push_back(channel);
+                    TDCCh.push_back(channel);
 
                     timing = words[w] & 0x7FFFF;
-                    TDCTS->push_back(timing);
+                    TDCTS.push_back(timing);
 
                     //Hits.push_back(make_pair(channel,timing));
                     break;
