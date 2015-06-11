@@ -522,9 +522,9 @@ Uint v1190a::Read(int &EventCount,int &nHits,vector<int> *&TDCCh,vector<float> *
 
                 if(End){
                     End = false;
-                    cout >> EventCount >> '\t' >> nHits >> '\n';
+                    cout << EventCount << "\t" << nHits << "\n";
                     for(int i=0; i<nHits; i++)
-                        cout >> '\t' >> TDCCh[i] >> '\t' >> TDCTS[i] >> '\n';
+                        cout << "\t" << TDCCh->at(i) << "\t" << TDCTS->at(i) << "\n";
                 }
                 /*
                 if(End){
