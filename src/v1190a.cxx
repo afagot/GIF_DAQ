@@ -432,8 +432,8 @@ int v1190a::ReadBlockD32(const Data16 address, Data32 *data, const int words, bo
 // *************************************************************************************************************
 
 //Uint v1190a::Read(string outputfilename){
-//Uint v1190a::Read(TTree *RAWDataTree, int &EventCount,int &nHits,vector<int> &TDCCh,vector<float> &TDCTS){
-Uint v1190a::Read(int &EventCount,int &nHits,vector<int> *&TDCCh,vector<float> *&TDCTS){
+Uint v1190a::Read(TTree *&RAWDataTree, int &EventCount,int &nHits,vector<int> *&TDCCh,vector<float> *&TDCTS){
+//Uint v1190a::Read(int &EventCount,int &nHits,vector<int> *&TDCCh,vector<float> *&TDCTS){
     Data16 EventStored = 0;
     CAENVME_ReadCycle(Handle, Address+ADD_EVENT_STORED_V1190A, &EventStored, cvA32_U_DATA, cvD16 );
 
@@ -480,7 +480,7 @@ Uint v1190a::Read(int &EventCount,int &nHits,vector<int> *&TDCCh,vector<float> *
                     End = true;
                     //if(TDCCh.size() == TDCTS.size()) nHits = TDCCh.size();
                     if(TDCCh->size() == TDCTS->size()) nHits = TDCCh->size();
-                    //RAWDataTree->Fill();
+                    RAWDataTree->Fill();
 
                     EventCount = -99;
                     nHits = -88;
@@ -519,13 +519,14 @@ Uint v1190a::Read(int &EventCount,int &nHits,vector<int> *&TDCCh,vector<float> *
                 }
 
                 }
-
+                /*
                 if(End){
                     End = false;
                     cout << EventCount << "\t" << nHits << "\n";
                     for(int i=0; i<nHits; i++)
                         cout << "\t" << TDCCh->at(i) << "\t" << TDCTS->at(i) << "\n";
                 }
+                */
                 /*
                 if(End){
                     End = false;
