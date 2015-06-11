@@ -145,15 +145,15 @@ void DataReader::Run()
 
     RAWDataTree->Branch("EventNumber",    &EventCount,   "EventNumber/I");
     RAWDataTree->Branch("number_of_hits", &nHits,         "number_of_hits/I");
-    RAWDataTree->Branch("TDC_channel",    &TDCCh,         "Hit_profile");
-    RAWDataTree->Branch("TDC_TimeStamp",  &TDCTS,         "Time_profile");
+    RAWDataTree->Branch("TDC_channel",    &TDCCh);
+    RAWDataTree->Branch("TDC_TimeStamp",  &TDCTS);
 
     while(TriggerCount < GetMaxTriggers()){
         usleep(20000);
 
         Uint lastCount = TriggerCount;
         //if(VME->CheckIRQ()) TriggerCount += TDC->Read(outputFileName);
-        if(VME->CheckIRQ()) TriggerCount += TDC->Read(RAWDataTree,&EventCount,&nHits,&TDCCh,&TDCTS);
+        if(VME->CheckIRQ()) TriggerCount += TDC->Read(RAWDataTree,EventCount,nHits,TDCCh,TDCTS);
 
         if(TriggerCount != lastCount) MSG_INFO("%d / %d taken\n", TriggerCount, GetMaxTriggers());
     }
