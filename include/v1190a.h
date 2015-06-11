@@ -207,7 +207,7 @@ class v1190a
     void                Set(IniFile *inifile);
     int                 ReadBlockD32(const Data16 address, Data32 *data, const int words, bool ignore_berr);
     //Uint                Read(string outputfilename);
-    Uint                Read(TTree *RAWDataTree,int EventCount,int nHits,vector<int> *TDCCh,vector<float> *TDCTS);
+    Uint                Read(TTree *RAWDataTree, int *EventCount, int *nHits, vector<int> **TDCCh, vector<float> **TDCTS);
 };
 
 

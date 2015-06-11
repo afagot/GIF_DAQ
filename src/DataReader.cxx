@@ -138,8 +138,8 @@ void DataReader::Run()
     TFile *outputFile = new TFile(outputFileName.c_str(), "recreate");
     TTree *RAWDataTree = new TTree("RAWData","RAWData");
 
-    int               EventCount = -1;
-    int               nHits       = -2;
+    int               EventCount = -9;
+    int               nHits       = -8;
     vector<int>      *TDCCh       = new vector<int>;
     vector<float>    *TDCTS       = new vector<float>;
 
@@ -153,7 +153,7 @@ void DataReader::Run()
 
         Uint lastCount = TriggerCount;
         //if(VME->CheckIRQ()) TriggerCount += TDC->Read(outputFileName);
-        if(VME->CheckIRQ()) TriggerCount += TDC->Read(RAWDataTree,EventCount,nHits,TDCCh,TDCTS);
+        if(VME->CheckIRQ()) TriggerCount += TDC->Read(RAWDataTree,&EventCount,&nHits,&TDCCh,&TDCTS);
 
         if(TriggerCount != lastCount) MSG_INFO("%d / %d taken\n", TriggerCount, GetMaxTriggers());
     }
