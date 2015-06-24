@@ -62,10 +62,10 @@ void DataReader::SetVME()
 
 void DataReader::SetTDC()
 {
-    TDC = new v1190a(VME->GetHandle(),iniFile);
+    TDCs = new v1190a(VME->GetHandle(),iniFile);
 
     /*********** initialize the TDC 1190a ***************************/
-    TDC->Set(iniFile);
+    TDCs->Set(iniFile);
 }
 
 // ****************************************************************************************************
@@ -129,8 +129,8 @@ string DataReader::GetFileName(){
 
 void DataReader::Run()
 {
-    MSG_INFO("Starting data acquisition\n");
-    MSG_INFO("%d triggers will be taken\n", GetMaxTriggers());
+    MSG_INFO("[DAQ]: Starting data acquisition\n");
+    MSG_INFO("[DAQ]: %d triggers will be taken\n", GetMaxTriggers());
 
     Uint TriggerCount = 0;
     string outputFileName = GetFileName();
@@ -153,10 +153,10 @@ void DataReader::Run()
 
         Uint lastCount = TriggerCount;
         //if(VME->CheckIRQ()) TriggerCount += TDC->Read(outputFileName);
-        if(VME->CheckIRQ()) TriggerCount += TDC->Read(RAWDataTree,EventCount,nHits,TDCCh,TDCTS);
+        if(VME->CheckIRQ()) TriggerCount += TDCs->Read(RAWDataTree,EventCount,nHits,TDCCh,TDCTS);
         //if(VME->CheckIRQ()) TriggerCount += TDC->Read(EventCount,nHits,TDCCh,TDCTS);
 
-        if(TriggerCount != lastCount) MSG_INFO("%d / %d taken\n", TriggerCount, GetMaxTriggers());
+        if(TriggerCount != lastCount) MSG_INFO("[DAQ]: %d / %d taken\n", TriggerCount, GetMaxTriggers());
     }
 
     RAWDataTree->Print();

@@ -24,7 +24,7 @@ class DataReader
         IniFile        *iniFile;
         Data32          MaxTriggers;
         v1718          *VME;
-        v1190a         *TDC;
+        v1190a         *TDCs;
 
     public:
         DataReader();

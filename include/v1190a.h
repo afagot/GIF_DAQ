@@ -33,7 +33,12 @@ using namespace std;
 
 /*** Base address (A32) of the model V1190A ***/
 
-#define BASEV1190A                          0xEEEE0000
+#define MAXNTDC                             2
+
+static const int BASEV1190A[MAXNTDC] = {
+    0xDDDD0000,
+    0xEEEE0000
+};
 
 // ****************************************************************************************************
 
@@ -171,7 +176,7 @@ class v1190a
 {
  private :
     long                Handle;
-    Data32              Address;
+    Data32              Address[MAXNTDC];
     CVDataWidth         DataWidth;
     CVAddressModifier   AddressModifier;
 
@@ -193,8 +198,8 @@ class v1190a
     void                SetTrigWindowOffset(long windowOffset);
     void                SetTrigSearchMargin(long searchMargin);
     void                SetTrigRejectionMargin(long rejectMargin);
-    void                SetTrigConfiguration(IniFile *inifile);
     void                GetTrigConfiguration();
+    void                SetTrigConfiguration(IniFile *inifile);
     void                SetTDCDetectionMode(Data16 mode);
     void                SetTDCResolution(Data16 lsb);
     void                SetTDCDeadTime(Data16 time);
@@ -205,9 +210,7 @@ class v1190a
     void                SetBlockTransferMode(Data16 mode);
     void                Set(IniFile *inifile);
     int                 ReadBlockD32(const Data16 address, Data32 *data, const int words, bool ignore_berr);
-    //Uint                Read(string outputfilename);
     Uint                Read(TTree *&RAWDataTree,int &EventCount,int &nHits,vector<int> *&TDCCh,vector<float> *&TDCTS);
-    //Uint                Read(int &EventCount, int &nHits, vector<int> *&TDCCh, vector<float> *&TDCTS);
 };
 
 
