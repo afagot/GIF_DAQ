@@ -15,6 +15,9 @@
 #define __LINUX
 #endif
 
+#ifndef _v1190a_h
+#define _v1190a_h
+
 #include "CAENVMEtypes.h"
 #include "IniFile.h"
 
@@ -25,9 +28,6 @@
 
 using namespace std;
 
-#ifndef _v1190a_h
-#define _v1190a_h
-
 
 // ****************************************************************************************************
 
@@ -35,7 +35,7 @@ using namespace std;
 
 #define MAXNTDC                             2
 
-static const int BASEV1190A[MAXNTDC] = {
+static const unsigned int BASEV1190A[MAXNTDC] = {
     0xDDDD0000,
     0xEEEE0000
 };
@@ -170,6 +170,15 @@ typedef enum _SetMode {
 
 // ****************************************************************************************************
 
+/*** STRUCTURE ***/
+
+struct RAWData{
+    vector<int>            *EventList;
+    vector<int>            *NHitsList;
+    vector<vector<int> >   *ChannelList;
+    vector<vector<float> > *TimeStampList;
+};
+
 /*** CLASS ***/
 
 class v1190a
@@ -194,10 +203,10 @@ class v1190a
     void                SetTDCTestMode(Data16 mode);
     void                SetTrigMatching();
     void                SetTrigTimeSubstraction(Data16 mode);
-    void                SetTrigWindowWidth(long  windowWidth);
-    void                SetTrigWindowOffset(long windowOffset);
-    void                SetTrigSearchMargin(long searchMargin);
-    void                SetTrigRejectionMargin(long rejectMargin);
+    void                SetTrigWindowWidth(Uint windowWidth);
+    void                SetTrigWindowOffset(Uint windowOffset);
+    void                SetTrigSearchMargin(Uint searchMargin);
+    void                SetTrigRejectionMargin(Uint rejectMargin);
     void                GetTrigConfiguration();
     void                SetTrigConfiguration(IniFile *inifile);
     void                SetTDCDetectionMode(Data16 mode);
@@ -209,8 +218,9 @@ class v1190a
     void                SetIRQ(Data32 level, Data32 count);
     void                SetBlockTransferMode(Data16 mode);
     void                Set(IniFile *inifile);
-    int                 ReadBlockD32(const Data16 address, Data32 *data, const int words, bool ignore_berr);
-    Uint                Read(TTree *&RAWDataTree,int &EventCount,int &nHits,vector<int> *&TDCCh,vector<float> *&TDCTS);
+    void                CheckStatus(CVErrorCodes status) const;
+    int                 ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const int words, bool ignore_berr);
+    Uint                Read(RAWData *DataList);
 };
 
 
