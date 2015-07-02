@@ -5,7 +5,8 @@
 # 14/01/14  Created by Y.Benhammou
 
 
-DAQ_HOME_DIR = /home/alex/Desktop/RPCs/GIF_DAQ
+DAQ_HOME_DIR = /home/pccmsrpcgif2/GIF_DAQ
+#DAQ_HOME_DIR = /home/alex/Desktop/RPCs/GIF_DAQ
 DAQ_BIN_DIR = $(DAQ_HOME_DIR)/bin
 DAQ_INC_DIR = $(DAQ_HOME_DIR)/include
 DAQ_SRC_DIR = $(DAQ_HOME_DIR)/src
