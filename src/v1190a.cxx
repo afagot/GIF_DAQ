@@ -306,7 +306,7 @@ void v1190a::SetTDCDeadTime(Data16 time){
         write_op_reg(Address[tdc],OPCODE_SET_DEAD_TIME_V1190A); //Set channel dead time
         write_op_reg(Address[tdc],time);
         write_op_reg(Address[tdc],OPCODE_READ_DEAD_TIME_V1190A); //Channel dead time readout
-        MSG_INFO("[TDC%i]:\t Channel dead time : %1X\n\n",tdc,(read_op_reg(Address[tdc]) & 0b11));
+        MSG_INFO("[TDC%i]:\t Channel dead time : %1X\n",tdc,(read_op_reg(Address[tdc]) & 0b11));
     }
 }
 
@@ -337,7 +337,7 @@ void v1190a::SetTDCEventSize(Data16 size){ //Maximum number of hits per event re
         write_op_reg(Address[tdc],OPCODE_SET_EVENT_SIZE_V1190A);
         write_op_reg(Address[tdc],size);
         write_op_reg(Address[tdc],OPCODE_READ_EVENT_SIZE_V1190A);
-        MSG_INFO("[TDC%i]:\t Maximum number of hit/event : %1X\n\n",tdc,(read_op_reg(Address[tdc]) & 0b1111));
+        MSG_INFO("[TDC%i]:\t Maximum number of hit/event : %1X\n",tdc,(read_op_reg(Address[tdc]) & 0b1111));
     }
 }
 
@@ -521,7 +521,7 @@ Uint v1190a::Read(RAWData *DataList){
 
         //Check if the TDC as the same number of trigger as the first TDC
         if(tdc > 0 && EventStored[tdc] != EventStored[0]){
-            MSG_ERROR("[TDC%i]: %i stored events instead of %i",tdc,EventStored[tdc],EventStored[0]);
+            MSG_ERROR("[TDC%i]: %i stored events instead of %i\n",tdc,EventStored[tdc],EventStored[0]);
             exit(0);
         }
 
@@ -546,7 +546,7 @@ Uint v1190a::Read(RAWData *DataList){
                     //Get the event count from the global header (very first word)
                     EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
                     if(tdc > 0 && EventCount != DataList->EventList->at(it)){
-                        MSG_ERROR("[TDC%i]: lost synchronisation - actual event is %i and should be %i",
+                        MSG_ERROR("[TDC%i]: \t lost synchronisation - actual event is %i and should be %i\n",
                                   tdc,EventCount,DataList->EventList->at(it));
                         exit(0);
                     }
@@ -583,7 +583,7 @@ Uint v1190a::Read(RAWData *DataList){
                 }
                 case TDC_DATA_V1190A: {
                     channel = (words[w]>>19) & 0x7F;
-                    TDCCh.push_back(channel);
+                    TDCCh.push_back(channel+tdc*1000); //each TDC module separated by 1000 in channel numbers
 
                     timing = words[w] & 0x7FFFF;
                     TDCTS.push_back((float)timing/10.);
@@ -603,7 +603,7 @@ Uint v1190a::Read(RAWData *DataList){
                     break;
                 }
                 default:{
-                    MSG_ERROR("%d : Encountered unknown word type while processing events\n",words[w]);
+                    MSG_ERROR("[v1190a] : Encountered unknown word type while processing events - %d\n",words[w]);
                     break;
                 }
 

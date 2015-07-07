@@ -31,7 +31,7 @@
 using namespace std;
 
 v1718::v1718(IniFile *inifile){
-   MSG_INFO("[v1718]: \t Initialization VME bridge...\n");
+   MSG_INFO("[v1718]: Initialization VME bridge...\n");
 
    //Get the base address from the configuration file
    Data32 baseaddress = inifile->addressType("VMEInterface","BaseAddress",BASEV1718);
@@ -44,7 +44,7 @@ v1718::v1718(IniFile *inifile){
    SetDatasize(cvD16);
    SetBaseAddress(baseaddress);
 
-   MSG_INFO("[v1718]: \t OK\n");
+   MSG_INFO("[v1718]: OK\n");
 }
 
 // *************************************************************************************************************
@@ -151,15 +151,15 @@ void v1718::CheckStatus(CVErrorCodes status) const{
     // This provides more flexible error handling, as the return value method is more of a C-ism
     switch (status){
         case cvBusError:
-            MSG_ERROR("[v1718]: \t VME bus error\n");
+            MSG_ERROR("[v1718]: VME bus error\n");
         case cvCommError:
-            MSG_ERROR("[v1718]: \t Communication error\n");
+            MSG_ERROR("[v1718]: Communication error\n");
         case cvGenericError:
-            MSG_ERROR("[v1718]: \t General VME library error\n");
+            MSG_ERROR("[v1718]: General VME library error\n");
         case cvInvalidParam:
-            MSG_ERROR("[v1718]: \t Invalid parameter passed to VME library\n");
+            MSG_ERROR("[v1718]: Invalid parameter passed to VME library\n");
         case cvTimeoutError:
-            MSG_ERROR("[v1718]: \t Request timed out\n");
+            MSG_ERROR("[v1718]: Request timed out\n");
         default:
             return;
     }
