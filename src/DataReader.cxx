@@ -79,7 +79,11 @@ void DataReader::Init(string inifilename){
     SetIniFile(inifilename);
     SetMaxTriggers();
     SetVME();
+    
+    //No data taking during TDC setting
+    VME->SendBUSY(ON);
     SetTDC();
+    VME->SendBUSY(OFF);
 }
 
 // ****************************************************************************************************
