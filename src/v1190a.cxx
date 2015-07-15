@@ -503,17 +503,13 @@ int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const uns
     if (!ignore_berr || ret < cvBusError)
         CheckStatus(ret);
 
-    return read / 4;
+    return (read/4);
 }
 
 // *************************************************************************************************************
 
-//Uint v1190a::Read(string outputfilename){
 Uint v1190a::Read(RAWData *DataList){
     Data16 EventStored[MAXNTDC] = {0};
-
-    Uint EventStart = DataList->EventList->size();
-    Uint it = EventStart;
 
     for(Uint tdc=0; tdc < MAXNTDC; tdc++){
         //Get the number of trigger in TDC memory
@@ -522,9 +518,9 @@ Uint v1190a::Read(RAWData *DataList){
         //Check if the TDC as the same number of trigger as the first TDC
         if(tdc > 0 && EventStored[tdc] != EventStored[0]){
             MSG_ERROR("[TDC%i]: %i stored events instead of %i\n",tdc,EventStored[tdc],EventStored[0]);
-            exit(0);
+//            exit(0);
         }
-
+/*
         Data32 words[BLOCK_SIZE] = {0};
         Uint Count = EventStored[0];
         Data32 channel, timing;
@@ -537,19 +533,22 @@ Uint v1190a::Read(RAWData *DataList){
         TDCCh.clear();
         TDCTS.clear();
 
-        while( Count > 0){
-            int words_read = ReadBlockD32(tdc,ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
+        int words_read = ReadBlockD32(tdc,ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
 
-            for(int w=0; w<words_read; w++){
-                switch(words[w] & STATUS_TDC_V1190A){
+        for(int w=0; w<words_read && Count>0 ; w++){
+            Data32 word_type = words[w] & STATUS_TDC_V1190A;
+
+            switch(word_type){
 
                 case GLOBAL_HEADER_V1190A: {
                     //Get the event count from the global header (very first word)
                     EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
-                    if(tdc > 0 && EventCount != DataList->EventList->at(it)){
-                        MSG_ERROR("[TDC%i]: \t lost synchronisation - actual event is %i and should be %i\n",
-                                  tdc,EventCount,DataList->EventList->at(it));
-                        exit(0);
+                    if(tdc > 0){
+                        if(EventCount != DataList->EventList->at(it)){
+                            MSG_ERROR("[TDC%i]: \t lost synchronisation - actual event is %i and should be %i\n",
+                                      tdc,EventCount,DataList->EventList->at(it));
+                            exit(0);
+                        }
                     }
 
                     break;
@@ -566,6 +565,7 @@ Uint v1190a::Read(RAWData *DataList){
                         DataList->ChannelList->push_back(TDCCh);
                         DataList->TimeStampList->push_back(TDCTS);
                     } else {
+                        Uint it = EventCount;
                         DataList->NHitsList->at(it) = DataList->NHitsList->at(it) + nHits;
                         DataList->ChannelList->at(it).insert(DataList->ChannelList->at(it).end(),TDCCh.begin(),TDCCh.end());
                         DataList->TimeStampList->at(it).insert(DataList->TimeStampList->at(it).end(),TDCTS.begin(),TDCTS.end());
@@ -578,7 +578,6 @@ Uint v1190a::Read(RAWData *DataList){
                     TDCTS.clear();
 
                     Count--;
-                    it++;
 
                     break;
                 }
@@ -604,13 +603,13 @@ Uint v1190a::Read(RAWData *DataList){
                     break;
                 }
                 default:{
-                    MSG_ERROR("[TDC%i] : \t Encountered unknown word type while processing events - %8X\n",tdc,words[w]);
+                    MSG_ERROR("[TDC%i] : \t Encountered unknown word type while processing events - %08X\n",tdc,word_type);
                     break;
                 }
 
-                }
             }
         }
+*/
     }
     return EventStored[0];
 }

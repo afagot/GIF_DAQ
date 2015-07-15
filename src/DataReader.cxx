@@ -163,8 +163,10 @@ void DataReader::Run(){
 
         if(VME->CheckIRQ()){
             VME->SendBUSY(ON);
+            usleep(10);
             TriggerCount += TDCs->Read(&TDCData);
             MSG_INFO("[DAQ]: %d / %d taken\n", TriggerCount, GetMaxTriggers());
+            usleep(10);
             VME->SendBUSY(OFF);
         }
     }
