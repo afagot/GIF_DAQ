@@ -496,7 +496,7 @@ void v1190a::CheckStatus(CVErrorCodes status) const{
 
 // *************************************************************************************************************
 
-int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const int words, bool ignore_berr) {
+int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const unsigned int words, bool ignore_berr) {
     int read;
 
     CVErrorCodes ret = CAENVME_BLTReadCycle(Handle, address + Address[tdc], data, words * 4, cvA32_U_BLT, cvD32, &read);
@@ -539,6 +539,7 @@ Uint v1190a::Read(RAWData *DataList){
 
         while( Count > 0){
             int words_read = ReadBlockD32(tdc,ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
+
             for(int w=0; w<words_read; w++){
                 switch(words[w] & STATUS_TDC_V1190A){
 
@@ -603,7 +604,7 @@ Uint v1190a::Read(RAWData *DataList){
                     break;
                 }
                 default:{
-                    MSG_ERROR("[v1190a] : Encountered unknown word type while processing events - %d\n",words[w]);
+                    MSG_ERROR("[TDC%i] : \t Encountered unknown word type while processing events - %8X\n",tdc,words[w]);
                     break;
                 }
 

@@ -33,9 +33,11 @@ using namespace std;
 
 /*** Base address (A32) of the model V1190A ***/
 
-#define MAXNTDC                             2
+#define MAXNTDC                             4
 
 static const unsigned int BASEV1190A[MAXNTDC] = {
+    0xBBBB0000,
+    0xCCCC0000,
     0xDDDD0000,
     0xEEEE0000
 };
@@ -80,7 +82,7 @@ static const unsigned int BASEV1190A[MAXNTDC] = {
 
 #define MAXTRIGGERS_V1190A                  1000
 
-#define BLOCK_SIZE                          2048
+#define BLOCK_SIZE                          10240
 
 // ****************************************************************************************************
 
@@ -219,7 +221,7 @@ class v1190a
     void                SetBlockTransferMode(Data16 mode);
     void                Set(IniFile *inifile);
     void                CheckStatus(CVErrorCodes status) const;
-    int                 ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const int words, bool ignore_berr);
+    int                 ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const unsigned int words, bool ignore_berr);
     Uint                Read(RAWData *DataList);
 };
 
