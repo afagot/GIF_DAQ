@@ -70,7 +70,7 @@ class v1718{
         Data16              GetBaseAddress(void);
         void                CheckStatus(CVErrorCodes status) const;
         bool                CheckIRQ();
-        void                SetPulserA();
+        void                SetPulsers();
         void                SendBUSY(BusyLevel level);
 };
 #endif

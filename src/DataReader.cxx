@@ -83,7 +83,7 @@ void DataReader::Init(string inifilename){
     for(int i=0; i<4; i++){
         printf("Signal %i\n",i);
         VME->SendBUSY(ON);
-        usleep(10000000);
+        usleep(4000000);
         VME->SendBUSY(OFF);
     }
 }

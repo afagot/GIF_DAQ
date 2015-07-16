@@ -43,7 +43,7 @@ v1718::v1718(IniFile *inifile){
    SetAM(cvA24_U_DATA);
    SetDatasize(cvD16);
    SetBaseAddress(baseaddress);
-   SetPulserA();
+   SetPulsers();
 
    MSG_INFO("[v1718]: OK\n");
 }
@@ -178,11 +178,18 @@ bool v1718::CheckIRQ(){
 }
 
 // *************************************************************************************************************
-//Set the width of the 
+//Set the width of the
 
-void v1718::SetPulserA() {
-    CheckStatus(CAENVME_WriteRegister(Handle, cvPulserA1, 0x000A)); //Set step and number of pulses
-    CheckStatus(CAENVME_WriteRegister(Handle, cvPulserA0, 0x0204)); //Set width and period
+void v1718::SetPulsers() {
+    CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegClear, 0x3CFF)); //Clear the output register output 0 to 3
+    CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegSet, 0x00AA));   //Set the output register to pulsers
+
+    Uchar P = 4;   //Period in step units
+    Uchar W = 2;   //Width in step units
+    Uchar Np = 10; //Number of pulses to be generated
+
+    CheckStatus(CAENVME_SetPulserConf(Handle, cvPulserA, 4, 2, cvUnit25ns, 10, cvManualSW, cvManualSW));
+    CheckStatus(CAENVME_SetPulserConf(Handle, cvPulserB, 4, 2, cvUnit25ns, 10, cvManualSW, cvManualSW));
 }
 
 // *************************************************************************************************************
@@ -190,8 +197,10 @@ void v1718::SetPulserA() {
 
 void v1718::SendBUSY(BusyLevel level) {
     if(level == ON){
-        CheckStatus(CAENVME_WriteRegister(Handle, cvOutRegSet, 0x00C1));//Turn ON pulser A on output 0
+        CheckStatus(CAENVME_StartPulser(Handle, cvPulserA));//Turn ON pulser A on output 0 and 1
+        CheckStatus(CAENVME_StartPulser(Handle, cvPulserB));//Turn ON pulser B on output 2 and 3
     } else if(level == OFF) {
-        CheckStatus(CAENVME_WriteRegister(Handle, cvOutRegClear, 0x00C1));//Turn OFF
+        CheckStatus(CAENVME_StopPulser(Handle, cvPulserA)); //Turn OFF
+        CheckStatus(CAENVME_StopPulser(Handle, cvPulserB)); //Turn OFF
     }
 }
