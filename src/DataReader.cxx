@@ -79,13 +79,13 @@ void DataReader::Init(string inifilename){
     SetIniFile(inifilename);
     SetMaxTriggers();
     SetVME();
-    //SetTDC();
-    for(int i=0; i<4; i++){
+    SetTDC();
+    /*for(int i=0; i<10000; i++){
         printf("Signal %i\n",i);
         VME->SendBUSY(ON);
-        usleep(4000000);
+        usleep(5000);
         VME->SendBUSY(OFF);
-    }
+    }*/
 }
 
 // ****************************************************************************************************
@@ -164,10 +164,10 @@ void DataReader::Run(){
         usleep(20000);
 
         if(VME->CheckIRQ()){
-            VME->SendBUSY(ON);
-            TriggerCount += TDCs->Read(&TDCData);
+            //VME->SendBUSY(ON);
+            TriggerCount = TDCs->Read(&TDCData);
             MSG_INFO("[DAQ]: %d / %d taken\n", TriggerCount, GetMaxTriggers());
-            VME->SendBUSY(OFF);
+            //VME->SendBUSY(OFF);
         }
     }
 

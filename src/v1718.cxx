@@ -182,25 +182,21 @@ bool v1718::CheckIRQ(){
 
 void v1718::SetPulsers() {
     CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegClear, 0x3CFF)); //Clear the output register output 0 to 3
-    CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegSet, 0x00AA));   //Set the output register to pulsers
+    CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegSet, 0x0C0A));   //Set the output register to pulsers
 
-    Uchar P = 4;   //Period in step units
-    Uchar W = 2;   //Width in step units
-    Uchar Np = 10; //Number of pulses to be generated
+    Uchar P = 0;   //Period in step units
+    Uchar W = 1;   //Width in step units
+    Uchar Np = 0; //Number of pulses to be generated
 
-    CheckStatus(CAENVME_SetPulserConf(Handle, cvPulserA, 4, 2, cvUnit25ns, 10, cvManualSW, cvManualSW));
-    CheckStatus(CAENVME_SetPulserConf(Handle, cvPulserB, 4, 2, cvUnit25ns, 10, cvManualSW, cvManualSW));
+    CheckStatus(CAENVME_SetPulserConf(Handle, cvPulserA, P, W, cvUnit104ms, Np, cvManualSW, cvManualSW));
 }
 
 // *************************************************************************************************************
 //Turn ON-OFF output signal - used as BUSY signal for the global DAQ
 
 void v1718::SendBUSY(BusyLevel level) {
-    if(level == ON){
+    if(level == ON)
         CheckStatus(CAENVME_StartPulser(Handle, cvPulserA));//Turn ON pulser A on output 0 and 1
-        CheckStatus(CAENVME_StartPulser(Handle, cvPulserB));//Turn ON pulser B on output 2 and 3
-    } else if(level == OFF) {
+    else if(level == OFF)
         CheckStatus(CAENVME_StopPulser(Handle, cvPulserA)); //Turn OFF
-        CheckStatus(CAENVME_StopPulser(Handle, cvPulserB)); //Turn OFF
-    }
 }

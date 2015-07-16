@@ -22,7 +22,7 @@ int main (int argc ,char *argv[])
     /* START OF THE LOOP */
     MSG_INFO("[DAQ]: RUN STARTED... \n");
 
-    //DR->Run();
+    DR->Run();
 
     MSG_INFO("[DAQ]: RUN FINISHED\n");
     return 0;

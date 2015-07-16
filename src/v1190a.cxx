@@ -516,19 +516,20 @@ int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const uns
 
 Uint v1190a::Read(RAWData *DataList){
     Data16 EventStored[MAXNTDC] = {0};
+    Uint MaxEventStored = 0;
 
     for(Uint tdc=0; tdc < MAXNTDC; tdc++){
         //Get the number of trigger in TDC memory
         CheckStatus(CAENVME_ReadCycle(Handle, Address[tdc]+ADD_EVENT_STORED_V1190A, &EventStored[tdc], cvA32_U_DATA, cvD16 ));
 
         //Check if the TDC as the same number of trigger as the first TDC
-        if(tdc > 0 && EventStored[tdc] != EventStored[0]){
+        /*if(tdc > 0 && EventStored[tdc] != EventStored[0]){
             MSG_ERROR("[TDC%i]: %i stored events instead of %i\n",tdc,EventStored[tdc],EventStored[0]);
-//            exit(0);
-        }
-/*
+            exit(0);
+        }*/
+
         Data32 words[BLOCK_SIZE] = {0};
-        Uint Count = EventStored[0];
+        Uint Count = EventStored[tdc];
         Data32 channel, timing;
 
         int EventCount = -99;
@@ -549,13 +550,13 @@ Uint v1190a::Read(RAWData *DataList){
                 case GLOBAL_HEADER_V1190A: {
                     //Get the event count from the global header (very first word)
                     EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
-                    if(tdc > 0){
+                    /*if(tdc > 0){
                         if(EventCount != DataList->EventList->at(it)){
                             MSG_ERROR("[TDC%i]: \t lost synchronisation - actual event is %i and should be %i\n",
                                       tdc,EventCount,DataList->EventList->at(it));
                             exit(0);
                         }
-                    }
+                    }*/
 
                     break;
                 }
@@ -565,7 +566,7 @@ Uint v1190a::Read(RAWData *DataList){
                     nHits = TDCCh.size();
 
                     //Put all the data in the RAWData lists
-                    if(tdc == 0){
+                    if(EventCount > DataList->EventList->size()){
                         DataList->EventList->push_back(EventCount);
                         DataList->NHitsList->push_back(nHits);
                         DataList->ChannelList->push_back(TDCCh);
@@ -577,19 +578,24 @@ Uint v1190a::Read(RAWData *DataList){
                         DataList->TimeStampList->at(it).insert(DataList->TimeStampList->at(it).end(),TDCTS.begin(),TDCTS.end());
                     }
 
+                    //Decrement the counter and if it reaches 0 compare the last event number to 
+                    //the max event number known
+                    Count--;
+
+                    if(Count == 0 && EventCount > MaxEventStored) MaxEventStored = EventCount;
+
                     //The reinitialise our temporary variables
                     EventCount = -99;
                     nHits = -88;
                     TDCCh.clear();
                     TDCTS.clear();
 
-                    Count--;
-
                     break;
                 }
                 case TDC_DATA_V1190A: {
-                    channel = (words[w]>>19) & 0x7F;
-                    TDCCh.push_back(channel+tdc*1000); //each TDC module separated by 1000 in channel numbers
+                    //each TDC module separated by 1000 in channel numbers
+                    channel = ((words[w]>>19) & 0x7F) + tdc*1000;
+                    TDCCh.push_back(channel);
 
                     timing = words[w] & 0x7FFFF;
                     TDCTS.push_back((float)timing/10.);
@@ -615,7 +621,6 @@ Uint v1190a::Read(RAWData *DataList){
 
             }
         }
-*/
     }
-    return EventStored[0];
+    return MaxEventStored;
 }
