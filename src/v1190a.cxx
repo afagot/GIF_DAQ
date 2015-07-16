@@ -517,16 +517,10 @@ int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const uns
 Uint v1190a::Read(RAWData *DataList){
     Data16 EventStored[MAXNTDC] = {0};
     Uint MaxEventStored = 0;
-
+//    Uint *Pointeur = &MaxEventStored;
     for(Uint tdc=0; tdc < MAXNTDC; tdc++){
         //Get the number of trigger in TDC memory
         CheckStatus(CAENVME_ReadCycle(Handle, Address[tdc]+ADD_EVENT_STORED_V1190A, &EventStored[tdc], cvA32_U_DATA, cvD16 ));
-
-        //Check if the TDC as the same number of trigger as the first TDC
-        /*if(tdc > 0 && EventStored[tdc] != EventStored[0]){
-            MSG_ERROR("[TDC%i]: %i stored events instead of %i\n",tdc,EventStored[tdc],EventStored[0]);
-            exit(0);
-        }*/
 
         Data32 words[BLOCK_SIZE] = {0};
         Uint Count = EventStored[tdc];
@@ -540,85 +534,80 @@ Uint v1190a::Read(RAWData *DataList){
         TDCCh.clear();
         TDCTS.clear();
 
-        int words_read = ReadBlockD32(tdc,ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
+        while(Count > 0){
+            int words_read = ReadBlockD32(tdc,ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
 
-        for(int w=0; w<words_read && Count>0 ; w++){
-            Data32 word_type = words[w] & STATUS_TDC_V1190A;
+            for(int w=0; w<words_read && Count>0 ; w++){
+                Data32 word_type = words[w] & STATUS_TDC_V1190A;
 
-            switch(word_type){
+                switch(word_type){
 
-                case GLOBAL_HEADER_V1190A: {
-                    //Get the event count from the global header (very first word)
-                    EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
-                    /*if(tdc > 0){
-                        if(EventCount != DataList->EventList->at(it)){
-                            MSG_ERROR("[TDC%i]: \t lost synchronisation - actual event is %i and should be %i\n",
-                                      tdc,EventCount,DataList->EventList->at(it));
-                            exit(0);
-                        }
-                    }*/
+                    case GLOBAL_HEADER_V1190A: {
+                        //Get the event count from the global header (very first word)
+                        EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
 
-                    break;
-                }
-                case GLOBAL_TRAILER_V1190A: {
-                    //The global trailer is the very last word of an event. At that
-                    //point the number of hits in the event is known.
-                    nHits = TDCCh.size();
-
-                    //Put all the data in the RAWData lists
-                    if(EventCount > DataList->EventList->size()){
-                        DataList->EventList->push_back(EventCount);
-                        DataList->NHitsList->push_back(nHits);
-                        DataList->ChannelList->push_back(TDCCh);
-                        DataList->TimeStampList->push_back(TDCTS);
-                    } else {
-                        Uint it = EventCount;
-                        DataList->NHitsList->at(it) = DataList->NHitsList->at(it) + nHits;
-                        DataList->ChannelList->at(it).insert(DataList->ChannelList->at(it).end(),TDCCh.begin(),TDCCh.end());
-                        DataList->TimeStampList->at(it).insert(DataList->TimeStampList->at(it).end(),TDCTS.begin(),TDCTS.end());
+                        break;
                     }
+                    case GLOBAL_TRAILER_V1190A: {
+                        //The global trailer is the very last word of an event. At that
+                        //point the number of hits in the event is known.
+                        nHits = TDCCh.size();
 
-                    //Decrement the counter and if it reaches 0 compare the last event number to 
-                    //the max event number known
-                    Count--;
+                        //Put all the data in the RAWData lists
+                        if(EventCount >= (int)DataList->EventList->size()){
+                            DataList->EventList->push_back(EventCount);
+                            DataList->NHitsList->push_back(nHits);
+                            DataList->ChannelList->push_back(TDCCh);
+                            DataList->TimeStampList->push_back(TDCTS);
+                        } else {
+                            Uint it = EventCount;
+                            DataList->NHitsList->at(it) = DataList->NHitsList->at(it) + nHits;
+                            DataList->ChannelList->at(it).insert(DataList->ChannelList->at(it).end(),TDCCh.begin(),TDCCh.end());
+                            DataList->TimeStampList->at(it).insert(DataList->TimeStampList->at(it).end(),TDCTS.begin(),TDCTS.end());
+                        }
 
-                    if(Count == 0 && EventCount > MaxEventStored) MaxEventStored = EventCount;
+                        //Decrement the counter and if it reaches 0 compare the last event number to 
+                        //the max event number known
+                        Count--;
+                        if(Count == 0 && EventCount > (int)MaxEventStored)
+                            MaxEventStored = EventCount;
 
-                    //The reinitialise our temporary variables
-                    EventCount = -99;
-                    nHits = -88;
-                    TDCCh.clear();
-                    TDCTS.clear();
+                        //The reinitialise our temporary variables
+                        EventCount = -99;
+                        nHits = -88;
+                        TDCCh.clear();
+                        TDCTS.clear();
 
-                    break;
-                }
-                case TDC_DATA_V1190A: {
-                    //each TDC module separated by 1000 in channel numbers
-                    channel = ((words[w]>>19) & 0x7F) + tdc*1000;
-                    TDCCh.push_back(channel);
+                        break;
+                    }
+                    case TDC_DATA_V1190A: {
+                        //each TDC module separated by 1000 in channel numbers
+                        channel = ((words[w]>>19) & 0x7F) + tdc*1000;
+                        TDCCh.push_back(channel);
 
-                    timing = words[w] & 0x7FFFF;
-                    TDCTS.push_back((float)timing/10.);
+                        timing = words[w] & 0x7FFFF;
+                        TDCTS.push_back((float)timing/10.);
 
-                    break;
+                        break;
+                    }
+                    case TDC_HEADER_V1190A:{
+                        break;
+                    }
+                    case TDC_ERROR_V1190A:{
+                        break;
+                    }
+                    case TDC_TRAILER_V1190A:{
+                        break;
+                    }
+                    case GLOBAL_TRIGGER_TIME_TAG_V1190A:{
+                        break;
+                    }
+                    default:{
+                        MSG_ERROR("[TDC%i] : \t Encountered unknown word type while processing events - %08X\n",tdc,word_type);
+                        break;
+                    }
                 }
-                case TDC_HEADER_V1190A:{
-                    break;
-                }
-                case TDC_ERROR_V1190A:{
-                    break;
-                }
-                case TDC_TRAILER_V1190A:{
-                    break;
-                }
-                case GLOBAL_TRIGGER_TIME_TAG_V1190A:{
-                    break;
-                }
-                default:{
-                    MSG_ERROR("[TDC%i] : \t Encountered unknown word type while processing events - %08X\n",tdc,word_type);
-                    break;
-                }
-
+                if(Count == 0) break;
             }
         }
     }
