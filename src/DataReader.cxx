@@ -70,7 +70,7 @@ void DataReader::SetTDC(){
     TDCs = new v1190a(VME->GetHandle(),iniFile);
 
     /*********** initialize the TDC 1190a ***************************/
-    TDCs->Set(iniFile);
+    TDCs->Set(iniFile,VME);
 }
 
 // ****************************************************************************************************
@@ -79,11 +79,13 @@ void DataReader::Init(string inifilename){
     SetIniFile(inifilename);
     SetMaxTriggers();
     SetVME();
-    
-    //No data taking during TDC setting
-    VME->SendBUSY(ON);
-    SetTDC();
-    VME->SendBUSY(OFF);
+    //SetTDC();
+    for(int i=0; i<4; i++){
+        printf("Signal %i\n",i);
+        VME->SendBUSY(ON);
+        usleep(10000000);
+        VME->SendBUSY(OFF);
+    }
 }
 
 // ****************************************************************************************************
@@ -163,10 +165,8 @@ void DataReader::Run(){
 
         if(VME->CheckIRQ()){
             VME->SendBUSY(ON);
-            usleep(10);
             TriggerCount += TDCs->Read(&TDCData);
             MSG_INFO("[DAQ]: %d / %d taken\n", TriggerCount, GetMaxTriggers());
-            usleep(10);
             VME->SendBUSY(OFF);
         }
     }

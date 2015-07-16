@@ -20,6 +20,7 @@
 
 #include "CAENVMEtypes.h"
 #include "IniFile.h"
+#include "v1718.h"
 
 #include <TFile.h>
 #include <TString.h>
@@ -219,7 +220,7 @@ class v1190a
     void                SwitchChannels(IniFile *inifile);
     void                SetIRQ(Data32 level, Data32 count);
     void                SetBlockTransferMode(Data16 mode);
-    void                Set(IniFile *inifile);
+    void                Set(IniFile *inifile,v1718 *vme);
     void                CheckStatus(CVErrorCodes status) const;
     int                 ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const unsigned int words, bool ignore_berr);
     Uint                Read(RAWData *DataList);

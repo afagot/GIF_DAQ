@@ -43,6 +43,7 @@ v1718::v1718(IniFile *inifile){
    SetAM(cvA24_U_DATA);
    SetDatasize(cvD16);
    SetBaseAddress(baseaddress);
+   SetPulserA();
 
    MSG_INFO("[v1718]: OK\n");
 }
@@ -177,11 +178,20 @@ bool v1718::CheckIRQ(){
 }
 
 // *************************************************************************************************************
+//Set the width of the 
+
+void v1718::SetPulserA() {
+    CheckStatus(CAENVME_WriteRegister(Handle, cvPulserA1, 0x000A)); //Set step and number of pulses
+    CheckStatus(CAENVME_WriteRegister(Handle, cvPulserA0, 0x0204)); //Set width and period
+}
+
+// *************************************************************************************************************
 //Turn ON-OFF output signal - used as BUSY signal for the global DAQ
 
 void v1718::SendBUSY(BusyLevel level) {
-    if(level == ON)
-        CheckStatus(CAENVME_WriteRegister(Handle, cvOutRegSet, 0x0040)); // Turn the output on
-    else if(level == OFF)
-        CheckStatus(CAENVME_WriteRegister(Handle, cvOutRegClear, 0x0040)); // Turn the output off
+    if(level == ON){
+        CheckStatus(CAENVME_WriteRegister(Handle, cvOutRegSet, 0x00C1));//Turn ON pulser A on output 0
+    } else if(level == OFF) {
+        CheckStatus(CAENVME_WriteRegister(Handle, cvOutRegClear, 0x00C1));//Turn OFF
+    }
 }

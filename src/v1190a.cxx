@@ -443,7 +443,7 @@ void v1190a::SetBlockTransferMode(Data16 mode) {
 
 // *************************************************************************************************************
 
-void v1190a::Set(IniFile * inifile){
+void v1190a::Set(IniFile * inifile,v1718 *vme){
     MSG_INFO("[v1190a]: START TO SET THE TDCs\n");
 
     Reset();
@@ -468,7 +468,13 @@ void v1190a::Set(IniFile * inifile){
 
     SetIRQ(1,10000);
 
+    //Turn ON the VME interface output pulser A on output 0 while clearing
+    //the TDC buffers. The signal is used as VETO for the trigger signal
+    //and thus there is no data acquired during the clearing time and the
+    //TDCs can start being synchronized.
+    vme->SendBUSY(ON);
     Clear();
+    vme->SendBUSY(OFF);
 }
 
 // *************************************************************************************************************
