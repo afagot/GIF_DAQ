@@ -155,7 +155,7 @@ void DataReader::Run(){
 
     //Read the output buffer until the min number of trigger is achieved
     while(TriggerCount < GetMaxTriggers()){
-        usleep(20000);
+        usleep(100000);
 
         if(VME->CheckIRQ()){
             TriggerCount = TDCs->Read(&TDCData);

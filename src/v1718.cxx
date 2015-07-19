@@ -182,7 +182,7 @@ bool v1718::CheckIRQ(){
 
 void v1718::SetPulsers() {
     CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegClear, 0x3CFF)); //Clear the output register output 0 to 3
-    CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegSet, 0x0C0A));   //Set the output register to pulsers
+    CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegSet, 0x000A));   //Set the output register to pulsers
 
     Uchar P = 0;   //Period in step units
     Uchar W = 1;   //Width in step units

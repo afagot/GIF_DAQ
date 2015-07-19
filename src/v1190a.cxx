@@ -466,7 +466,7 @@ void v1190a::Set(IniFile * inifile,v1718 *vme){
 
     SwitchChannels(inifile);
 
-    SetIRQ(1,10000);
+    SetIRQ(1,BLOCK_SIZE);
 
     //Turn ON the VME interface output pulser A on output 0 while clearing
     //the TDC buffers. The signal is used as VETO for the trigger signal
@@ -517,7 +517,7 @@ int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const uns
 Uint v1190a::Read(RAWData *DataList){
     Data16 EventStored[MAXNTDC] = {0};
     Uint MaxEventStored = 0;
-//    Uint *Pointeur = &MaxEventStored;
+
     for(Uint tdc=0; tdc < MAXNTDC; tdc++){
         //Get the number of trigger in TDC memory
         CheckStatus(CAENVME_ReadCycle(Handle, Address[tdc]+ADD_EVENT_STORED_V1190A, &EventStored[tdc], cvA32_U_DATA, cvD16 ));
@@ -534,6 +534,12 @@ Uint v1190a::Read(RAWData *DataList){
         TDCCh.clear();
         TDCTS.clear();
 
+        //Sometimes, the header is not weel read out in the buffer. To control this, the previous
+        //good word having been read out to know when this happens. When this happens, the bool
+        //Header stays at false.
+        Data32 previous_word = 0;
+        bool Header = false;
+
         while(Count > 0){
             int words_read = ReadBlockD32(tdc,ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
 
@@ -546,21 +552,44 @@ Uint v1190a::Read(RAWData *DataList){
                         //Get the event count from the global header (very first word)
                         EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
 
+                        //Save GLOBAL_HEADER as the last good word and Header is true
+                        previous_word = word_type;
+                        Header = true;
+
                         break;
                     }
                     case GLOBAL_TRAILER_V1190A: {
+                        if(!Header) break;
                         //The global trailer is the very last word of an event. At that
                         //point the number of hits in the event is known.
                         nHits = TDCCh.size();
 
                         //Put all the data in the RAWData lists
-                        if(EventCount >= (int)DataList->EventList->size()){
+
+                        //When the event entry is not yet created in the data lists, a new
+                        //entry is created. The difference in entries is saved. If it is
+                        //greater than 1 (what shouldn't be possible), a log error message
+                        //is printed out but the acquisition isn't stopped and an empty
+                        //entry is created instead of the missing one.
+                        //Else, the data is added to the already existing entry.
+                        if(EventCount > (int)DataList->EventList->size()){
+                            int Difference = EventCount - (int)DataList->EventList->size();
+
+                            if(Difference > 1)
+                                MSG_ERROR("[TDC%i] : \t %i events are missing. Event %d is actual event.",tdc,Difference-1,EventCount);
+                            for(int i=0; i<Difference-1; i++){
+                                DataList->EventList->push_back(EventCount-Difference+i);
+                                DataList->NHitsList->push_back(0);
+                                DataList->ChannelList->push_back({0});
+                                DataList->TimeStampList->push_back({0.});
+                            }
                             DataList->EventList->push_back(EventCount);
                             DataList->NHitsList->push_back(nHits);
                             DataList->ChannelList->push_back(TDCCh);
                             DataList->TimeStampList->push_back(TDCTS);
                         } else {
-                            Uint it = EventCount;
+                            Uint it = EventCount-1;
+                            DataList->EventList->at(it) = EventCount;
                             DataList->NHitsList->at(it) = DataList->NHitsList->at(it) + nHits;
                             DataList->ChannelList->at(it).insert(DataList->ChannelList->at(it).end(),TDCCh.begin(),TDCCh.end());
                             DataList->TimeStampList->at(it).insert(DataList->TimeStampList->at(it).end(),TDCTS.begin(),TDCTS.end());
@@ -578,9 +607,13 @@ Uint v1190a::Read(RAWData *DataList){
                         TDCCh.clear();
                         TDCTS.clear();
 
+                        //Save GLOBAL_TRAILER as the last good word
+                        previous_word = word_type;
+
                         break;
                     }
                     case TDC_DATA_V1190A: {
+                        if(!Header) break;
                         //each TDC module separated by 1000 in channel numbers
                         channel = ((words[w]>>19) & 0x7F) + tdc*1000;
                         TDCCh.push_back(channel);
@@ -588,22 +621,42 @@ Uint v1190a::Read(RAWData *DataList){
                         timing = words[w] & 0x7FFFF;
                         TDCTS.push_back((float)timing/10.);
 
+                        //Save TDC_DATA as the last good word
+                        previous_word = word_type;
+
                         break;
                     }
                     case TDC_HEADER_V1190A:{
+                        if(!Header) break;
+
+                        //Save TDC_HEADER as the last good word
+                        previous_word = word_type;
                         break;
                     }
                     case TDC_ERROR_V1190A:{
+                        if(!Header) break;
+
+                        //Save TDC_ERROR as the last good word
+                        previous_word = word_type;
                         break;
                     }
                     case TDC_TRAILER_V1190A:{
+                        if(!Header) break;
+
+                        //Save TDC_TRAILER as the last good word
+                        previous_word = word_type;
                         break;
                     }
                     case GLOBAL_TRIGGER_TIME_TAG_V1190A:{
+                        if(!Header) break;
+
+                        //Save GLOBAL_TRIGGER_TIME as the last good word
+                        previous_word = word_type;
                         break;
                     }
                     default:{
                         MSG_ERROR("[TDC%i] : \t Encountered unknown word type while processing events - %08X\n",tdc,word_type);
+                        MSG_ERROR("[TDC%i] : \t Previous word - %08X\n",tdc,previous_word);
                         break;
                     }
                 }
