@@ -34,10 +34,9 @@ using namespace std;
 
 /*** Base address (A32) of the model V1190A ***/
 
-#define MAXNTDC                             4
+#define MAXNTDC                             3
 
 static const unsigned int BASEV1190A[MAXNTDC] = {
-    0xBBBB0000,
     0xCCCC0000,
     0xDDDD0000,
     0xEEEE0000
