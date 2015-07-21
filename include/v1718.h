@@ -48,10 +48,10 @@ class v1718{
         int                 Handle;
 
         Data32              Data ;          	// Data
-        CVIRQLevels		    Level ;             // Interrupt level
-        CVAddressModifier	AM ;			    // Addressing Mode
-        CVDataWidth 		DataSize ;          // Data Format
-        Data32              BaseAddress ;		// Base Address
+        CVIRQLevels         Level ;             // Interrupt level
+        CVAddressModifier   AM ;                // Addressing Mode
+        CVDataWidth 	    DataSize ;          // Data Format
+        Data32              BaseAddress ;       // Base Address
 
     public:
         v1718(IniFile *inifile);

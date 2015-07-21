@@ -524,7 +524,8 @@ Uint v1190a::Read(RAWData *DataList){
 
         Data32 words[BLOCK_SIZE] = {0};
         Uint Count = EventStored[tdc];
-        Data32 channel, timing;
+        Data32 channel = 9999;
+        Data32 timing = 8888;
 
         int EventCount = -99;
         int nHits = -88;
@@ -620,7 +621,7 @@ Uint v1190a::Read(RAWData *DataList){
 
                         timing = words[w] & 0x7FFFF;
                         TDCTS.push_back((float)timing/10.);
-cout << channel << "\t" << timing << endl;
+
                         //Save TDC_DATA as the last good word
                         previous_word = word_type;
 

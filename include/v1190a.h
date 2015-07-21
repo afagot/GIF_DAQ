@@ -83,7 +83,7 @@ static const unsigned int BASEV1190A[MAXNTDC] = {
 
 #define MAXTRIGGERS_V1190A                  1000
 
-#define BLOCK_SIZE                          1024
+#define BLOCK_SIZE                          2048
 
 // ****************************************************************************************************
 
