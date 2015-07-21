@@ -159,7 +159,8 @@ void DataReader::Run(){
 
         if(VME->CheckIRQ()){
             TriggerCount = TDCs->Read(&TDCData);
-            MSG_INFO("[DAQ]: %d / %d taken\n", TriggerCount, GetMaxTriggers());
+            if(TriggerCount != 0) MSG_INFO("\n[DAQ]: %d / %d taken\n", TriggerCount, GetMaxTriggers());
+            else MSG_INFO(".");
         }
     }
 

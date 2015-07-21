@@ -620,7 +620,7 @@ Uint v1190a::Read(RAWData *DataList){
 
                         timing = words[w] & 0x7FFFF;
                         TDCTS.push_back((float)timing/10.);
-
+cout << channel << "\t" << timing << endl;
                         //Save TDC_DATA as the last good word
                         previous_word = word_type;
 
@@ -655,8 +655,7 @@ Uint v1190a::Read(RAWData *DataList){
                         break;
                     }
                     default:{
-                        MSG_ERROR("[TDC%i] : \t Encountered unknown word type while processing events - %08X\n",tdc,word_type);
-                        MSG_ERROR("[TDC%i] : \t Previous word - %08X\n",tdc,previous_word);
+                        MSG_ERROR("[TDC%i] : \t Encountered unknown word type while processing events - %08X - Previous word - %08X\n",tdc,word_type,previous_word);
                         break;
                     }
                 }
