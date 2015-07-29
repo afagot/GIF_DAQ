@@ -161,7 +161,7 @@ void DataReader::Run(){
             TriggerCount = TDCs->Read(&TDCData);
             if(TriggerCount != 0) MSG_INFO("\n[DAQ]: %d / %d taken\n", TriggerCount, GetMaxTriggers());
             else MSG_INFO(".");
-        }
+        } else MSG_INFO(".");
     }
 
     //Write the data from the RAWData sstructure to the TTree
