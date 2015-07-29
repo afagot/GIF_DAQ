@@ -67,10 +67,11 @@ void DataReader::SetVME(){
 // ****************************************************************************************************
 
 void DataReader::SetTDC(){
-    TDCs = new v1190a(VME->GetHandle(),iniFile);
+    nTDCs = iniFile->intType("General","Tdcs",MINNTDC);
+    TDCs = new v1190a(VME->GetHandle(),iniFile,nTDCs);
 
     /*********** initialize the TDC 1190a ***************************/
-    TDCs->Set(iniFile,VME);
+    TDCs->Set(iniFile,VME,nTDCs);
 }
 
 // ****************************************************************************************************
@@ -158,7 +159,7 @@ void DataReader::Run(){
         usleep(100000);
 
         if(VME->CheckIRQ()){
-            TriggerCount = TDCs->Read(&TDCData);
+            TriggerCount = TDCs->Read(&TDCData,nTDCs);
             if(TriggerCount != 0) MSG_INFO("\n[DAQ]: %d / %d taken\n", TriggerCount, GetMaxTriggers());
             else MSG_INFO(".");
         } else MSG_INFO(".");

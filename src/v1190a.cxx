@@ -29,11 +29,13 @@
 
 using namespace std;
 
-v1190a::v1190a(long handle, IniFile * inifile){
-    for(int tdc=0; tdc<MAXNTDC; tdc++){
+v1190a::v1190a(long handle, IniFile * inifile, int ntdcs){
+    Address.clear();
+
+    for(int tdc=0; tdc<ntdcs; tdc++){
         char groupname[10];
         sprintf(groupname,"TDC%i",tdc);
-        Address[tdc]=inifile->addressType(groupname,"BaseAddress",BASEV1190A[tdc]); //See page 35
+        Address.push_back(inifile->addressType(groupname,"BaseAddress",BASEV1190A)); //See page 35
     }
     DataWidth=cvD16;              //See in CAENVMEtypes.h CVDataWidth enum
     AddressModifier=cvA24_U_DATA; //See in CAENVMEtypes.h CVAddressModifier enum
@@ -57,7 +59,7 @@ Data16 v1190a::read_op_reg(Data32 address){
     } while(ro_bit != READ_OK && time < 100000);
 
     if(time == 100000){
-        MSG_ERROR("[v1190a]: Reads - timeout error\n");
+        MSG_ERROR("[v1190]: Reads - timeout error\n");
         exit(0);
     } else {
         sleep(1);      /*** delay 12ms, internal delay ***/
@@ -80,7 +82,7 @@ Data16 v1190a::write_op_reg(Data32 address, int code){
     } while(wo_bit != WRITE_OK && time < 100000);
 
     if(time == 100000){
-        MSG_ERROR("[v1190a]: Write opcode - timeout error\n");
+        MSG_ERROR("[v1190]: Write opcode - timeout error\n");
         exit(0);
     } else {
         sleep(1);      /*** delay 12 msec, internal delay ***/
@@ -92,30 +94,30 @@ Data16 v1190a::write_op_reg(Data32 address, int code){
 
 // *************************************************************************************************************
 
-void v1190a::Reset(){ //Reset the TDCs (Software clear) and wait 1s
-    MSG_INFO("[v1190a]: Reset the TDCs...\n");
+void v1190a::Reset(int ntdcs){ //Reset the TDCs (Software clear) and wait 1s
+    MSG_INFO("[v1190]: Reset the TDCs...\n");
     int reset=0x0;
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++)
+    for(int tdc=0; tdc < ntdcs; tdc++)
         CAENVME_WriteCycle(Handle,Address[tdc]+ADD_MOD_RESET_V1190A,&reset,AddressModifier,DataWidth);
     sleep(1);
 }
 
 // *************************************************************************************************************
 
-void v1190a::Clear(){ //Clear the TDC Buffers and wait 1s
-    MSG_INFO("[v1190a]: Clear the TDC Buffers...\n");
+void v1190a::Clear(int ntdcs){ //Clear the TDC Buffers and wait 1s
+    MSG_INFO("[v1190]: Clear the TDC Buffers...\n");
     int clear=0x0;
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++)
+    for(int tdc=0; tdc < ntdcs; tdc++)
         CAENVME_WriteCycle(Handle,Address[tdc]+ADD_SW_CLEAR_V1190A,&clear,AddressModifier,DataWidth);
     sleep(1);
 }
 
 // *************************************************************************************************************
 
-void v1190a::TestWR(Data16 value){ //Test : try to write/read 16 bit word
-    for(int tdc=0; tdc < MAXNTDC; tdc++){
+void v1190a::TestWR(Data16 value, int ntdcs){ //Test : try to write/read 16 bit word
+    for(int tdc=0; tdc < ntdcs; tdc++){
         Data16 test=value;
         CAENVME_WriteCycle(Handle,Address[tdc]+ADD_DUMMY16_V1190A,&test,AddressModifier,DataWidth);
 
@@ -129,11 +131,11 @@ void v1190a::TestWR(Data16 value){ //Test : try to write/read 16 bit word
 
 // *************************************************************************************************************
 
-void v1190a::CheckStatus(){ //Status of the TDCs (Status register)
-    MSG_INFO("[v1190a]: Status of the TDCs...\n");
+void v1190a::CheckTDCStatus(int ntdcs){ //Status of the TDCs (Status register)
+    MSG_INFO("[v1190]: Status of the TDCs...\n");
     Data16 status;
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         CAENVME_ReadCycle(Handle,Address[tdc]+ADD_STATUS_V1190A,&status,AddressModifier,DataWidth);
         MSG_INFO("[TDC%i]:  Status is %X\n",tdc,status);
     }
@@ -141,11 +143,11 @@ void v1190a::CheckStatus(){ //Status of the TDCs (Status register)
 
 // *************************************************************************************************************
 
-void v1190a::CheckCommunication(){//Check the communication with the micro controller
-    MSG_INFO("[v1190a]: Control of the communication with the uController gives:\n");
+void v1190a::CheckCommunication(int ntdcs){//Check the communication with the micro controller
+    MSG_INFO("[v1190]: Control of the communication with the uController gives:\n");
     int check = 0;
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc],OPCODE_READ_SPARE_V1190A);
         check = read_op_reg(Address[tdc]);
         if(check == 0x5555) MSG_INFO("[TDC%i]:\t 0x%04X (OK)\n",tdc,check);
@@ -155,43 +157,43 @@ void v1190a::CheckCommunication(){//Check the communication with the micro contr
 
 // *************************************************************************************************************
 
-void v1190a::SetTDCTestMode(Data16 mode){//Enable/Disable TDC test mode
+void v1190a::SetTDCTestMode(Data16 mode, int ntdcs){//Enable/Disable TDC test mode
     if(mode == ENABLE)
-        for(int tdc=0; tdc < MAXNTDC; tdc++)
+        for(int tdc=0; tdc < ntdcs; tdc++)
             write_op_reg(Address[tdc], OPCODE_EN_TEST_MODE_V1190A);
 
     else if(mode == DISABLE)
-        for(int tdc=0; tdc < MAXNTDC; tdc++)
+        for(int tdc=0; tdc < ntdcs; tdc++)
             write_op_reg(Address[tdc], OPCODE_DIS_TEST_MODE_V1190A);
 }
 
 // *************************************************************************************************************
 
-void v1190a::SetTrigMatching(){//Set trigger matching mode
-    for(int tdc=0; tdc < MAXNTDC; tdc++)
+void v1190a::SetTrigMatching(int ntdcs){//Set trigger matching mode
+    for(int tdc=0; tdc < ntdcs; tdc++)
         write_op_reg(Address[tdc], OPCODE_TRG_MATCH_V1190A);
 }
 
 // *************************************************************************************************************
 
-void v1190a::SetTrigTimeSubstraction(Data16 mode){//Enable/Disable substraction of trigger time
+void v1190a::SetTrigTimeSubstraction(Data16 mode, int ntdcs){//Enable/Disable substraction of trigger time
     if(mode == ENABLE)
-        for(int tdc=0; tdc < MAXNTDC; tdc++)
+        for(int tdc=0; tdc < ntdcs; tdc++)
             write_op_reg(Address[tdc], OPCODE_EN_SUB_TRG_V1190A);
 
     else if(mode == DISABLE)
-        for(int tdc=0; tdc < MAXNTDC; tdc++)
+        for(int tdc=0; tdc < ntdcs; tdc++)
             write_op_reg(Address[tdc], OPCODE_DIS_SUB_TRG_V1190A);
 }
 
 // *************************************************************************************************************
 
-void v1190a::SetTrigWindowWidth(Uint windowWidth){
+void v1190a::SetTrigWindowWidth(Uint windowWidth,int ntdcs){
     // Time unit = 25ns
     Uint windowWidthns = windowWidth*25;
-    MSG_INFO("[v1190a]: Window width is set to 0x%02X (%dns)\n",windowWidth,windowWidthns);
+    MSG_INFO("[v1190]: Window width is set to 0x%02X (%dns)\n",windowWidth,windowWidthns);
 
-    for(Uint tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc], OPCODE_SET_WIN_WIDTH_V1190A);
         write_op_reg(Address[tdc], windowWidth);
     }
@@ -199,12 +201,12 @@ void v1190a::SetTrigWindowWidth(Uint windowWidth){
 
 // *************************************************************************************************************
 
-void v1190a::SetTrigWindowOffset(Uint windowOffset){
+void v1190a::SetTrigWindowOffset(Uint windowOffset, int ntdcs){
     // Time unit = 25ns
     Uint windowOffsetns = windowOffset*25;
-    MSG_INFO("[v1190a]: Window Offset is set to 0x%08X (%dns)\n",windowOffset,windowOffsetns);
+    MSG_INFO("[v1190]: Window Offset is set to 0x%08X (%dns)\n",windowOffset,windowOffsetns);
 
-    for(Uint tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc], OPCODE_SET_WIN_OFFSET_V1190A);
         write_op_reg(Address[tdc], windowOffset);
     }
@@ -212,12 +214,12 @@ void v1190a::SetTrigWindowOffset(Uint windowOffset){
 
 // *************************************************************************************************************
 
-void v1190a::SetTrigSearchMargin(Uint searchMargin){
+void v1190a::SetTrigSearchMargin(Uint searchMargin, int ntdcs){
     // Time unit = 25ns
     Uint searchMarginns = searchMargin*25;
-    MSG_INFO("[v1190a]: Extra search margin is set to 0x%02X (%dns)\n",searchMargin,searchMarginns);
+    MSG_INFO("[v1190]: Extra search margin is set to 0x%02X (%dns)\n",searchMargin,searchMarginns);
 
-    for(Uint tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc], OPCODE_SET_SW_MARGIN_V1190A);
         write_op_reg(Address[tdc], searchMargin);
     }
@@ -225,12 +227,12 @@ void v1190a::SetTrigSearchMargin(Uint searchMargin){
 
 // *************************************************************************************************************
 
-void v1190a::SetTrigRejectionMargin(Uint rejectMargin){
+void v1190a::SetTrigRejectionMargin(Uint rejectMargin, int ntdcs){
     // Time unit = 25ns
     Uint rejectMarginns = rejectMargin*25;
-    MSG_INFO("[v1190a]: Rejection margin is set to 0x%02X (%dns)\n",rejectMargin,rejectMarginns);
+    MSG_INFO("[v1190]: Rejection margin is set to 0x%02X (%dns)\n",rejectMargin,rejectMarginns);
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc], OPCODE_SET_REJ_MARGIN_V1190A);
         write_op_reg(Address[tdc], rejectMargin);
     }
@@ -238,10 +240,10 @@ void v1190a::SetTrigRejectionMargin(Uint rejectMargin){
 
 // *************************************************************************************************************
 
-void v1190a::GetTrigConfiguration(){ //Read and print trigger configuration
-    MSG_INFO("[v1190a]: Trigger control configuration:\n");
+void v1190a::GetTrigConfiguration(int ntdcs){ //Read and print trigger configuration
+    MSG_INFO("[v1190]: Trigger control configuration:\n");
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc], OPCODE_READ_TRG_CONF_V1190A);
 
         Data16 MatchWindowWidth,WindowOffset,ExtraSearchWindowWidth,RejectMargin,TriggerTimeSubtraction;
@@ -261,22 +263,22 @@ void v1190a::GetTrigConfiguration(){ //Read and print trigger configuration
 
 // *************************************************************************************************************
 
-void v1190a::SetTrigConfiguration(IniFile *inifile){ //Set and print trigger configuration
+void v1190a::SetTrigConfiguration(IniFile *inifile,int ntdcs){ //Set and print trigger configuration
     // Each parameter is defined taking into account that the time unit is 25ns
-    SetTrigWindowWidth(inifile->intType("TDCSettings","TriggerWindowWidth",TRIG_WIN_WIDTH_V1990A));
-    SetTrigWindowOffset(inifile->intType("TDCSettings","TriggerWindowOffset",TRIG_WIN_OFFSET_V1190A));
-    SetTrigSearchMargin(inifile->intType("TDCSettings","TriggerExtraSearchMargin",TRIG_SRCH_MARGIN_V1190A));
-    SetTrigRejectionMargin(inifile->intType("TDCSettings","TriggerRejectMargin",TRIG_REJ_MARGIN_V1190A));
+    SetTrigWindowWidth(inifile->intType("TDCSettings","TriggerWindowWidth",TRIG_WIN_WIDTH_V1990A),ntdcs);
+    SetTrigWindowOffset(inifile->intType("TDCSettings","TriggerWindowOffset",TRIG_WIN_OFFSET_V1190A),ntdcs);
+    SetTrigSearchMargin(inifile->intType("TDCSettings","TriggerExtraSearchMargin",TRIG_SRCH_MARGIN_V1190A),ntdcs);
+    SetTrigRejectionMargin(inifile->intType("TDCSettings","TriggerRejectMargin",TRIG_REJ_MARGIN_V1190A),ntdcs);
 
-    GetTrigConfiguration();
+    GetTrigConfiguration(ntdcs);
 }
 
 // *************************************************************************************************************
 
-void v1190a::SetTDCDetectionMode(Data16 mode){
-    MSG_INFO("[v1190a]: Edge detection setting\n");
+void v1190a::SetTDCDetectionMode(Data16 mode, int ntdcs){
+    MSG_INFO("[v1190]: Edge detection setting\n");
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc],OPCODE_SET_DETECTION_V1190A); //Edge detection selection
         write_op_reg(Address[tdc],mode);
         write_op_reg(Address[tdc],OPCODE_READ_DETECTION_V1190A); //Edge detection readout
@@ -286,10 +288,10 @@ void v1190a::SetTDCDetectionMode(Data16 mode){
 
 // *************************************************************************************************************
 
-void v1190a::SetTDCResolution(Data16 lsb){ //Resolution readout
-    MSG_INFO("[v1190a]: Channel resolution setting\n");
+void v1190a::SetTDCResolution(Data16 lsb, int ntdcs){ //Resolution readout
+    MSG_INFO("[v1190]: Channel resolution setting\n");
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc],OPCODE_SET_TR_LEAD_LSB_V1190A); //Set channel dead time
         write_op_reg(Address[tdc],lsb);
         write_op_reg(Address[tdc],OPCODE_READ_RES_V1190A);
@@ -299,10 +301,10 @@ void v1190a::SetTDCResolution(Data16 lsb){ //Resolution readout
 
 // *************************************************************************************************************
 
-void v1190a::SetTDCDeadTime(Data16 time){
-    MSG_INFO("[v1190a]: Channel dead time setting\n");
+void v1190a::SetTDCDeadTime(Data16 time, int ntdcs){
+    MSG_INFO("[v1190]: Channel dead time setting\n");
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc],OPCODE_SET_DEAD_TIME_V1190A); //Set channel dead time
         write_op_reg(Address[tdc],time);
         write_op_reg(Address[tdc],OPCODE_READ_DEAD_TIME_V1190A); //Channel dead time readout
@@ -312,17 +314,17 @@ void v1190a::SetTDCDeadTime(Data16 time){
 
 // *************************************************************************************************************
 
-void v1190a::SetTDCHeadTrailer(Data16 mode){ //Enable/Disable TDC header and trailer
-    MSG_INFO("[v1190a]: TDC header configuration\n");
+void v1190a::SetTDCHeadTrailer(Data16 mode, int ntdcs){ //Enable/Disable TDC header and trailer
+    MSG_INFO("[v1190]: TDC header configuration\n");
 
     if(mode == 1)
-        for(int tdc=0; tdc < MAXNTDC; tdc++)
+        for(int tdc=0; tdc < ntdcs; tdc++)
             write_op_reg(Address[tdc],OPCODE_EN_HEAD_TRAILER_V1190A);
     else if(mode == 0)
-        for(int tdc=0; tdc < MAXNTDC; tdc++)
+        for(int tdc=0; tdc < ntdcs; tdc++)
             write_op_reg(Address[tdc],OPCODE_DIS_HEAD_TRAILER_V1190A);
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc],OPCODE_READ_HEAD_TRAILER_V1190A);
         MSG_INFO("[TDC%i]:\t TDC header/trailer status (on/off) : %1X\n",tdc,(read_op_reg(Address[tdc]) & 0b1));
     }
@@ -330,10 +332,10 @@ void v1190a::SetTDCHeadTrailer(Data16 mode){ //Enable/Disable TDC header and tra
 
 // *************************************************************************************************************
 
-void v1190a::SetTDCEventSize(Data16 size){ //Maximum number of hits per event readout
-    MSG_INFO("[v1190a]: TDC event size configuration\n");
+void v1190a::SetTDCEventSize(Data16 size,int ntdcs){ //Maximum number of hits per event readout
+    MSG_INFO("[v1190]: TDC event size configuration\n");
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc],OPCODE_SET_EVENT_SIZE_V1190A);
         write_op_reg(Address[tdc],size);
         write_op_reg(Address[tdc],OPCODE_READ_EVENT_SIZE_V1190A);
@@ -343,8 +345,8 @@ void v1190a::SetTDCEventSize(Data16 size){ //Maximum number of hits per event re
 
 // *************************************************************************************************************
 
-void v1190a::SwitchChannels(IniFile *inifile){
-    MSG_INFO("[v1190a]: TDC Channels enabling\n");
+void v1190a::SwitchChannels(IniFile *inifile, int ntdcs){
+    MSG_INFO("[v1190]: TDC Channels enabling\n");
 
     char Connectors[5]="ABCD";
     int StatusList[8];
@@ -353,12 +355,19 @@ void v1190a::SwitchChannels(IniFile *inifile){
 
     //Enable - Disable channels according to configuration file
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         char groupname[10];
         sprintf(groupname,"TDC%i",tdc);
 
         write_op_reg(Address[tdc],OPCODE_WRITE_EN_PATTERN_V1190A);
-        for(int c = 0; c < 4; c++){ //Loop over the 32-channels TDC connectors (A,B,C,D)
+
+        string TDCType = inifile->stringType(groupname,"Type","V1190A");
+        int nConnectors = 0;
+
+        if(TDCType == "V1190A") nConnectors = 4;
+        else if(TDCType == "V1190B") nConnectors = 2;
+
+        for(int c = 0; c < nConnectors; c++){ //Loop over the 32-channels TDC connectors (A,B,C,D or A,B)
             for(int ch = 0; ch < 2; ch++){ //Loop over the 2 16-channels inputs of each TDC connector
                 firstchannel = ch*16;
                 lastchannel = firstchannel+15;
@@ -395,32 +404,32 @@ void v1190a::SwitchChannels(IniFile *inifile){
 
 // *************************************************************************************************************
 // Set the chosen IRQ
-void v1190a::SetIRQ(Data32 level, Data32 count) {
+void v1190a::SetIRQ(Data32 level, Data32 count, int ntdcs) {
     // IRQ lines go from 1 to 7, so line 0 disables the IRQ function
     if (level == DISABLE){
-        MSG_INFO("[v1190a]: Disabling IRQ levels\n");
-        for(int tdc=0; tdc < MAXNTDC; tdc++)
+        MSG_INFO("[v1190]: Disabling IRQ levels\n");
+        for(int tdc=0; tdc < ntdcs; tdc++)
             CAENVME_WriteCycle(Handle,Address[tdc]+ADD_INT_LEVEL_V1190A,&level,AddressModifier,DataWidth);
         return;
     }
 
     // The VME bus has IRQ lines numbered 1 to 7
     if (level < 1 || level > 7) {
-        MSG_ERROR("[v1190a]: Tried to enable invalid IRQ\n");
+        MSG_ERROR("[v1190]: Tried to enable invalid IRQ\n");
         return;
     }
 
     // Setting 0 makes no sense, and the output buffer can hold 32735 words
     if (count < 1 || count > 32735) {
         unsigned int new_count = count < 1 ? 1 : 32735;
-        MSG_WARNING("[v1190a]: Tried to enable invalid Almost Full Level\n");
-        MSG_INFO("[v1190a]: Level capped to %u\n",new_count);
+        MSG_WARNING("[v1190]: Tried to enable invalid Almost Full Level\n");
+        MSG_INFO("[v1190]: Level capped to %u\n",new_count);
         count = new_count;
     }
 
-    MSG_INFO("[v1190a]: Enabling IRQ level %u\n",level);
+    MSG_INFO("[v1190]: Enabling IRQ level %u\n",level);
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
         // Set the IRQ line we want the module to use
         CAENVME_WriteCycle(Handle,Address[tdc]+ADD_INT_LEVEL_V1190A,&level,AddressModifier,DataWidth);
 
@@ -431,49 +440,49 @@ void v1190a::SetIRQ(Data32 level, Data32 count) {
 
 // *************************************************************************************************************
 
-void v1190a::SetBlockTransferMode(Data16 mode) {
-    if(mode == ENABLE) MSG_INFO("[v1190a]: Enabling block transfer\n");
-    else if(mode == DISABLE) MSG_INFO("[v1190a]: Disabling block transfer\n");
+void v1190a::SetBlockTransferMode(Data16 mode, int ntdcs) {
+    if(mode == ENABLE) MSG_INFO("[v1190]: Enabling block transfer\n");
+    else if(mode == DISABLE) MSG_INFO("[v1190]: Disabling block transfer\n");
 
     Data16 num = (Data16) (mode==ENABLE ? (BLOCK_SIZE / 20) : 0);
 
-    for(int tdc=0; tdc < MAXNTDC; tdc++)
+    for(int tdc=0; tdc < ntdcs; tdc++)
         CAENVME_WriteCycle(Handle,Address[tdc]+ADD_BLT_EVENT_NUM_V1190A,&num,AddressModifier,DataWidth);
 }
 
 // *************************************************************************************************************
 
-void v1190a::Set(IniFile * inifile,v1718 *vme){
-    MSG_INFO("[v1190a]: START TO SET THE TDCs\n");
+void v1190a::Set(IniFile * inifile,v1718 *vme, int ntdcs){
+    MSG_INFO("[v1190]: START TO SET THE TDCs\n");
 
-    Reset();
-    TestWR(TEST_WR);
-    CheckStatus();
-    CheckCommunication();
-    SetTDCTestMode(inifile->intType("TDCSettings","TdcTestMode",DISABLE));
-    SetBlockTransferMode(inifile->intType("TDCSettings","BLTMode",ENABLE));
+    Reset(ntdcs);
+    TestWR(TEST_WR,ntdcs);
+    CheckTDCStatus(ntdcs);
+    CheckCommunication(ntdcs);
+    SetTDCTestMode(inifile->intType("TDCSettings","TdcTestMode",DISABLE),ntdcs);
+    SetBlockTransferMode(inifile->intType("TDCSettings","BLTMode",ENABLE),ntdcs);
 
-    SetTrigMatching();
-    SetTrigTimeSubstraction(inifile->intType("TDCSettings","TriggerTimeSubstraction",ENABLE));
-    SetTrigConfiguration(inifile);
+    SetTrigMatching(ntdcs);
+    SetTrigTimeSubstraction(inifile->intType("TDCSettings","TriggerTimeSubstraction",ENABLE),ntdcs);
+    SetTrigConfiguration(inifile,ntdcs);
 
-    SetTDCDetectionMode(inifile->intType("TDCSettings","TdcDetectionMode",EdgeMode_Both));
-    SetTDCResolution(inifile->intType("TDCSettings","TdcResolution",Res_100ps));
-    SetTDCDeadTime(inifile->intType("TDCSettings","TdcDeadTime",DT_5ns));
+    SetTDCDetectionMode(inifile->intType("TDCSettings","TdcDetectionMode",EdgeMode_Both),ntdcs);
+    SetTDCResolution(inifile->intType("TDCSettings","TdcResolution",Res_100ps),ntdcs);
+    SetTDCDeadTime(inifile->intType("TDCSettings","TdcDeadTime",DT_5ns),ntdcs);
 
-    SetTDCHeadTrailer(inifile->intType("TDCSettings","TdcHeadTrailer",ENABLE));
-    SetTDCEventSize(inifile->intType("TDCSettings","TdcEventSize",HITS_UNLIMITED));
+    SetTDCHeadTrailer(inifile->intType("TDCSettings","TdcHeadTrailer",ENABLE),ntdcs);
+    SetTDCEventSize(inifile->intType("TDCSettings","TdcEventSize",HITS_UNLIMITED),ntdcs);
 
-    SwitchChannels(inifile);
+    SwitchChannels(inifile,ntdcs);
 
-    SetIRQ(1,BLOCK_SIZE);
+    SetIRQ(1,BLOCK_SIZE,ntdcs);
 
     //Turn ON the VME interface output pulser A on output 0 while clearing
     //the TDC buffers. The signal is used as VETO for the trigger signal
     //and thus there is no data acquired during the clearing time and the
     //TDCs can start being synchronized.
     vme->SendBUSY(ON);
-    Clear();
+    Clear(ntdcs);
     vme->SendBUSY(OFF);
 }
 
@@ -486,15 +495,15 @@ void v1190a::CheckStatus(CVErrorCodes status) const{
     // This provides more flexible error handling, as the return value method is more of a C-ism
     switch (status){
         case cvBusError:
-            MSG_ERROR("[v1718]: \t VME bus error\n");
+            MSG_ERROR("[v1190]: \t VME bus error\n");
         case cvCommError:
-            MSG_ERROR("[v1718]: \t Communication error\n");
+            MSG_ERROR("[v1190]: \t Communication error\n");
         case cvGenericError:
-            MSG_ERROR("[v1718]: \t General VME library error\n");
+            MSG_ERROR("[v1190]: \t General VME library error\n");
         case cvInvalidParam:
-            MSG_ERROR("[v1718]: \t Invalid parameter passed to VME library\n");
+            MSG_ERROR("[v1190]: \t Invalid parameter passed to VME library\n");
         case cvTimeoutError:
-            MSG_ERROR("[v1718]: \t Request timed out\n");
+            MSG_ERROR("[v1190]: \t Request timed out\n");
         default:
             return;
     }
@@ -514,11 +523,15 @@ int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const uns
 
 // *************************************************************************************************************
 
-Uint v1190a::Read(RAWData *DataList){
-    Data16 EventStored[MAXNTDC] = {0};
+Uint v1190a::Read(RAWData *DataList, int ntdcs){
+    vector<Data16> EventStored;
+    EventStored.clear();
+
     Uint MaxEventStored = 0;
 
-    for(Uint tdc=0; tdc < MAXNTDC; tdc++){
+    for(int tdc=0; tdc < ntdcs; tdc++){
+        EventStored.push_back(0);
+
         //Get the number of trigger in TDC memory
         CheckStatus(CAENVME_ReadCycle(Handle, Address[tdc]+ADD_EVENT_STORED_V1190A, &EventStored[tdc], cvA32_U_DATA, cvD16 ));
 
@@ -538,7 +551,7 @@ Uint v1190a::Read(RAWData *DataList){
         //Sometimes, the header is not weel read out in the buffer. To control this, the previous
         //good word having been read out to know when this happens. When this happens, the bool
         //Header stays at false.
-        Data32 previous_word = 0;
+//        Data32 previous_word = 0; //used for debug purpose
         bool Header = false;
 
         while(Count > 0){
@@ -554,7 +567,7 @@ Uint v1190a::Read(RAWData *DataList){
                         EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
 
                         //Save GLOBAL_HEADER as the last good word and Header is true
-                        previous_word = word_type;
+                        //previous_word = word_type;
                         Header = true;
 
                         break;
@@ -609,7 +622,7 @@ Uint v1190a::Read(RAWData *DataList){
                         TDCTS.clear();
 
                         //Save GLOBAL_TRAILER as the last good word
-                        previous_word = word_type;
+                        //previous_word = word_type;
 
                         break;
                     }
@@ -623,7 +636,7 @@ Uint v1190a::Read(RAWData *DataList){
                         TDCTS.push_back((float)timing/10.);
 
                         //Save TDC_DATA as the last good word
-                        previous_word = word_type;
+                        //previous_word = word_type;
 
                         break;
                     }
@@ -631,32 +644,32 @@ Uint v1190a::Read(RAWData *DataList){
                         if(!Header) break;
 
                         //Save TDC_HEADER as the last good word
-                        previous_word = word_type;
+                        //previous_word = word_type;
                         break;
                     }
                     case TDC_ERROR_V1190A:{
                         if(!Header) break;
 
                         //Save TDC_ERROR as the last good word
-                        previous_word = word_type;
+                        //previous_word = word_type;
                         break;
                     }
                     case TDC_TRAILER_V1190A:{
                         if(!Header) break;
 
                         //Save TDC_TRAILER as the last good word
-                        previous_word = word_type;
+                        //previous_word = word_type;
                         break;
                     }
                     case GLOBAL_TRIGGER_TIME_TAG_V1190A:{
                         if(!Header) break;
 
                         //Save GLOBAL_TRIGGER_TIME as the last good word
-                        previous_word = word_type;
+                        //previous_word = word_type;
                         break;
                     }
                     default:{
-                        MSG_ERROR("[TDC%i] : \t Encountered unknown word type while processing events - %08X - Previous word - %08X\n",tdc,word_type,previous_word);
+                        //MSG_ERROR("[TDC%i] : \t Encountered unknown word type while processing events - %08X - Previous word - %08X\n",tdc,word_type,previous_word);
                         break;
                     }
                 }

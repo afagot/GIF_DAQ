@@ -34,15 +34,8 @@ using namespace std;
 
 /*** Base address (A32) of the model V1190A ***/
 
-//#define MAXNTDC                             4
-#define MAXNTDC                             3
-
-static const unsigned int BASEV1190A[MAXNTDC] = {
-//    0xBBBB0000,
-    0xCCCC0000,
-    0xDDDD0000,
-    0xEEEE0000
-};
+#define MINNTDC                             1
+#define BASEV1190A                          0x00000000
 
 // ****************************************************************************************************
 
@@ -189,42 +182,42 @@ class v1190a
 {
  private :
     long                Handle;
-    Data32              Address[MAXNTDC];
+    vector<Data32>      Address;
     CVDataWidth         DataWidth;
     CVAddressModifier   AddressModifier;
 
  public:
 
-    v1190a(long handle, IniFile *inifile);
+    v1190a(long handle, IniFile *inifile, int ntdcs);
     ~v1190a();
     Data16              write_op_reg(Data32 address, int code);
     Data16              read_op_reg(Data32 address);
-    void                Reset();
-    void                Clear();
-    void                TestWR(Data16 value);
-    void                CheckStatus();
-    void                CheckCommunication();
-    void                SetTDCTestMode(Data16 mode);
-    void                SetTrigMatching();
-    void                SetTrigTimeSubstraction(Data16 mode);
-    void                SetTrigWindowWidth(Uint windowWidth);
-    void                SetTrigWindowOffset(Uint windowOffset);
-    void                SetTrigSearchMargin(Uint searchMargin);
-    void                SetTrigRejectionMargin(Uint rejectMargin);
-    void                GetTrigConfiguration();
-    void                SetTrigConfiguration(IniFile *inifile);
-    void                SetTDCDetectionMode(Data16 mode);
-    void                SetTDCResolution(Data16 lsb);
-    void                SetTDCDeadTime(Data16 time);
-    void                SetTDCHeadTrailer(Data16 mode);
-    void                SetTDCEventSize(Data16 size);
-    void                SwitchChannels(IniFile *inifile);
-    void                SetIRQ(Data32 level, Data32 count);
-    void                SetBlockTransferMode(Data16 mode);
-    void                Set(IniFile *inifile,v1718 *vme);
+    void                Reset(int ntdcs);
+    void                Clear(int ntdcs);
+    void                TestWR(Data16 value,int ntdcs);
+    void                CheckTDCStatus(int ntdcs);
+    void                CheckCommunication(int ntdcs);
+    void                SetTDCTestMode(Data16 mode,int ntdcs);
+    void                SetTrigMatching(int ntdcs);
+    void                SetTrigTimeSubstraction(Data16 mode,int ntdcs);
+    void                SetTrigWindowWidth(Uint windowWidth,int ntdcs);
+    void                SetTrigWindowOffset(Uint windowOffset,int ntdcs);
+    void                SetTrigSearchMargin(Uint searchMargin,int ntdcs);
+    void                SetTrigRejectionMargin(Uint rejectMargin,int ntdcs);
+    void                GetTrigConfiguration(int ntdcs);
+    void                SetTrigConfiguration(IniFile *inifile,int ntdcs);
+    void                SetTDCDetectionMode(Data16 mode,int ntdcs);
+    void                SetTDCResolution(Data16 lsb,int ntdcs);
+    void                SetTDCDeadTime(Data16 time,int ntdcs);
+    void                SetTDCHeadTrailer(Data16 mode,int ntdcs);
+    void                SetTDCEventSize(Data16 size,int ntdcs);
+    void                SwitchChannels(IniFile *inifile,int ntdcs);
+    void                SetIRQ(Data32 level, Data32 count,int ntdcs);
+    void                SetBlockTransferMode(Data16 mode,int ntdcs);
+    void                Set(IniFile *inifile,v1718 *vme,int ntdcs);
     void                CheckStatus(CVErrorCodes status) const;
     int                 ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const unsigned int words, bool ignore_berr);
-    Uint                Read(RAWData *DataList);
+    Uint                Read(RAWData *DataList,int ntdcs);
 };
 
 
