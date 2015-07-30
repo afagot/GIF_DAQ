@@ -13,6 +13,7 @@
 #include <sstream>
 
 #include "../include/IniFile.h"
+#include "../include/MsgSvc.h"
 
 using namespace std;
 
@@ -58,9 +59,9 @@ bool IniFile::CheckIfGroup(string line,string& group){
 // *************************************************************************************************************
 
 bool IniFile::CheckIfToken(string line,string& key,string& value){
-    Data32 p0 = 0;
+    size_t p0 = 0;
 
-    Data32 p1 = string::npos;
+    size_t p1 = string::npos;
     p1 = line.find_first_of('=',p0);
 
     if(p1 != p0){
@@ -96,11 +97,12 @@ int IniFile::Read(){
 
     // Loading the file into the parser
     if(ini){
+        MSG_INFO("[IniFile]: Opening configuration file %s\n",FileName.c_str());
         parser << ini.rdbuf();
         ini.close();
     } else {
         Error = INI_ERROR_CANNOT_OPEN_READ_FILE;
-        cerr << "CANNOT OPEN INI FILE\n\n";
+        MSG_ERROR("[IniFile]: Cannot open configuration file.\n");
         return Error;
     }
 
@@ -126,7 +128,7 @@ int IniFile::Read(){
     }
 
     for(IniFileDataIter Iter = FileData.begin(); Iter != FileData.end(); Iter++)
-        cout << "INI: " << Iter->first << " = " << Iter->second << endl;
+        MSG_INFO("[IniFile]: %s = %s\n", Iter->first.c_str(), Iter->second.c_str());
 
     return Error;
 }

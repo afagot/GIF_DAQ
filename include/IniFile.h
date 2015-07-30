@@ -7,13 +7,13 @@
 // *   29/01/2015
 // *************************************************************************************************************
 
+#ifndef __INIFILE_H_
+#define __INIFILE_H_
+
 #include <string>
 #include <map>
 
 #include "CAENVMEtypes.h"
-
-#ifndef __INIFILE_H_
-#define __INIFILE_H_
 
 using namespace std;
 

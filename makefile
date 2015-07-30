@@ -6,19 +6,21 @@
 
 
 DAQ_HOME_DIR = /home/pccmsrpcgif2/GIF_DAQ
+#DAQ_HOME_DIR = /home/alex/Desktop/RPCs/GIF_DAQ
 DAQ_BIN_DIR = $(DAQ_HOME_DIR)/bin
 DAQ_INC_DIR = $(DAQ_HOME_DIR)/include
 DAQ_SRC_DIR = $(DAQ_HOME_DIR)/src
 DAQ_OBJ_DIR = $(DAQ_HOME_DIR)/obj
 
 ROOT_INC  = $(ROOTSYS)/include
+ROOTCFLAGS   := $(shell root-config --cflags)
 ROOTLIBS     := $(shell root-config --libs)
 
 LFLAGS     = -L$(DAQ_HOME_DIR)/lib -L/usr/lib \
              $(ROOTLIBS) 
 
 CFLAGS     = -ggdb -fPIC -DLINUX -Wall -funsigned-char \
-             -I$(DAQ_INC_DIR) -I$(ROOT_INC)
+             -I$(DAQ_INC_DIR) -I$(ROOT_INC) -I$(ROOTCFLAGS)
 
 all: daq
 

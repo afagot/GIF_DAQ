@@ -31,7 +31,7 @@
 using namespace std;
 
 v1718::v1718(IniFile *inifile){
-   MSG_INFO("v1718: \t Initialization VME bridge...\n");
+   MSG_INFO("[v1718]: Initialization VME bridge...\n");
 
    //Get the base address from the configuration file
    Data32 baseaddress = inifile->addressType("VMEInterface","BaseAddress",BASEV1718);
@@ -43,8 +43,9 @@ v1718::v1718(IniFile *inifile){
    SetAM(cvA24_U_DATA);
    SetDatasize(cvD16);
    SetBaseAddress(baseaddress);
+   SetPulsers();
 
-   MSG_INFO("v1718: \t OK\n");
+   MSG_INFO("[v1718]: OK\n");
 }
 
 // *************************************************************************************************************
@@ -151,15 +152,15 @@ void v1718::CheckStatus(CVErrorCodes status) const{
     // This provides more flexible error handling, as the return value method is more of a C-ism
     switch (status){
         case cvBusError:
-            MSG_ERROR("v1718: \t VME bus error\n");
+            MSG_ERROR("[v1718]: VME bus error\n");
         case cvCommError:
-            MSG_ERROR("v1718: \t Communication error\n");
+            MSG_ERROR("[v1718]: Communication error\n");
         case cvGenericError:
-            MSG_ERROR("v1718: \t General VME library error\n");
+            MSG_ERROR("[v1718]: General VME library error\n");
         case cvInvalidParam:
-            MSG_ERROR("v1718: \t Invalid parameter passed to VME library\n");
+            MSG_ERROR("[v1718]: Invalid parameter passed to VME library\n");
         case cvTimeoutError:
-            MSG_ERROR("v1718: \t Request timed out\n");
+            MSG_ERROR("[v1718]: Request timed out\n");
         default:
             return;
     }
@@ -174,4 +175,28 @@ bool v1718::CheckIRQ(){
 
     // Pick the requested IRQ line from the data and return its status
     return (((data>>(Level-1)) & 1) > 0);
+}
+
+// *************************************************************************************************************
+//Set the width of the
+
+void v1718::SetPulsers() {
+    CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegClear, 0x3CFF)); //Clear the output register output 0 to 3
+    CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegSet, 0x000A));   //Set the output register to pulsers
+
+    Uchar P = 0;   //Period in step units
+    Uchar W = 1;   //Width in step units
+    Uchar Np = 0; //Number of pulses to be generated
+
+    CheckStatus(CAENVME_SetPulserConf(Handle, cvPulserA, P, W, cvUnit104ms, Np, cvManualSW, cvManualSW));
+}
+
+// *************************************************************************************************************
+//Turn ON-OFF output signal - used as BUSY signal for the global DAQ
+
+void v1718::SendBUSY(BusyLevel level) {
+    if(level == ON)
+        CheckStatus(CAENVME_StartPulser(Handle, cvPulserA));//Turn ON pulser A on output 0 and 1
+    else if(level == OFF)
+        CheckStatus(CAENVME_StopPulser(Handle, cvPulserA)); //Turn OFF
 }

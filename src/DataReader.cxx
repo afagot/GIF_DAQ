@@ -17,61 +17,66 @@ using namespace std;
 
 // ****************************************************************************************************
 
-DataReader::DataReader()
-{
+DataReader::DataReader(){
+    //Initialisation of the RAWData vectors
+    TDCData.EventList = new vector<int>;
+    TDCData.NHitsList = new vector<int>;
+    TDCData.ChannelList = new vector< vector<int> >;
+    TDCData.TimeStampList = new vector< vector<float> >;
+
+    //Cleaning all the vectors
+    TDCData.EventList->clear();
+    TDCData.NHitsList->clear();
+    TDCData.ChannelList->clear();
+    TDCData.TimeStampList->clear();
+
     StopFlag = false;
 }
 
 // ****************************************************************************************************
 
-DataReader::~DataReader()
-{
+DataReader::~DataReader(){
 
 }
 
 // ****************************************************************************************************
 
-void DataReader::SetIniFile(string inifilename)
-{
+void DataReader::SetIniFile(string inifilename){
     iniFile = new IniFile(inifilename);
     iniFile->Read();
 }
 
 // ****************************************************************************************************
 
-void DataReader::SetMaxTriggers()
-{
+void DataReader::SetMaxTriggers(){
     MaxTriggers = iniFile->intType("General","MaxTriggers",MAXTRIGGERS_V1190A);
 }
 
 // ****************************************************************************************************
 
-Data32 DataReader::GetMaxTriggers()
-{
+Data32 DataReader::GetMaxTriggers(){
     return MaxTriggers;
 }
 
 // ****************************************************************************************************
 
-void DataReader::SetVME()
-{
+void DataReader::SetVME(){
     VME = new v1718(iniFile);
 }
 
 // ****************************************************************************************************
 
-void DataReader::SetTDC()
-{
-    TDC = new v1190a(VME->GetHandle(),iniFile);
+void DataReader::SetTDC(){
+    nTDCs = iniFile->intType("General","Tdcs",MINNTDC);
+    TDCs = new v1190a(VME->GetHandle(),iniFile,nTDCs);
 
     /*********** initialize the TDC 1190a ***************************/
-    TDC->Set(iniFile);
+    TDCs->Set(iniFile,VME,nTDCs);
 }
 
 // ****************************************************************************************************
 
-void DataReader::Init(string inifilename)
-{
+void DataReader::Init(string inifilename){
     SetIniFile(inifilename);
     SetMaxTriggers();
     SetVME();
@@ -117,7 +122,6 @@ string DataReader::GetFileName(){
                 << setfill('0') << setw(2) << m
                 << setfill('0') << setw(2) << s
                 << ".root";
-                //<< ".dat";                          //file type
 
     string outputfName;
     fNameStream >> outputfName;
@@ -127,10 +131,9 @@ string DataReader::GetFileName(){
 
 // ****************************************************************************************************
 
-void DataReader::Run()
-{
-    MSG_INFO("Starting data acquisition\n");
-    MSG_INFO("%d triggers will be taken\n", GetMaxTriggers());
+void DataReader::Run(){
+    MSG_INFO("[DAQ]: Starting data acquisition\n");
+    MSG_INFO("[DAQ]: %d triggers will be taken\n", GetMaxTriggers());
 
     Uint TriggerCount = 0;
     string outputFileName = GetFileName();
@@ -139,24 +142,37 @@ void DataReader::Run()
     TTree *RAWDataTree = new TTree("RAWData","RAWData");
 
     int               EventCount = -9;
-    int               nHits       = -8;
-    vector<int>      *TDCCh       = new vector<int>;
-    vector<float>    *TDCTS       = new vector<float>;
+    int               nHits = -8;
+    vector<int>       TDCCh;
+    vector<float>     TDCTS;
 
-    RAWDataTree->Branch("EventNumber",    &EventCount,   "EventNumber/I");
-    RAWDataTree->Branch("number_of_hits", &nHits,         "number_of_hits/I");
+    TDCCh.clear();
+    TDCTS.clear();
+
+    RAWDataTree->Branch("EventNumber",    &EventCount,  "EventNumber/I");
+    RAWDataTree->Branch("number_of_hits", &nHits,       "number_of_hits/I");
     RAWDataTree->Branch("TDC_channel",    &TDCCh);
     RAWDataTree->Branch("TDC_TimeStamp",  &TDCTS);
 
+    //Read the output buffer until the min number of trigger is achieved
     while(TriggerCount < GetMaxTriggers()){
-        usleep(20000);
+        usleep(100000);
 
-        Uint lastCount = TriggerCount;
-        //if(VME->CheckIRQ()) TriggerCount += TDC->Read(outputFileName);
-        if(VME->CheckIRQ()) TriggerCount += TDC->Read(RAWDataTree,EventCount,nHits,TDCCh,TDCTS);
-        //if(VME->CheckIRQ()) TriggerCount += TDC->Read(EventCount,nHits,TDCCh,TDCTS);
+        if(VME->CheckIRQ()){
+            TriggerCount = TDCs->Read(&TDCData,nTDCs);
+            if(TriggerCount != 0) MSG_INFO("\n[DAQ]: %d / %d taken\n", TriggerCount, GetMaxTriggers());
+            else MSG_INFO(".");
+        } else MSG_INFO(".");
+    }
 
-        if(TriggerCount != lastCount) MSG_INFO("%d / %d taken\n", TriggerCount, GetMaxTriggers());
+    //Write the data from the RAWData sstructure to the TTree
+    for(Uint i=0; i<TDCData.EventList->size(); i++){
+        EventCount = TDCData.EventList->at(i);
+        nHits = TDCData.NHitsList->at(i);
+        TDCCh = TDCData.ChannelList->at(i);
+        TDCTS = TDCData.TimeStampList->at(i);
+
+        RAWDataTree->Fill();
     }
 
     RAWDataTree->Print();
