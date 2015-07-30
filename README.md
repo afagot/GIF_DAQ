@@ -1,4 +1,4 @@
-#GIF++ DAQ
+#GIF++ DAQ v2.1
 ####Author: Alexis Fagot
 ####email : alexis.fagot@ugent.be
 ####Tel.: +32 9 264 65 69
@@ -20,7 +20,7 @@ To compile the gif daq project, first, open the makefile with a text editor, for
 
 In the case of the GIF ++ computer, we have :
 
-    DAQ_HOME_DIR = /home/gifdaq/Desktop/GIF_DAQ
+    DAQ_HOME_DIR = /home/pccmsrpcgif2/GIF_DAQ
 
 Then, simply do :
 
