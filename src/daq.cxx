@@ -12,7 +12,7 @@ using namespace std;
 int main (int argc ,char *argv[])
 {
     MSG_INFO("****************************************************\n");
-    MSG_INFO("******    DAQ Program 14/1/15 Version 2.00    ******\n");
+    MSG_INFO("******    DAQ Program 29/07/15 Version 2.1    ******\n");
     MSG_INFO("****************************************************\n");
 
     DataReader *DR = new DataReader();
