@@ -20,7 +20,7 @@ To compile the gif daq project, first, open the makefile with a text editor, for
 
 In the case of the GIF ++ computer, we have :
 
-    DAQ_HOME_DIR = /home/gifdaq/Desktop/GIF_DAQ
+    DAQ_HOME_DIR = /home/pccmsrpcgif2/GIF_DAQ
 
 Then, simply do :
 
