@@ -2,27 +2,26 @@
 #
 # test program for CMS RPC
 #
-# 14/01/14  Created by Y.Benhammou
+# 14/01/14  A.Fagot
+# from makefile created by Y.Benhammou
 
 
-DAQ_HOME_DIR = /home/pccmsrpcgif2/GIF_DAQ
-#DAQ_HOME_DIR = /home/alex/Desktop/RPCs/GIF_DAQ
-DAQ_BIN_DIR = $(DAQ_HOME_DIR)/bin
-DAQ_INC_DIR = $(DAQ_HOME_DIR)/include
-DAQ_SRC_DIR = $(DAQ_HOME_DIR)/src
-DAQ_OBJ_DIR = $(DAQ_HOME_DIR)/obj
+DAQ_BIN_DIR  = ./bin
+DAQ_INC_DIR  = ./include
+DAQ_SRC_DIR  = ./src
+DAQ_OBJ_DIR  = ./obj
 
-ROOT_INC  = $(ROOTSYS)/include
+ROOT_INC     := $(ROOTSYS)/include
 ROOTCFLAGS   := $(shell root-config --cflags)
 ROOTLIBS     := $(shell root-config --libs)
 
-LFLAGS     = -L$(DAQ_HOME_DIR)/lib -L/usr/lib \
-             $(ROOTLIBS) 
+LFLAGS       := -Llib -L/usr/lib \
+                $(ROOTLIBS) 
 
-CFLAGS     = -ggdb -fPIC -DLINUX -Wall -funsigned-char \
-             -I$(DAQ_INC_DIR) -I$(ROOT_INC) -I$(ROOTCFLAGS)
+CFLAGS       := -ggdb -fPIC -DLINUX -Wall -funsigned-char \
+                -I$(DAQ_INC_DIR) -I$(ROOT_INC) -I$(ROOTCFLAGS)
 
-all: daq
+all: $(DAQ_BIN_DIR) $(DAQ_OBJ_DIR) daq
 
 daq: 	daq.o v1718.o v1190a.o DataReader.o IniFile.o
 	g++ $(CFLAGS) $(DAQ_OBJ_DIR)/daq.o \
@@ -34,14 +33,6 @@ daq: 	daq.o v1718.o v1190a.o DataReader.o IniFile.o
         $(LFLAGS)  \
         -l CAENVME -l curses
 
-clean:
-	-rm $(DAQ_BIN_DIR)/daq
-	-rm $(DAQ_OBJ_DIR)/*.o
-
-remove:
-	-rm $(DAQ_BIN_DIR)/daq
-	-rm $(DAQ_OBJ_DIR)/*.o
-
 daq.o:
 	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/daq.cxx -o $(DAQ_OBJ_DIR)/daq.o
 v1718.o:
@@ -52,3 +43,18 @@ DataReader.o:
 	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/DataReader.cxx -o $(DAQ_OBJ_DIR)/DataReader.o
 IniFile.o:
 	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/IniFile.cxx -o $(DAQ_OBJ_DIR)/IniFile.o
+
+$(DAQ_BIN_DIR):
+	mkdir -p $(DAQ_BIN_DIR)/
+
+$(DAQ_OBJ_DIR):
+	mkdir -p $(DAQ_OBJ_DIR)/
+
+clean:
+	rm -rf $(DAQ_BIN_DIR)/
+	rm -rf $(DAQ_OBJ_DIR)/
+
+remove:
+	rm -rf $(DAQ_BIN_DIR)/
+	rm -rf $(DAQ_OBJ_DIR)/
+
