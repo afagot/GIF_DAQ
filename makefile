@@ -2,13 +2,14 @@
 #
 # test program for CMS RPC
 #
-# 14/01/14  Created by Y.Benhammou
+# 14/01/14  A.Fagot
+# from makefile created by Y.Benhammou
 
 
-DAQ_BIN_DIR  := bin
-DAQ_INC_DIR  := include
-DAQ_SRC_DIR  := src
-DAQ_OBJ_DIR  := obj
+DAQ_BIN_DIR  = ./bin
+DAQ_INC_DIR  = ./include
+DAQ_SRC_DIR  = ./src
+DAQ_OBJ_DIR  = ./obj
 
 ROOT_INC     := $(ROOTSYS)/include
 ROOTCFLAGS   := $(shell root-config --cflags)
@@ -20,7 +21,7 @@ LFLAGS       := -Llib -L/usr/lib \
 CFLAGS       := -ggdb -fPIC -DLINUX -Wall -funsigned-char \
                 -I$(DAQ_INC_DIR) -I$(ROOT_INC) -I$(ROOTCFLAGS)
 
-all: daq
+all: $(DAQ_BIN_DIR) $(DAQ_OBJ_DIR) daq
 
 daq: 	daq.o v1718.o v1190a.o DataReader.o IniFile.o
 	g++ $(CFLAGS) $(DAQ_OBJ_DIR)/daq.o \
@@ -44,10 +45,10 @@ IniFile.o:
 	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/IniFile.cxx -o $(DAQ_OBJ_DIR)/IniFile.o
 
 $(DAQ_BIN_DIR):
-	mkdir -p $(DAQ_BIN_DIR)
+	mkdir -p $(DAQ_BIN_DIR)/
 
 $(DAQ_OBJ_DIR):
-	mkdir -p $(DAQ_OBJ_DIR)
+	mkdir -p $(DAQ_OBJ_DIR)/
 
 clean:
 	rm -rf $(DAQ_BIN_DIR)/
