@@ -85,6 +85,69 @@ void DataReader::Init(string inifilename){
 
 // ****************************************************************************************************
 
+string DataReader::GetRunNumber(string runregistry){
+    //Get the time first and then write it in the run registry along with the run number
+    time_t t = time(0);
+    struct tm *Time = localtime(&t);
+    int Y = Time->tm_year + 1900;
+    int M = Time->tm_mon + 1;
+    int D = Time->tm_mday;
+    int h = Time->tm_hour;
+    int m = Time->tm_min;
+    int s = Time->tm_sec;
+
+    stringstream datestream;
+
+    datestream << setfill('0') << setw(4) << Y << "/"
+               << setfill('0') << setw(2) << M << "/"
+               << setfill('0') << setw(2) << D << "-"
+               << setfill('0') << setw(2) << h << ":"
+               << setfill('0') << setw(2) << m << ":"
+               << setfill('0') << setw(2) << s;
+
+    string Date;
+
+    datestream >> Date;
+
+    //Check if the run registry file already exists or not
+    //After the first usage of the DAQ, this is also used to
+    //control the good reading of the file.
+    ifstream checkifexits(runregistry.c_str(),ios::in);
+
+    string RunName;
+
+    if(!checkifexits){
+        MSG_INFO("No registry file found. Creating the file %s and initialising to run 0",runregistry.c_str());
+
+        Uint runnumber = 0;
+        RunName << setfill('0') << setw(6) << runnumber;
+
+        ofstream runregFile(runregistry.c_str(),ios::out);
+        runregFile << setfill('0') << setw(6) << runnumber << '\t' << Date;
+    } else {
+        ifstream runregRead(runregistry.c_srt());
+
+        Uint lastrun;
+        string lastdate;
+
+        while(runregRead.good()){
+            runregRead >> lastrun >> lastdate;
+        }
+
+        //increment the run number to get the new run number
+        Uint runnumber = lastrun + 1;
+        RunName << setfill('0') << setw(6) << runnumber;
+
+        //Write this new run number in the run registry
+        ofstream runregWrite(runregistry.c_str(),ios::out);
+        runregWrite << setfill('0') << setw(6) << runnumber << '\t' << Date;
+    }
+
+    return RunName;
+}
+
+// ****************************************************************************************************
+
 string DataReader::GetFileName(){
     string fNameParts[9];
     fNameParts[0] = iniFile->stringType("General","RunType","");
@@ -101,27 +164,11 @@ string DataReader::GetFileName(){
         if(fNameParts[i] != "")
             fNameParts[i] += "_";
 
-    time_t t = time(0);
-    struct tm *Time = localtime(&t);
-    int Y = Time->tm_year + 1900;
-    int M = Time->tm_mon + 1;
-    int D = Time->tm_mday;
-    int h = Time->tm_hour;
-    int m = Time->tm_min;
-    int s = Time->tm_sec;
-
     stringstream fNameStream;
     fNameStream << "datarun/";                      //destination
     for(int i=0; i<9;i++)
         fNameStream << fNameParts[i];               //informations about chamber, trigger and electronics
-    fNameStream << "run"
-                << setfill('0') << setw(4) << Y     //run number
-                << setfill('0') << setw(2) << M
-                << setfill('0') << setw(2) << D
-                << setfill('0') << setw(2) << h
-                << setfill('0') << setw(2) << m
-                << setfill('0') << setw(2) << s
-                << ".root";
+    fNameStream << GetRunNumber("./RunRegistry/RunRegistry.csv") << ".root";
 
     string outputfName;
     fNameStream >> outputfName;
