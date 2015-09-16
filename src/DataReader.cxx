@@ -122,7 +122,7 @@ string DataReader::GetRunNumber(string runregistry){
     Uint runnumber = 0;
 
     if(!checkifexits){
-        MSG_INFO("No registry file found. Creating the file %s and initialising to run 0",runregistry.c_str());
+        MSG_INFO("No registry file found. Creating the file %s and initialising to run 0\n",runregistry.c_str());
     } else {
         ifstream runregRead(runregistry.c_str(),ios::in);
 
@@ -136,7 +136,7 @@ string DataReader::GetRunNumber(string runregistry){
         //increment the run number to get the new run number
         runnumber = lastrun + 1;
 
-        MSG_INFO("Adding run %06u the file %s",runnumber,runregistry.c_str());
+        MSG_INFO("Adding run %06u the file %s\n",runnumber,runregistry.c_str());
     }
 
     stream << setfill('0') << setw(6) << runnumber;
@@ -169,10 +169,11 @@ string DataReader::GetFileName(){
             fNameParts[i] += "_";
 
     stringstream fNameStream;
-    fNameStream << "datarun/";                      //destination
+    fNameStream << "datarun/run"                                    //destination + filename prefix "run"
+                << GetRunNumber(".RunRegistry/RunRegistry.csv");    //run number
     for(int i=0; i<9;i++)
-        fNameStream << fNameParts[i];               //informations about chamber, trigger and electronics
-    fNameStream << GetRunNumber(".RunRegistry/RunRegistry.csv") << ".root";
+        fNameStream << fNameParts[i];                               //run info
+    fNameStream << ".root";
 
     string outputfName;
     fNameStream >> outputfName;
@@ -207,21 +208,29 @@ void DataReader::Run(){
 
     //Read the output buffer until the min number of trigger is achieved
     while(TriggerCount < GetMaxTriggers()){
-        usleep(100000);
+        usleep(200000);
 
         if(VME->CheckIRQ()){
+            //Stop data acquisition with BUSY as VETO
+            VME->SendBUSY(ON);
+            usleep(1000);
+
+            //Read the data
             TriggerCount = TDCs->Read(&TDCData,nTDCs);
             if(TriggerCount != 0) MSG_INFO("\n[DAQ]: %d / %d taken\n", TriggerCount, GetMaxTriggers());
             else MSG_INFO(".");
+
+            //Resume data taking
+            VME->SendBUSY(OFF);
         } else MSG_INFO(".");
     }
 
     //Write the data from the RAWData sstructure to the TTree
     for(Uint i=0; i<TDCData.EventList->size(); i++){
-        EventCount = TDCData.EventList->at(i);
-        nHits = TDCData.NHitsList->at(i);
-        TDCCh = TDCData.ChannelList->at(i);
-        TDCTS = TDCData.TimeStampList->at(i);
+        EventCount  = TDCData.EventList->at(i);
+        nHits       = TDCData.NHitsList->at(i);
+        TDCCh       = TDCData.ChannelList->at(i);
+        TDCTS       = TDCData.TimeStampList->at(i);
 
         RAWDataTree->Fill();
     }

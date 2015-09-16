@@ -11,6 +11,8 @@ DAQ_INC_DIR  = ./include
 DAQ_SRC_DIR  = ./src
 DAQ_OBJ_DIR  = ./obj
 
+RUN_REGISTRY = ./.RunRegistry
+
 ROOT_INC     := $(ROOTSYS)/include
 ROOTCFLAGS   := $(shell root-config --cflags)
 ROOTLIBS     := $(shell root-config --libs)
@@ -21,7 +23,7 @@ LFLAGS       := -Llib -L/usr/lib \
 CFLAGS       := -ggdb -fPIC -DLINUX -Wall -funsigned-char \
                 -I$(DAQ_INC_DIR) -I$(ROOT_INC) -I$(ROOTCFLAGS)
 
-all: $(DAQ_BIN_DIR) $(DAQ_OBJ_DIR) daq
+all: $(RUN_REGISTRY) $(DAQ_BIN_DIR) $(DAQ_OBJ_DIR) daq
 
 daq: 	daq.o v1718.o v1190a.o DataReader.o IniFile.o
 	g++ $(CFLAGS) $(DAQ_OBJ_DIR)/daq.o \
@@ -43,6 +45,9 @@ DataReader.o:
 	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/DataReader.cxx -o $(DAQ_OBJ_DIR)/DataReader.o
 IniFile.o:
 	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/IniFile.cxx -o $(DAQ_OBJ_DIR)/IniFile.o
+
+$(RUN_REGISTRY):
+	mkdir -p $(RUN_REGISTRY)/
 
 $(DAQ_BIN_DIR):
 	mkdir -p $(DAQ_BIN_DIR)/
