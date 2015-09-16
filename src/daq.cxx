@@ -48,15 +48,16 @@ int main (int argc ,char *argv[])
         MSG_INFO("[DAQ]: RUN FINISHED\n");
 
         while(startrun != "y" && startrun != "n"){
-            MSG_GREEN("[DAQ]: Would you like to start a new run? (y/n)");
+            MSG_GREEN("[DAQ]: Would you like to start a new run? (y/n) ");
             cin >> startrun;
         }
 
         if(startrun == "y"){
-            MSG_WARNING("[DAQ]: Update the configuration file then press ENTER to continue...\n");
-            cin.ignore( numeric_limits<streamsize>::max(), '\n' );
+            string emptystring;
+            MSG_GREEN("[DAQ]: Update the configuration file then type OK and ENTER to continue...");
+            cin >> emptystring;
         } else if (startrun == "n"){
-            MSG_INFO("[DAQ]: GOODBYE!");
+            MSG_INFO("[DAQ]: GOODBYE!\n");
         }
     }
     return 0;

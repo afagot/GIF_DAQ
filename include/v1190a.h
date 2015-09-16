@@ -214,7 +214,7 @@ class v1190a
     void                SwitchChannels(IniFile *inifile,int ntdcs);
     void                SetIRQ(Data32 level, Data32 count,int ntdcs);
     void                SetBlockTransferMode(Data16 mode,int ntdcs);
-    void                Set(IniFile *inifile,v1718 *vme,int ntdcs);
+    void                Set(IniFile *inifile,int ntdcs);
     void                CheckStatus(CVErrorCodes status) const;
     int                 ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const unsigned int words, bool ignore_berr);
     Uint                Read(RAWData *DataList,int ntdcs);

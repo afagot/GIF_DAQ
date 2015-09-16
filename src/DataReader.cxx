@@ -72,7 +72,7 @@ void DataReader::SetTDC(){
     TDCs = new v1190a(VME->GetHandle(),iniFile,nTDCs);
 
     /*********** initialize the TDC 1190a ***************************/
-    TDCs->Set(iniFile,VME,nTDCs);
+    TDCs->Set(iniFile,nTDCs);
 }
 
 // ****************************************************************************************************
@@ -116,7 +116,8 @@ string DataReader::GetRunNumber(string runregistry){
     //Set the run number
     string RunNumber;
 
-    stream << setfill('0') << setw(4) << Y
+    stream << "run"
+           << setfill('0') << setw(4) << Y
            << setfill('0') << setw(2) << M
            << setfill('0') << setw(2) << D
            << setfill('0') << setw(2) << h
@@ -126,24 +127,35 @@ string DataReader::GetRunNumber(string runregistry){
     stream >> RunNumber;
     stream.clear();
 
-    MSG_INFO("[DAQ]: Adding %s into %s\n",RunNumber,runregistry.c_str());
+    MSG_INFO("[DAQ]: Adding %s into %s\n",RunNumber.c_str(),runregistry.c_str());
 
     //Write this new run number in the run registry
     ofstream runregWrite(runregistry.c_str(),ios::app);
-    runregWrite << RunNumber << '\t' << Date << endl;
+    runregWrite << RunNumber << '\t' << Date << '\t';
 
     return RunNumber;
 }
 
 // ****************************************************************************************************
 
-string DataReader::GetFileName(){
+string DataReader::GetFileName(string runregistry){
+    //Write the run info in the run registry
+    string RunNumber = GetRunNumber(runregistry.c_str());
+
+    ofstream runregWrite(runregistry.c_str(),ios::app);
+    runregWrite << iniFile->stringType("General","RunType","") << '\t'
+                << iniFile->stringType("General","MaxTriggers","") << '\t'
+                << iniFile->stringType("General","TriggerType","") << '\t'
+                << iniFile->stringType("General","Threshold","") << '\t'
+                << iniFile->stringType("General","Voltage","") << '\n';
+
+    //Set the output filename
     string fNameParts[9];
     fNameParts[0] = iniFile->stringType("General","RunType","");
     fNameParts[1] = iniFile->stringType("General","ChamberType","");
     fNameParts[2] = iniFile->stringType("General","Mode","");
     fNameParts[3] = iniFile->stringType("General","Partition","");
-    fNameParts[4] = iniFile->stringType("General","MaxTrigger","");
+    fNameParts[4] = iniFile->stringType("General","MaxTriggers","");
     fNameParts[5] = iniFile->stringType("General","TriggerType","");
     fNameParts[6] = iniFile->stringType("General","ElectronicsType","");
     fNameParts[7] = iniFile->stringType("General","Threshold","");
@@ -158,8 +170,8 @@ string DataReader::GetFileName(){
     fNameStream << "datarun/";                                      //destination
     for(int i=0; i<9;i++)
         fNameStream << fNameParts[i];                               //run info
-    fNameStream << GetRunNumber(".RunRegistry/RunRegistry.csv");    //run number
-    fNameStream << ".root";                                         //extension
+    fNameStream << RunNumber                                        //run number
+                << ".root";                                         //extension
 
     string outputfName;
     fNameStream >> outputfName;
@@ -173,8 +185,14 @@ void DataReader::Run(){
     MSG_INFO("[DAQ]: Starting data acquisition\n");
     MSG_INFO("[DAQ]: %d triggers will be taken\n", GetMaxTriggers());
 
+    //Clear all the buffers while stopping data collection
+    VME->SendBUSY(ON);
+    TDCs->Clear(nTDCs);
+    VME->SendBUSY(OFF);
+
+    //Get the output file name and initialise the branches
     Uint TriggerCount = 0;
-    string outputFileName = GetFileName();
+    string outputFileName = GetFileName(".RunRegistry/RunRegistry.csv");
 
     TFile *outputFile = new TFile(outputFileName.c_str(), "recreate");
     TTree *RAWDataTree = new TTree("RAWData","RAWData");

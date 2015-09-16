@@ -38,7 +38,7 @@ class DataReader
         void                SetTDC();
         void                Init(string inifilename);
         string              GetRunNumber(string runregistry);
-        string              GetFileName();
+        string              GetFileName(string runregistry);
         void                Run();
 };
 
