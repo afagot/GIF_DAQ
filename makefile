@@ -10,7 +10,6 @@ DAQ_BIN_DIR  = ./bin
 DAQ_INC_DIR  = ./include
 DAQ_SRC_DIR  = ./src
 DAQ_OBJ_DIR  = ./obj
-
 RUN_REGISTRY = ./.RunRegistry
 
 ROOT_INC     := $(ROOTSYS)/include

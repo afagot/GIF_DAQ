@@ -137,7 +137,7 @@ void v1190a::CheckTDCStatus(int ntdcs){ //Status of the TDCs (Status register)
 
     for(int tdc=0; tdc < ntdcs; tdc++){
         CAENVME_ReadCycle(Handle,Address[tdc]+ADD_STATUS_V1190A,&status,AddressModifier,DataWidth);
-        MSG_INFO("[TDC%i]:  Status is %X\n",tdc,status);
+        MSG_INFO("[TDC%i]: Status is %X\n",tdc,status);
     }
 }
 
