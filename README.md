@@ -14,15 +14,7 @@ This application requires two non-optional dependencies:
 
 The CAEN VME library will not be packaged by distributions and will need to be installed manually.
 
-To compile the gif daq project, first, open the makefile with a text editor, for example gedit, and modify the path to DAQ_HOME_DIR :
-
-    DAQ_HOME_DIR = /path/to/your/working/directory
-
-In the case of the GIF ++ computer, we have :
-
-    DAQ_HOME_DIR = /home/pccmsrpcgif2/GIF_DAQ
-
-Then, simply do :
+To compile the gif daq project, simply do :
 
     make
 
@@ -32,4 +24,4 @@ To use the program, the user can modify the parameters of the TDC inside the fil
 
     bin/daq
 
-The output datafiles are saved into the directory `datarun`.
+The output datafiles are saved into the directory `datarun` and a Run Registry file is provided in the folder `.RunRegistry`
