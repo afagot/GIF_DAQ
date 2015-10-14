@@ -43,6 +43,7 @@ int main (int argc ,char *argv[])
 
         MSG_INFO("[DAQ]: RUN STARTED... \n");
 
+        DR->Update();
         DR->Run();
 
         MSG_INFO("[DAQ]: RUN FINISHED\n");

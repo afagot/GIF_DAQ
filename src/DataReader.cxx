@@ -86,6 +86,13 @@ void DataReader::Init(string inifilename){
 
 // ****************************************************************************************************
 
+void DataReader::Update(){
+    iniFile->Read();
+    SetMaxTriggers();
+}
+
+// ****************************************************************************************************
+
 string DataReader::GetRunNumber(string runregistry){
     //Get the date first and then write it in the run registry along with the run number
     stringstream stream;
