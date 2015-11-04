@@ -192,6 +192,12 @@ void DataReader::Run(){
     MSG_INFO("[DAQ]: Starting data acquisition\n");
     MSG_INFO("[DAQ]: %d triggers will be taken\n", GetMaxTriggers());
 
+    //Cleaning all the vectors
+    TDCData.EventList->clear();
+    TDCData.NHitsList->clear();
+    TDCData.ChannelList->clear();
+    TDCData.TimeStampList->clear();
+
     //Clear all the buffers while stopping data collection
     VME->SendBUSY(ON);
     TDCs->Clear(nTDCs);
