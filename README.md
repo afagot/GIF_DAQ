@@ -1,4 +1,4 @@
-#GIF++ DAQ v2.1
+#GIF++ DAQ v2.2
 ####Author: Alexis Fagot
 ####email : alexis.fagot@ugent.be
 ####Tel.: +32 9 264 65 69
