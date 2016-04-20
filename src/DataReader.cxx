@@ -205,7 +205,7 @@ void DataReader::Run(){
 
     //Get the output file name and initialise the branches
     Uint TriggerCount = 0;
-    string outputFileName = GetFileName(".RunRegistry/RunRegistry.csv");
+    string outputFileName = GetFileName("RunRegistry/RunRegistry.csv");
 
     TFile *outputFile = new TFile(outputFileName.c_str(), "recreate");
     TTree *RAWDataTree = new TTree("RAWData","RAWData");
