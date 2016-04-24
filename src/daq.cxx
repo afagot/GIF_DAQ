@@ -13,19 +13,19 @@ using namespace std;
 
 int main (int argc ,char *argv[])
 {
-    MSG_INFO("****************************************************\n");
-    MSG_INFO("******    DAQ Program XX/0X/16 Version 3.0    ******\n");
-    MSG_INFO("****************************************************\n");
+    MSG_INFO("****************************************************");
+    MSG_INFO("******    DAQ Program XX/0X/16 Version 3.0    ******");
+    MSG_INFO("****************************************************");
 
     DataReader *DR = new DataReader();
 
     /* Initialisation of the setup */
 
-    MSG_INFO("[DAQ]: Initialisation of the TDCs\n");
+    MSG_INFO("[DAQ]: Initialisation of the TDCs");
 
     DR->Init(__configpath);
 
-    MSG_INFO("[DAQ]: Initialisation done\n");
+    MSG_INFO("[DAQ]: Initialisation done");
 
     /* Run */
 
@@ -44,7 +44,7 @@ int main (int argc ,char *argv[])
         //Stay in the run loop while you don't have STOP
         //or an error
         while(CtrlRunStatus(runStatus) != STOP){
-            MSG_INFO("[DAQ] Run about to start...\n");
+            MSG_INFO("[DAQ] Run about to start...");
 
             runStatus = "RUNNING";
             SetRunStatus(runStatus);
@@ -55,7 +55,7 @@ int main (int argc ,char *argv[])
             DR->Update();
             DR->Run();
 
-            MSG_INFO("[DAQ] Run finished. Waiting for the next signal...\n");
+            MSG_INFO("[DAQ] Run finished. Waiting for the next signal...");
 
             runStatus = "NEXT";
             SetRunStatus(runStatus);
@@ -70,6 +70,6 @@ int main (int argc ,char *argv[])
         }
     }
 
-    MSG_INFO("[DAQ] DAQ will shut down\n");
+    MSG_INFO("[DAQ] DAQ will shut down");
     return CtrlRunStatus(runStatus);
 }

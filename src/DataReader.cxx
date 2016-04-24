@@ -167,8 +167,8 @@ void DataReader::Run(){
     VME->SendBUSY(OFF);
 
     //Print log message
-    MSG_INFO("[DAQ] Run "+outputFileName+" started\n");
-    MSG_INFO("[DAQ] Run "+outputFileName+" 0%\n");
+    MSG_INFO("[DAQ] Run "+outputFileName+" started");
+    MSG_INFO("[DAQ] Run "+outputFileName+" 0%");
 
     int percentage = 0;     // percentage of the run done
     int last_print = 0;     // keep track of the last percentage printed
@@ -195,7 +195,7 @@ void DataReader::Run(){
             if(percentage % 10 == 0 && percentage != last_print){
                 string log_percent = intTostring(percentage);
 
-                MSG_INFO("[DAQ] "+log_percent+"%\n");
+                MSG_INFO("[DAQ] "+log_percent+"%");
                 last_print = percentage;
             }
 
@@ -210,8 +210,8 @@ void DataReader::Run(){
         if(checkKill == 50){
             runStatus = GetRunStatus();
             if(CtrlRunStatus(runStatus) == FATAL){
-                MSG_FATAL("[DAQ-FATAL] KILL command received\n");
-                MSG_FATAL("[DAQ-FATAL] Safely close current data file and exit\n");
+                MSG_FATAL("[DAQ-FATAL] KILL command received");
+                MSG_FATAL("[DAQ-FATAL] Safely close current data file and exit");
 
                 //Write the data from the RAWData structure to the TTree
                 for(Uint i=0; i<TDCData.EventList->size(); i++){

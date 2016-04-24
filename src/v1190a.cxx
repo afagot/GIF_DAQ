@@ -61,7 +61,7 @@ Data16 v1190a::read_op_reg(Data32 address){
     } while(ro_bit != READ_OK && time < 100000);
 
     if(time == 100000){
-        MSG_ERROR("[v1190] Read opcode - timeout error\n");
+        MSG_ERROR("[v1190] Read opcode - timeout error");
         exit(0);
     } else {
         sleep(1);      /*** delay 12ms, internal delay ***/
@@ -84,7 +84,7 @@ Data16 v1190a::write_op_reg(Data32 address, int code){
     } while(wo_bit != WRITE_OK && time < 100000);
 
     if(time == 100000){
-        MSG_ERROR("[v1190-ERROR] Write opcode - timeout error\n");
+        MSG_ERROR("[v1190-ERROR] Write opcode - timeout error");
         exit(0);
     } else {
         sleep(1);      /*** delay 12 msec, internal delay ***/
@@ -126,7 +126,7 @@ void v1190a::TestWR(Data16 value, int ntdcs){ //Test : try to write/read 16 bit 
 
         if(test != value){
             string tdcnumber = intTostring(tdc);
-            MSG_ERROR("[TDC"+tdcnumber+"-ERROR]:  Result of W/R test is not 0xBEEF\n");
+            MSG_ERROR("[TDC"+tdcnumber+"-ERROR]:  Result of W/R test is not 0xBEEF");
         }
     }
 }
@@ -150,7 +150,7 @@ void v1190a::CheckCommunication(int ntdcs){//Check the communication with the mi
         check = read_op_reg(Address[tdc]);
         if(check != 0x5555){
             string tdcnumber = intTostring(tdc);
-            MSG_ERROR("[TDC"+tdcnumber+"-ERROR] Communication error\n");
+            MSG_ERROR("[TDC"+tdcnumber+"-ERROR] Communication error");
         }
     }
 }
@@ -241,17 +241,17 @@ void v1190a::GetTrigConfiguration(int ntdcs){ //Read and print trigger configura
         RejectMargin            = read_op_reg(Address[tdc]);
         TriggerTimeSubtraction  = read_op_reg(Address[tdc]);
 
-        string width     = intTostring(MatchWindowWidth);
-        string offset    = intTostring(WindowOffset);
-        string extra     = intTostring(ExtraSearchWindowWidth);
-        string reject    = intTostring(RejectMargin);
-        string substract = intTostring(TriggerTimeSubtraction);
+        string width     = intTostring(MatchWindowWidth*25);
+        string offset    = intTostring((65536-WindowOffset)*25);
+        string extra     = intTostring(ExtraSearchWindowWidth*25);
+        string reject    = intTostring(RejectMargin*25);
+        string substract = intTostring(TriggerTimeSubtraction*25);
 
-        MSG_INFO("[TDC"+tdcnumber+"] Match Window Width :        "+width+"\n");
-        MSG_INFO("[TDC"+tdcnumber+"] Window Offset :             "+offset+"\n");
-        MSG_INFO("[TDC"+tdcnumber+"] Extra Search Window Width : "+extra+"\n");
-        MSG_INFO("[TDC"+tdcnumber+"] Reject Margin :             "+reject+"\n");
-        MSG_INFO("[TDC"+tdcnumber+"] Trigger Time Subtraction :  "+substract+"\n");
+        MSG_INFO("[TDC"+tdcnumber+"] Match Window Width :        "+width);
+        MSG_INFO("[TDC"+tdcnumber+"] Window Offset :             "+offset);
+        MSG_INFO("[TDC"+tdcnumber+"] Extra Search Window Width : "+extra);
+        MSG_INFO("[TDC"+tdcnumber+"] Reject Margin :             "+reject);
+        MSG_INFO("[TDC"+tdcnumber+"] Trigger Time Subtraction :  "+substract);
     }
 }
 
@@ -406,7 +406,7 @@ void v1190a::SetIRQ(Data32 level, Data32 count, int ntdcs) {
 
     // The VME bus has IRQ lines numbered 1 to 7
     if (level < 1 || level > 7) {
-        MSG_ERROR("[v1190-ERROR] Tried to enable invalid IRQ\n");
+        MSG_ERROR("[v1190-ERROR] Tried to enable invalid IRQ");
         return;
     }
 
@@ -418,8 +418,8 @@ void v1190a::SetIRQ(Data32 level, Data32 count, int ntdcs) {
         ss << new_count;
         string log_count = UintTostring(new_count);
 
-        MSG_WARNING("[v1190-WARNING] Tried to enable invalid Almost Full Level\n");
-        MSG_INFO("[v1190] Level capped to "+log_count+"\n");
+        MSG_WARNING("[v1190-WARNING] Tried to enable invalid Almost Full Level");
+        MSG_INFO("[v1190] Level capped to "+log_count);
         count = new_count;
     }
 
@@ -477,15 +477,15 @@ void v1190a::CheckStatus(CVErrorCodes status) const{
     // This provides more flexible error handling, as the return value method is more of a C-ism
     switch (status){
         case cvBusError:
-            MSG_ERROR("[v1190] VME bus error\n");
+            MSG_ERROR("[v1190] VME bus error");
         case cvCommError:
-            MSG_ERROR("[v1190] Communication error\n");
+            MSG_ERROR("[v1190] Communication error");
         case cvGenericError:
-            MSG_ERROR("[v1190] General VME library error\n");
+            MSG_ERROR("[v1190] General VME library error");
         case cvInvalidParam:
-            MSG_ERROR("[v1190] Invalid parameter passed to VME library\n");
+            MSG_ERROR("[v1190] Invalid parameter passed to VME library");
         case cvTimeoutError:
-            MSG_ERROR("[v1190] Request timed out\n");
+            MSG_ERROR("[v1190] Request timed out");
         default:
             return;
     }

@@ -51,7 +51,7 @@ bool IniFile::CheckIfGroup(string line,string& group){
                 return true;
         } else {
             Error = INI_ERROR_WRONG_GROUP_FORMAT;
-            MSG_ERROR("[IniFile-ERROR] Wrong group format : doesn't end with a ]\n");
+            MSG_ERROR("[IniFile-ERROR] Wrong group format : doesn't end with a ]");
             return true;
         }
     }
@@ -73,12 +73,12 @@ bool IniFile::CheckIfToken(string line,string& key,string& value){
             value = line.substr(p0,(line.size()-p0));
         } else {
             Error = INI_ERROR_MISSING_VALUE;
-            MSG_ERROR("[IniFile-ERROR] A value is missing for the key "+key+"\n");
+            MSG_ERROR("[IniFile-ERROR] A value is missing for the key "+key);
             return true;
         }
     } else {
         Error = INI_ERROR_WRONG_FORMAT;
-        MSG_ERROR("[IniFile-ERROR] A key name is missing is the config file\n");
+        MSG_ERROR("[IniFile-ERROR] A key name is missing is the config file");
         return false;
     }
     return true;
@@ -105,7 +105,7 @@ int IniFile::Read(){
         ini.close();
     } else {
         Error = INI_ERROR_CANNOT_OPEN_READ_FILE;
-        MSG_ERROR("[IniFile-ERROR] Cannot open configuration file\n");
+        MSG_ERROR("[IniFile-ERROR] Cannot open configuration file");
         return Error;
     }
 
@@ -124,7 +124,7 @@ int IniFile::Read(){
                     FileData[token] = value;
                 } else {
                     Error = INI_ERROR_WRONG_FORMAT;
-                    MSG_ERROR("[IniFile-ERROR] The missing key name is in group "+group+"\n");
+                    MSG_ERROR("[IniFile-ERROR] The missing key name is in group "+group);
                     return Error;
                 }
             }
@@ -189,7 +189,7 @@ Data32 IniFile::addressType(string groupname, string keyname, Data32 defaultvalu
         addressValue = strtoul(Iter->second.c_str(),NULL,16);
     else {
         string defVal = UintTostring(defaultvalue);
-        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defVal+")\n");
+        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defVal+")");
     }
 
     return addressValue;
@@ -224,7 +224,7 @@ long IniFile::intType(string groupname, string keyname, long defaultvalue ){
     }
     else {
         string defVal = longTostring(defaultvalue);
-        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defVal+")\n");
+        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defVal+")");
     }
 
     return intValue;
@@ -258,7 +258,7 @@ long long IniFile::longType(string groupname, string keyname, long long defaultv
     }
     else {
         string defVal = longlongTostring(defaultvalue);
-        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defVal+")\n");
+        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defVal+")");
     }
 
     return longValue;
@@ -280,7 +280,7 @@ string IniFile::stringType( string groupname, string keyname, string defaultvalu
     if(Iter != FileData.end())
         stringChain = Iter->second;
     else
-        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defaultvalue+")\n");
+        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defaultvalue+")");
 
     return stringChain;
 }
@@ -302,7 +302,7 @@ float IniFile::floatType( string groupname, string keyname, float defaultvalue )
         floatValue = strtof(Iter->second.c_str(),NULL);
     else {
         string defVal = floatTostring(defaultvalue);
-        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defVal+")\n");
+        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defVal+")");
     }
 
     return floatValue;

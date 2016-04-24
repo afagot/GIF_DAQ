@@ -86,7 +86,7 @@ string GetRunStatus(){
         statusfile.close();
         return runStatus;
     } else {
-        MSG_ERROR("[DAQ-ERROR] Error opening the run status file.Please check "+__runstatuspath+"\n");
+        MSG_ERROR("[DAQ-ERROR] Error opening the run status file.Please check "+__runstatuspath);
         runStatus = "READ_ERR";
         return runStatus;
     }
@@ -102,7 +102,7 @@ int SetRunStatus(string& runStatus){
         statusfile.close();
         return WR_OK;
     } else {
-        MSG_ERROR("[DAQ-ERROR] Error opening the run status file.Please check "+__runstatuspath+"\n");
+        MSG_ERROR("[DAQ-ERROR] Error opening the run status file.Please check "+__runstatuspath);
         runStatus = "WRITE_ERR";
         return WR_ERR;
     }
@@ -126,7 +126,7 @@ int CtrlRunStatus(string& runStatus){
     else if(runStatus == "WR_ERR")
         return WR_ERR;
     else{
-        MSG_ERROR("[DAQ-ERROR] Run status is unknown ("+runStatus+").\n");
+        MSG_ERROR("[DAQ-ERROR] Run status is unknown ("+runStatus+")");
         runStatus = "STATUS_ERR";
         return STATUS_ERR;
     }
