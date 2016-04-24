@@ -14,6 +14,7 @@
 
 #include "../include/IniFile.h"
 #include "../include/MsgSvc.h"
+#include "../include/utils.h"
 
 using namespace std;
 
@@ -50,6 +51,7 @@ bool IniFile::CheckIfGroup(string line,string& group){
                 return true;
         } else {
             Error = INI_ERROR_WRONG_GROUP_FORMAT;
+            MSG_ERROR("[IniFile-ERROR] Wrong group format : doesn't end with a ]\n");
             return true;
         }
     }
@@ -71,10 +73,12 @@ bool IniFile::CheckIfToken(string line,string& key,string& value){
             value = line.substr(p0,(line.size()-p0));
         } else {
             Error = INI_ERROR_MISSING_VALUE;
+            MSG_ERROR("[IniFile-ERROR] A value is missing for the key "+key+"\n");
             return true;
         }
     } else {
         Error = INI_ERROR_WRONG_FORMAT;
+        MSG_ERROR("[IniFile-ERROR] A key name is missing is the config file\n");
         return false;
     }
     return true;
@@ -82,7 +86,7 @@ bool IniFile::CheckIfToken(string line,string& key,string& value){
 
 // *************************************************************************************************************
 
-void IniFile::SetFileName(const string filename){
+void IniFile::SetFileName(string filename){
     FileName = filename;
 }
 
@@ -97,12 +101,11 @@ int IniFile::Read(){
 
     // Loading the file into the parser
     if(ini){
-        MSG_INFO("[IniFile]: Opening configuration file %s\n",FileName.c_str());
         parser << ini.rdbuf();
         ini.close();
     } else {
         Error = INI_ERROR_CANNOT_OPEN_READ_FILE;
-        MSG_ERROR("[IniFile]: Cannot open configuration file.\n");
+        MSG_ERROR("[IniFile-ERROR] Cannot open configuration file\n");
         return Error;
     }
 
@@ -121,14 +124,15 @@ int IniFile::Read(){
                     FileData[token] = value;
                 } else {
                     Error = INI_ERROR_WRONG_FORMAT;
+                    MSG_ERROR("[IniFile-ERROR] The missing key name is in group "+group+"\n");
                     return Error;
                 }
             }
         }
     }
 
-    for(IniFileDataIter Iter = FileData.begin(); Iter != FileData.end(); Iter++)
-        MSG_INFO("[IniFile]: %s = %s\n", Iter->first.c_str(), Iter->second.c_str());
+ //   for(IniFileDataIter Iter = FileData.begin(); Iter != FileData.end(); Iter++)
+ //       MSG_INFO("[IniFile]: %s = %s\n", Iter->first.c_str(), Iter->second.c_str());
 
     return Error;
 }
@@ -136,16 +140,41 @@ int IniFile::Read(){
 // *************************************************************************************************************
 
 int IniFile::Write(){
+    ofstream ini(FileName.c_str(), ios::out);
     Error = INI_OK;
 
+    string last_group = "";
+
+    for(IniFileDataIter Iter = FileData.begin(); Iter != FileData.end(); Iter++){
+        size_t separator_pos = Iter->first.find_first_of('.');
+        if (separator_pos == string::npos)
+            continue;
+
+        string group = Iter->first.substr(0, separator_pos);
+
+        if(group != last_group){
+            last_group = group;
+            ini << "[" << group << "]\n";
+        }
+        string token = Iter->first.substr(separator_pos+1);
+        string value = Iter->second;
+
+        ini << token << "=" << value << "\n";
+    }
+
+    ini.close();
     return Error;
 }
 
 // *************************************************************************************************************
 
+IniFileData IniFile::GetFileData(){
+    return FileData;
+}
 
-Data32 IniFile::addressType(const string groupname, const string keyname, const Data32 defaultvalue ){
-    stringstream sstr;
+// *************************************************************************************************************
+
+Data32 IniFile::addressType(string groupname, string keyname, Data32 defaultvalue ){
     string key;
     long addressValue = defaultvalue;
 
@@ -158,6 +187,10 @@ Data32 IniFile::addressType(const string groupname, const string keyname, const 
 
     if(Iter != FileData.end())
         addressValue = strtoul(Iter->second.c_str(),NULL,16);
+    else {
+        string defVal = UintTostring(defaultvalue);
+        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defVal+")\n");
+    }
 
     return addressValue;
 }
@@ -165,7 +198,7 @@ Data32 IniFile::addressType(const string groupname, const string keyname, const 
 // *************************************************************************************************************
 
 
-long IniFile::intType(const string groupname, const string keyname, const long defaultvalue ){
+long IniFile::intType(string groupname, string keyname, long defaultvalue ){
     string key;
     long intValue = defaultvalue;
     string fileValue;
@@ -189,13 +222,17 @@ long IniFile::intType(const string groupname, const string keyname, const long d
 
         intValue = strtol(fileValue.c_str(),NULL,base);
     }
+    else {
+        string defVal = longTostring(defaultvalue);
+        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defVal+")\n");
+    }
 
     return intValue;
 }
 
 // *************************************************************************************************************
 
-long long IniFile::longType(const string groupname, const string keyname, const long long defaultvalue ){
+long long IniFile::longType(string groupname, string keyname, long long defaultvalue ){
     string key;
     long long longValue = defaultvalue;
     string fileValue;
@@ -219,13 +256,17 @@ long long IniFile::longType(const string groupname, const string keyname, const 
 
         longValue = strtoll(fileValue.c_str(),NULL,base);
     }
+    else {
+        string defVal = longlongTostring(defaultvalue);
+        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defVal+")\n");
+    }
 
     return longValue;
 }
 
 // *************************************************************************************************************
 
-string IniFile::stringType( const string groupname, const string keyname, const string defaultvalue ){
+string IniFile::stringType( string groupname, string keyname, string defaultvalue ){
     string key;
     string stringChain = defaultvalue;
 
@@ -238,13 +279,15 @@ string IniFile::stringType( const string groupname, const string keyname, const 
 
     if(Iter != FileData.end())
         stringChain = Iter->second;
+    else
+        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defaultvalue+")\n");
 
     return stringChain;
 }
 
 // *************************************************************************************************************
 
-float IniFile::floatType( const string groupname, const string keyname, const float defaultvalue ){
+float IniFile::floatType( string groupname, string keyname, float defaultvalue ){
     string key;
     float floatValue = defaultvalue;
 
@@ -257,6 +300,10 @@ float IniFile::floatType( const string groupname, const string keyname, const fl
 
     if(Iter != FileData.end())
         floatValue = strtof(Iter->second.c_str(),NULL);
+    else {
+        string defVal = floatTostring(defaultvalue);
+        MSG_WARNING("[IniFile-WARING] "+key+" could not be found : default key used instead ("+defVal+")\n");
+    }
 
     return floatValue;
 }

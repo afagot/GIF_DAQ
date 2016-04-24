@@ -70,8 +70,12 @@ using namespace std;
 #define READ_OK                             0X0002
 #define TEST_WR                             0xBEEF
 
-#define TRIG_WIN_WIDTH_V1990A               0x50
-#define TRIG_WIN_OFFSET_V1190A             -0x28
+#define TRIG_DEF_WIDTH_V1990A               40
+#define TRIG_DEF_OFFSET_V1190A             -41
+#define TRIG_EFF_WIDTH_V1990A               24
+#define TRIG_EFF_OFFSET_V1190A             -29
+#define TRIG_RATE_WIDTH_V1990A              400
+#define TRIG_RATE_OFFSET_V1190A            -401
 #define TRIG_SRCH_MARGIN_V1190A             0x04
 #define TRIG_REJ_MARGIN_V1190A              0x04
 

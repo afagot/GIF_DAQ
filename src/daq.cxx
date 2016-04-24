@@ -5,6 +5,7 @@
 // *********************************************************************
 
 #include "../include/DataReader.h"
+#include "../include/utils.h"
 #include "../include/MsgSvc.h"
 #include <limits>
 
@@ -13,53 +14,62 @@ using namespace std;
 int main (int argc ,char *argv[])
 {
     MSG_INFO("****************************************************\n");
-    MSG_INFO("******    DAQ Program 16/09/15 Version 2.2    ******\n");
+    MSG_INFO("******    DAQ Program XX/0X/16 Version 3.0    ******\n");
     MSG_INFO("****************************************************\n");
 
     DataReader *DR = new DataReader();
 
     /* Initialisation of the setup */
 
-    MSG_INFO("[DAQ]: TDC INITIALISATION...");
+    MSG_INFO("[DAQ]: Initialisation of the TDCs\n");
 
-    DR->Init("daqgifpp.ini");
+    DR->Init(__configpath);
 
-    MSG_INFO("[DAQ]: INITIALISATION DONE");
+    MSG_INFO("[DAQ]: Initialisation done\n");
 
     /* Run */
 
-    //define a variable used to ask the user if he wants to start a new
-    //run each time a run finishes. It is first initialised at "y" (yes)
-    //taking in consideration that the user always wants to start the
-    //first run.
-    //Then it is changed to "default" and the user will be asked if he
-    //wants to start a new run.
-    //If the user wants to start a new run, we will leave him a bit of
-    //time to update the run information into the configuration file
-    string startrun = "y";
+    //The DAQ is communicating with the WEB DCS. It reads a file containing
+    //run commands from the DCS (START and STOP) and gives feedback on the
+    //run status (RUNNING, NEXT).
+    //When the DAQ gets START, the run starts and a busy is sent via NEXT.
+    //When the run ends, the DAQ sends NEXT and waits for the next START.
+    //In case the DAQ gets STOP from the WEB DCS, the DAQ exits safely.
+    //In case of an error, the DAQ sends STATUS_ERR or WRITE_ERR and exits.
+    string runStatus = GetRunStatus();
 
-    while(startrun == "y"){
-        startrun = "default";
+    //Enter the DAQ Loop only if we got a first START
+    if(CtrlRunStatus(runStatus) == START){
 
-        MSG_INFO("[DAQ]: RUN STARTED... \n");
+        //Stay in the run loop while you don't have STOP
+        //or an error
+        while(CtrlRunStatus(runStatus) != STOP){
+            MSG_INFO("[DAQ] Run about to start...\n");
 
-        DR->Update();
-        DR->Run();
+            runStatus = "RUNNING";
+            SetRunStatus(runStatus);
 
-        MSG_INFO("[DAQ]: RUN FINISHED\n");
+            //If you got a writing error, exit
+            if(CtrlRunStatus(runStatus) != RUNNING) break;
 
-        while(startrun != "y" && startrun != "n"){
-            MSG_GREEN("[DAQ]: Would you like to start a new run? (y/n) ");
-            cin >> startrun;
-        }
+            DR->Update();
+            DR->Run();
 
-        if(startrun == "y"){
-            string emptystring;
-            MSG_GREEN("[DAQ]: Update the configuration file then type OK and ENTER to continue...");
-            cin >> emptystring;
-        } else if (startrun == "n"){
-            MSG_INFO("[DAQ]: GOODBYE!\n");
+            MSG_INFO("[DAQ] Run finished. Waiting for the next signal...\n");
+
+            runStatus = "NEXT";
+            SetRunStatus(runStatus);
+            if(CtrlRunStatus(runStatus) != NEXT) break;
+
+            while(CtrlRunStatus(runStatus) == NEXT){
+                sleep(20);
+                runStatus = GetRunStatus();
+            }
+
+            if(CtrlRunStatus(runStatus) != START) break;
         }
     }
-    return 0;
+
+    MSG_INFO("[DAQ] DAQ will shut down\n");
+    return CtrlRunStatus(runStatus);
 }

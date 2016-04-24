@@ -24,12 +24,14 @@ CFLAGS       := -ggdb -fPIC -DLINUX -Wall -funsigned-char \
 
 all: $(RUN_REGISTRY) $(DAQ_BIN_DIR) $(DAQ_OBJ_DIR) daq
 
-daq: 	daq.o v1718.o v1190a.o DataReader.o IniFile.o
+daq: 	daq.o v1718.o v1190a.o DataReader.o IniFile.o utils.o MsgSvc.o
 	g++ $(CFLAGS) $(DAQ_OBJ_DIR)/daq.o \
 	$(DAQ_OBJ_DIR)/v1718.o \
 	$(DAQ_OBJ_DIR)/v1190a.o \
 	$(DAQ_OBJ_DIR)/DataReader.o \
 	$(DAQ_OBJ_DIR)/IniFile.o \
+	$(DAQ_OBJ_DIR)/utils.o \
+	$(DAQ_OBJ_DIR)/MsgSvc.o \
         -o $(DAQ_BIN_DIR)/daq \
         $(LFLAGS)  \
         -l CAENVME -l curses
@@ -44,6 +46,10 @@ DataReader.o:
 	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/DataReader.cxx -o $(DAQ_OBJ_DIR)/DataReader.o
 IniFile.o:
 	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/IniFile.cxx -o $(DAQ_OBJ_DIR)/IniFile.o
+utils.o:
+	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/utils.cxx -o $(DAQ_OBJ_DIR)/utils.o
+MsgSvc.o:
+	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/MsgSvc.cxx -o $(DAQ_OBJ_DIR)/MsgSvc.o
 
 $(RUN_REGISTRY):
 	mkdir -p $(RUN_REGISTRY)/

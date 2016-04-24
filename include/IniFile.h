@@ -52,16 +52,17 @@ class IniFile{
         virtual         ~IniFile();
 
         // Basic file operations
-        void            SetFileName(const string filename);
+        void            SetFileName(string filename);
         int             Read();
         int             Write();
+        IniFileData     GetFileData();
 
         // Data readout methods
-        Data32          addressType(const string groupname, const string keyname, const Data32 defaultvalue);
-        long            intType(const string groupname,const string keyname,const long defaultvalue);
-        long long       longType( const string groupname, const string keyname, const long long defaultvalue );
-        string          stringType( const string groupname, const string keyname, const string defaultvalue );
-        float           floatType( const string groupname, const string keyname, const float defaultvalue );
+        Data32          addressType (string groupname, string keyname, Data32 defaultvalue);
+        long            intType     (string groupname, string keyname, long defaultvalue);
+        long long       longType    (string groupname, string keyname, long long defaultvalue );
+        string          stringType  (string groupname, string keyname, string defaultvalue );
+        float           floatType   (string groupname, string keyname, float defaultvalue );
 
         // Error methods
         string          GetErrorMsg();
