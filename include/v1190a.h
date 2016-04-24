@@ -26,6 +26,7 @@
 #include <TString.h>
 #include <TTree.h>
 #include <TString.h>
+#include <string>
 
 using namespace std;
 
@@ -194,8 +195,8 @@ class v1190a
 
     v1190a(long handle, IniFile *inifile, int ntdcs);
     ~v1190a();
-    Data16              write_op_reg(Data32 address, int code);
-    Data16              read_op_reg(Data32 address);
+    Data16              write_op_reg(Data32 address, int code, string error);
+    Data16              read_op_reg(Data32 address, string error);
     void                Reset(int ntdcs);
     void                Clear(int ntdcs);
     void                TestWR(Data16 value,int ntdcs);

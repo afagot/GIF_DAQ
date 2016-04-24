@@ -183,10 +183,10 @@ string GetLogTimeStamp(){
 
     stream << setfill('0') << setw(4) << Y << "-"
            << setfill('0') << setw(2) << M << "-"
-           << setfill('0') << setw(2) << D << " "
+           << setfill('0') << setw(2) << D << "."
            << setfill('0') << setw(2) << h << ":"
            << setfill('0') << setw(2) << m << ":"
-           << setfill('0') << setw(2) << s << " ";
+           << setfill('0') << setw(2) << s << ".";
 
     stream >> Date;
     stream.clear();
