@@ -21,11 +21,11 @@ int main (int argc ,char *argv[])
 
     /* Initialisation of the setup */
 
-    MSG_INFO("[DAQ]: Initialisation of the TDCs");
+    MSG_INFO("[DAQ] Initialisation of the TDCs. Please wait, this may take a few minutes...");
 
     DR->Init(__configpath);
 
-    MSG_INFO("[DAQ]: Initialisation done");
+    MSG_INFO("[DAQ] Initialisation done");
 
     /* Run */
 

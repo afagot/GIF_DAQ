@@ -300,9 +300,9 @@ void v1190a::SetTDCDetectionMode(Data16 mode, int ntdcs){
 
 void v1190a::SetTDCResolution(Data16 lsb, int ntdcs){ //Resolution readout
     for(int tdc=0; tdc < ntdcs; tdc++){
-        write_op_reg(Address[tdc],OPCODE_SET_TR_LEAD_LSB_V1190A, "SetTDCResolution"); //Set channel dead time
+        write_op_reg(Address[tdc],OPCODE_SET_TR_LEAD_LSB_V1190A, "SetTDCResolution"); //Set LSB of leading/trailing edge
         write_op_reg(Address[tdc],lsb, "SetTDCResolution");
-        write_op_reg(Address[tdc],OPCODE_READ_RES_V1190A, "SetTDCResolution");
+        write_op_reg(Address[tdc],OPCODE_READ_RES_V1190A, "SetTDCResolution"); //Resolution readout
     }
 }
 
