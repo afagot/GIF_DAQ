@@ -1,4 +1,4 @@
-#GIF++ DAQ v2.2
+#GIF++ DAQ v3.0
 ####Author: Alexis Fagot
 ####email : alexis.fagot@ugent.be
 ####Tel.: +32 9 264 65 69
@@ -21,8 +21,6 @@ To compile the gif daq project, simply do :
 
 ## Usage
 
-To use the program, the user can modify the parameters of the TDC inside the file `daqgifpp.ini` using the **[USER'S MANUAL](http://www.caen.it/servlet/checkCaenManualFile?Id=8657)**. Then to run it, simply type :
+Note that this new version of the DAQ is not meant to be used as a standalone program anymore.
+A web interface has been designed to automate the data taking of an entire scan. This web interface launches the DAQ and sends START signals at the beginning of every run and shut downs the DAQ via a STOP signal when the scan is completed.
 
-    bin/daq
-
-The output datafiles are saved into the directory `datarun` and a Run Registry file is provided in the folder `.RunRegistry`

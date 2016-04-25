@@ -160,11 +160,11 @@ void v1190a::CheckCommunication(int ntdcs){//Check the communication with the mi
 void v1190a::SetTDCTestMode(Data16 mode, int ntdcs){//Enable/Disable TDC test mode
     if(mode == ENABLE)
         for(int tdc=0; tdc < ntdcs; tdc++)
-            write_op_reg(Address[tdc], OPCODE_EN_TEST_MODE_V1190A, "SetTDCTestMode");
+            write_op_reg(Address[tdc], OPCODE_EN_TEST_MODE_V1190A, "SetTDCTestMode - Step 1");
 
     else if(mode == DISABLE)
         for(int tdc=0; tdc < ntdcs; tdc++)
-            write_op_reg(Address[tdc], OPCODE_DIS_TEST_MODE_V1190A, "SetTDCTestMode");
+            write_op_reg(Address[tdc], OPCODE_DIS_TEST_MODE_V1190A, "SetTDCTestMode - Step 2");
 }
 
 // *************************************************************************************************************
@@ -179,11 +179,11 @@ void v1190a::SetTrigMatching(int ntdcs){//Set trigger matching mode
 void v1190a::SetTrigTimeSubstraction(Data16 mode, int ntdcs){//Enable/Disable substraction of trigger time
     if(mode == ENABLE)
         for(int tdc=0; tdc < ntdcs; tdc++)
-            write_op_reg(Address[tdc], OPCODE_EN_SUB_TRG_V1190A,"SetTrigTimeSubstraction");
+            write_op_reg(Address[tdc], OPCODE_EN_SUB_TRG_V1190A,"SetTrigTimeSubstraction - Step 1");
 
     else if(mode == DISABLE)
         for(int tdc=0; tdc < ntdcs; tdc++)
-            write_op_reg(Address[tdc], OPCODE_DIS_SUB_TRG_V1190A, "SetTrigTimeSubstraction");
+            write_op_reg(Address[tdc], OPCODE_DIS_SUB_TRG_V1190A, "SetTrigTimeSubstraction - Step 2");
 }
 
 // *************************************************************************************************************
@@ -191,8 +191,8 @@ void v1190a::SetTrigTimeSubstraction(Data16 mode, int ntdcs){//Enable/Disable su
 void v1190a::SetTrigWindowWidth(Uint windowWidth,int ntdcs){
     // Time unit = 25ns
     for(int tdc=0; tdc < ntdcs; tdc++){
-        write_op_reg(Address[tdc], OPCODE_SET_WIN_WIDTH_V1190A, "SetTrigWindowWidth");
-        write_op_reg(Address[tdc], windowWidth, "SetTrigWindowWidth");
+        write_op_reg(Address[tdc], OPCODE_SET_WIN_WIDTH_V1190A, "SetTrigWindowWidth - Step 1");
+        write_op_reg(Address[tdc], windowWidth, "SetTrigWindowWidth - Step 2");
     }
 }
 
@@ -201,8 +201,8 @@ void v1190a::SetTrigWindowWidth(Uint windowWidth,int ntdcs){
 void v1190a::SetTrigWindowOffset(Uint windowOffset, int ntdcs){
     // Time unit = 25ns
     for(int tdc=0; tdc < ntdcs; tdc++){
-        write_op_reg(Address[tdc], OPCODE_SET_WIN_OFFSET_V1190A, "SetTrigWindowOffset");
-        write_op_reg(Address[tdc], windowOffset, "SetTrigWindowOffset");
+        write_op_reg(Address[tdc], OPCODE_SET_WIN_OFFSET_V1190A, "SetTrigWindowOffset - Step 1");
+        write_op_reg(Address[tdc], windowOffset, "SetTrigWindowOffset - Step 2");
     }
 }
 
@@ -211,8 +211,8 @@ void v1190a::SetTrigWindowOffset(Uint windowOffset, int ntdcs){
 void v1190a::SetTrigSearchMargin(Uint searchMargin, int ntdcs){
     // Time unit = 25ns
     for(int tdc=0; tdc < ntdcs; tdc++){
-        write_op_reg(Address[tdc], OPCODE_SET_SW_MARGIN_V1190A, "SetTrigSearchMargin");
-        write_op_reg(Address[tdc], searchMargin, "SetTrigSearchMargin");
+        write_op_reg(Address[tdc], OPCODE_SET_SW_MARGIN_V1190A, "SetTrigSearchMargin - Step 1");
+        write_op_reg(Address[tdc], searchMargin, "SetTrigSearchMargin - Step 2");
     }
 }
 
@@ -221,8 +221,8 @@ void v1190a::SetTrigSearchMargin(Uint searchMargin, int ntdcs){
 void v1190a::SetTrigRejectionMargin(Uint rejectMargin, int ntdcs){
     // Time unit = 25ns
     for(int tdc=0; tdc < ntdcs; tdc++){
-        write_op_reg(Address[tdc], OPCODE_SET_REJ_MARGIN_V1190A, "SetTrigRejectionMargin");
-        write_op_reg(Address[tdc], rejectMargin, "SetTrigRejectionMargin");
+        write_op_reg(Address[tdc], OPCODE_SET_REJ_MARGIN_V1190A, "SetTrigRejectionMargin - Step 1");
+        write_op_reg(Address[tdc], rejectMargin, "SetTrigRejectionMargin - Step 2");
     }
 }
 
@@ -232,14 +232,14 @@ void v1190a::GetTrigConfiguration(int ntdcs){ //Read and print trigger configura
     for(int tdc=0; tdc < ntdcs; tdc++){
         string tdcnumber = intTostring(tdc);
 
-        write_op_reg(Address[tdc], OPCODE_READ_TRG_CONF_V1190A, "GetTrigConfiguration");
+        write_op_reg(Address[tdc], OPCODE_READ_TRG_CONF_V1190A, "GetTrigConfiguration - Step 1");
 
         Data16 MatchWindowWidth,WindowOffset,ExtraSearchWindowWidth,RejectMargin,TriggerTimeSubtraction;
-        MatchWindowWidth        = read_op_reg(Address[tdc], "GetTrigConfiguration");
-        WindowOffset            = read_op_reg(Address[tdc], "GetTrigConfiguration");
-        ExtraSearchWindowWidth  = read_op_reg(Address[tdc], "GetTrigConfiguration");
-        RejectMargin            = read_op_reg(Address[tdc], "GetTrigConfiguration");
-        TriggerTimeSubtraction  = read_op_reg(Address[tdc], "GetTrigConfiguration");
+        MatchWindowWidth        = read_op_reg(Address[tdc], "GetTrigConfiguration - Step 2");
+        WindowOffset            = read_op_reg(Address[tdc], "GetTrigConfiguration - Step 3");
+        ExtraSearchWindowWidth  = read_op_reg(Address[tdc], "GetTrigConfiguration - Step 4");
+        RejectMargin            = read_op_reg(Address[tdc], "GetTrigConfiguration - Step 5");
+        TriggerTimeSubtraction  = read_op_reg(Address[tdc], "GetTrigConfiguration - Step 6");
 
         string width     = intTostring(MatchWindowWidth*25);
         string offset    = intTostring((65536-WindowOffset)*25);
@@ -290,9 +290,13 @@ void v1190a::SetTrigConfiguration(IniFile *inifile,int ntdcs){ //Set and print t
 
 void v1190a::SetTDCDetectionMode(Data16 mode, int ntdcs){
     for(int tdc=0; tdc < ntdcs; tdc++){
-        write_op_reg(Address[tdc],OPCODE_SET_DETECTION_V1190A, "SetTDCDetectionMode"); //Edge detection selection
-        write_op_reg(Address[tdc],mode, "SetTDCDetectionMode");
-        write_op_reg(Address[tdc],OPCODE_READ_DETECTION_V1190A, "SetTDCDetectionMode"); //Edge detection readout
+        string tdcnumber = intTostring(tdc);
+        write_op_reg(Address[tdc],OPCODE_SET_DETECTION_V1190A, "SetTDCDetectionMode - Step 1"); //Edge detection selection
+        write_op_reg(Address[tdc],mode, "SetTDCDetectionMode - Step 2");
+        write_op_reg(Address[tdc],OPCODE_READ_DETECTION_V1190A, "SetTDCDetectionMode - Step 3"); //Edge detection readout
+
+        string readregister = intTostring(read_op_reg(Address[tdc], "SetTDCDetectionMode - Step 4") & 0b11);
+        MSG_INFO("[TDC"+tdcnumber+"] Edge readout : "+readregister);
     }
 }
 
@@ -300,9 +304,13 @@ void v1190a::SetTDCDetectionMode(Data16 mode, int ntdcs){
 
 void v1190a::SetTDCResolution(Data16 lsb, int ntdcs){ //Resolution readout
     for(int tdc=0; tdc < ntdcs; tdc++){
-        write_op_reg(Address[tdc],OPCODE_SET_TR_LEAD_LSB_V1190A, "SetTDCResolution"); //Set LSB of leading/trailing edge
-        write_op_reg(Address[tdc],lsb, "SetTDCResolution");
-        write_op_reg(Address[tdc],OPCODE_READ_RES_V1190A, "SetTDCResolution"); //Resolution readout
+        string tdcnumber = intTostring(tdc);
+        write_op_reg(Address[tdc],OPCODE_SET_TR_LEAD_LSB_V1190A, "SetTDCResolution - Step 1"); //Set LSB of leading/trailing edge
+        write_op_reg(Address[tdc],lsb, "SetTDCResolution - Step 2");
+        write_op_reg(Address[tdc],OPCODE_READ_RES_V1190A, "SetTDCResolution - Step 3"); //Resolution readout
+
+        string readregister = intTostring(read_op_reg(Address[tdc], "SetTDCResolution - Step 4") & 0b11);
+        MSG_INFO("[TDC"+tdcnumber+"] Resoltion : "+readregister);
     }
 }
 
@@ -310,9 +318,13 @@ void v1190a::SetTDCResolution(Data16 lsb, int ntdcs){ //Resolution readout
 
 void v1190a::SetTDCDeadTime(Data16 time, int ntdcs){
     for(int tdc=0; tdc < ntdcs; tdc++){
-        write_op_reg(Address[tdc],OPCODE_SET_DEAD_TIME_V1190A, "SetTDCDeadTime"); //Set channel dead time
-        write_op_reg(Address[tdc],time, "SetTDCDeadTime");
-        write_op_reg(Address[tdc],OPCODE_READ_DEAD_TIME_V1190A, "SetTDCDeadTime"); //Channel dead time readout
+        string tdcnumber = intTostring(tdc);
+        write_op_reg(Address[tdc],OPCODE_SET_DEAD_TIME_V1190A, "SetTDCDeadTime - Step 1"); //Set channel dead time
+        write_op_reg(Address[tdc],time, "SetTDCDeadTime - Step 2");
+        write_op_reg(Address[tdc],OPCODE_READ_DEAD_TIME_V1190A, "SetTDCDeadTime - Step 3"); //Channel dead time readout
+
+        string readregister = intTostring(read_op_reg(Address[tdc], "SetTDCDeadTime - Step 4") & 0b11);
+        MSG_INFO("[TDC"+tdcnumber+"] Channel dead time : "+readregister);
     }
 }
 
@@ -321,13 +333,17 @@ void v1190a::SetTDCDeadTime(Data16 time, int ntdcs){
 void v1190a::SetTDCHeadTrailer(Data16 mode, int ntdcs){ //Enable/Disable TDC header and trailer
     if(mode == 1)
         for(int tdc=0; tdc < ntdcs; tdc++)
-            write_op_reg(Address[tdc],OPCODE_EN_HEAD_TRAILER_V1190A, "SetTDCHeadTrailer");
+            write_op_reg(Address[tdc],OPCODE_EN_HEAD_TRAILER_V1190A, "SetTDCHeadTrailer - Step 1");
     else if(mode == 0)
         for(int tdc=0; tdc < ntdcs; tdc++)
-            write_op_reg(Address[tdc],OPCODE_DIS_HEAD_TRAILER_V1190A, "SetTDCHeadTrailer");
+            write_op_reg(Address[tdc],OPCODE_DIS_HEAD_TRAILER_V1190A, "SetTDCHeadTrailer - Step 2");
 
     for(int tdc=0; tdc < ntdcs; tdc++){
-        write_op_reg(Address[tdc],OPCODE_READ_HEAD_TRAILER_V1190A, "SetTDCHeadTrailer");
+        string tdcnumber = intTostring(tdc);
+        write_op_reg(Address[tdc],OPCODE_READ_HEAD_TRAILER_V1190A, "SetTDCHeadTrailer - Step 3");
+
+        string readregister = intTostring(read_op_reg(Address[tdc], "SetTDCHeadTrailer - Step 4") & 0b1);
+        MSG_INFO("[TDC"+tdcnumber+"] TDC header/trailer status (on/off) : "+readregister);
     }
 }
 
@@ -335,9 +351,13 @@ void v1190a::SetTDCHeadTrailer(Data16 mode, int ntdcs){ //Enable/Disable TDC hea
 
 void v1190a::SetTDCEventSize(Data16 size,int ntdcs){ //Maximum number of hits per event readout
     for(int tdc=0; tdc < ntdcs; tdc++){
-        write_op_reg(Address[tdc],OPCODE_SET_EVENT_SIZE_V1190A, "SetTDCEventSize");
-        write_op_reg(Address[tdc],size, "SetTDCEventSize");
-        write_op_reg(Address[tdc],OPCODE_READ_EVENT_SIZE_V1190A, "SetTDCEventSize");
+        string tdcnumber = intTostring(tdc);
+        write_op_reg(Address[tdc],OPCODE_SET_EVENT_SIZE_V1190A, "SetTDCEventSize - Step 1");
+        write_op_reg(Address[tdc],size, "SetTDCEventSize - Step 2");
+        write_op_reg(Address[tdc],OPCODE_READ_EVENT_SIZE_V1190A, "SetTDCEventSize - Step 3");
+
+        string readregister = intTostring(read_op_reg(Address[tdc], "SetTDCEventSize - Step 4") & 0b1111);
+        MSG_INFO("[TDC"+tdcnumber+"] Maximum number of hit/event : "+readregister);
     }
 }
 
@@ -352,10 +372,11 @@ void v1190a::SwitchChannels(IniFile *inifile, int ntdcs){
     //Enable - Disable channels according to configuration file
 
     for(int tdc=0; tdc < ntdcs; tdc++){
+        string tdcnumber = intTostring(tdc);
         char groupname[10];
         sprintf(groupname,"TDC%i",tdc);
 
-        write_op_reg(Address[tdc],OPCODE_WRITE_EN_PATTERN_V1190A, "SwitchChannels");
+        write_op_reg(Address[tdc],OPCODE_WRITE_EN_PATTERN_V1190A, "SwitchChannels - Step 1");
 
         string TDCType = inifile->stringType(groupname,"Type","V1190A");
         int nConnectors = 0;
@@ -378,17 +399,24 @@ void v1190a::SwitchChannels(IniFile *inifile, int ntdcs){
                 else if(status == DISABLE)
                     StatusList[2*c+ch] = 0x0000;
 
-                write_op_reg(Address[tdc],StatusList[2*c+ch], "SwitchChannels");
+                write_op_reg(Address[tdc],StatusList[2*c+ch], "SwitchChannels - Step 2");
             }
         }
 
         //Read status of channels
 
-        write_op_reg(Address[tdc],OPCODE_READ_EN_PATTERN_V1190A, "SwitchChannels");
+        write_op_reg(Address[tdc],OPCODE_READ_EN_PATTERN_V1190A, "SwitchChannels - Step 3");
         for(int c = 0; c<4; c++){ //Loop over the 32-channels TDC connectors (A,B,C,D)
             for(int ch = 0; ch<2; ch++){ //Loop over the 2 16-channels inputs of each TDC connector
                 firstchannel = ch*16;
                 lastchannel = firstchannel+15;
+
+                char tmpname[15];
+                sprintf(tmpname,"%c%02u-%02u",Connectors[c],firstchannel,lastchannel);
+                string name = string(tmpname);
+
+                string readregister = intTostring(read_op_reg(Address[tdc], "SwitchChannels - Step 4") & 0xFFFF);
+                MSG_INFO("[TDC"+tdcnumber+name+"] Status : "+readregister);
             }
         }
     }
