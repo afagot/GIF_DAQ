@@ -87,7 +87,9 @@ string GetRunStatus(){
         return runStatus;
     } else {
         MSG_ERROR("[DAQ-ERROR] Error opening the run status file.Please check "+__runstatuspath);
-        runStatus = "READ_ERR";
+        runStatus = "DAQ_ERR";
+	SetRunStatus(runStatus);
+	runStatus = "RD_ERR";
         return runStatus;
     }
 }
@@ -103,7 +105,7 @@ int SetRunStatus(string& runStatus){
         return WR_OK;
     } else {
         MSG_ERROR("[DAQ-ERROR] Error opening the run status file.Please check "+__runstatuspath);
-        runStatus = "WRITE_ERR";
+        runStatus = "WR_ERR";
         return WR_ERR;
     }
 }
@@ -113,8 +115,8 @@ int SetRunStatus(string& runStatus){
 int CtrlRunStatus(string& runStatus){
     if(runStatus == "START")
         return START;
-    else if(runStatus == "NEXT")
-        return NEXT;
+    else if(runStatus == "DAQ_RDY")
+        return DAQ_RDY;
     else if(runStatus == "RUNNING")
         return RUNNING;
     else if(runStatus == "STOP")
@@ -127,6 +129,8 @@ int CtrlRunStatus(string& runStatus){
         return WR_ERR;
     else{
         MSG_ERROR("[DAQ-ERROR] Run status is unknown ("+runStatus+")");
+        runStatus = "DAQ_ERR";
+	SetRunStatus(runStatus);
         runStatus = "STATUS_ERR";
         return STATUS_ERR;
     }
@@ -134,7 +138,7 @@ int CtrlRunStatus(string& runStatus){
 
 // ****************************************************************************************************
 
-int GetTimeStamp(){
+long long GetTimeStamp(){
     stringstream stream;
 
     //Get time information
@@ -148,7 +152,7 @@ int GetTimeStamp(){
     int s = Time->tm_sec;
 
     //Set the time stamp
-    int timestamp;
+    long long timestamp;
 
     stream << setfill('0') << setw(4) << Y
            << setfill('0') << setw(2) << M

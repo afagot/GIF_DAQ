@@ -18,6 +18,15 @@ int main (int argc ,char *argv[])
     MSG_INFO("****************************************************");
 
     DataReader *DR = new DataReader();
+    string runStatus;
+
+    //The DAQ is communicating with the WEB DCS. It reads a file containing
+    //run commands from the DCS (RAMP, WAIT, START and STOP) and gives feedback
+    //on the run status (DAQ_RDY, RUNNING, NEXT).
+    //When the DAQ gets START, the run starts and a busy is sent via RUNNING.
+    //When the run ends, the DAQ sends NEXT and waits for the next START.
+    //In case the DAQ gets STOP from the WEB DCS, the DAQ exits safely.
+    //In case of an error, the DAQ sends STATUS_ERR or WRITE_ERR and exits.
 
     /* Initialisation of the setup */
 
@@ -25,20 +34,29 @@ int main (int argc ,char *argv[])
 
     DR->Init(__configpath);
 
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL){
+        MSG_INFO("[DAQ] KILL command received");
+        MSG_INFO("[DAQ] DAQ will shut down");
+        return CtrlRunStatus(runStatus);
+    }
+
     MSG_INFO("[DAQ] Initialisation done");
+
+    //When the initialisation is done, send to the WEBDCS a DAQ_RDY signal
+    runStatus = "DAQ_RDY";
+
+    SetRunStatus(runStatus);
 
     /* Run */
 
-    //The DAQ is communicating with the WEB DCS. It reads a file containing
-    //run commands from the DCS (START and STOP) and gives feedback on the
-    //run status (RUNNING, NEXT).
-    //When the DAQ gets START, the run starts and a busy is sent via NEXT.
-    //When the run ends, the DAQ sends NEXT and waits for the next START.
-    //In case the DAQ gets STOP from the WEB DCS, the DAQ exits safely.
-    //In case of an error, the DAQ sends STATUS_ERR or WRITE_ERR and exits.
-    string runStatus = GetRunStatus();
-
     //Enter the DAQ Loop only if we got a first START
+    //If the DAQ was ready before the ramping, wait until START
+    while(CtrlRunStatus(runStatus) == DAQ_RDY){
+        sleep(10);
+        runStatus = GetRunStatus();
+    }
+
     if(CtrlRunStatus(runStatus) == START){
 
         //Stay in the run loop while you don't have STOP
@@ -55,13 +73,20 @@ int main (int argc ,char *argv[])
             DR->Update();
             DR->Run();
 
+            runStatus = GetRunStatus();
+
+	    if(CtrlRunStatus(runStatus) == FATAL){
+                MSG_INFO("[DAQ] DAQ will shut down");
+                return CtrlRunStatus(runStatus);
+            }
+
             MSG_INFO("[DAQ] Run finished. Waiting for the next signal...");
 
-            runStatus = "NEXT";
+            runStatus = "DAQ_RDY";
             SetRunStatus(runStatus);
-            if(CtrlRunStatus(runStatus) != NEXT) break;
+            if(CtrlRunStatus(runStatus) != DAQ_RDY) break;
 
-            while(CtrlRunStatus(runStatus) == NEXT){
+            while(CtrlRunStatus(runStatus) == DAQ_RDY){
                 sleep(20);
                 runStatus = GetRunStatus();
             }
@@ -73,3 +98,4 @@ int main (int argc ,char *argv[])
     MSG_INFO("[DAQ] DAQ will shut down");
     return CtrlRunStatus(runStatus);
 }
+

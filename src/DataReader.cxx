@@ -103,7 +103,7 @@ string DataReader::GetFileName(){
 
     //Create the folder to contain the data file is it doesn't exist yet
     //We will use a convention of 6 digits for the Scan ID
-    straingstream ss;
+    stringstream ss;
     ss << setfill('0') << setw(6) << ScanNumber;
     string ScanID;
     ss >> ScanID;
@@ -113,7 +113,7 @@ string DataReader::GetFileName(){
     system(mkdirScanFolder.c_str());
 
     //Get the run number (start time of the run)
-    int RunNumber = GetTimeStamp();
+    long long RunNumber = GetTimeStamp();
 
     //use a stream to construct the name with the different variable types
     stringstream fNameStream;
@@ -148,7 +148,7 @@ void DataReader::Run(){
     //Get the output file name and create the ROOT file
     Uint TriggerCount = 0;
     string outputFileName = GetFileName();
-    int startstamp = GetTimeStamp();
+    long long startstamp = GetTimeStamp();
 
     TFile *outputFile = new TFile(outputFileName.c_str(), "recreate");
 
@@ -212,7 +212,7 @@ void DataReader::Run(){
             if(percentage % 10 == 0 && percentage != last_print){
                 string log_percent = intTostring(percentage);
 
-                MSG_INFO("[DAQ] "+log_percent+"%");
+                MSG_INFO("[DAQ] Run "+outputFileName+" "+log_percent+"%");
                 last_print = percentage;
             }
 
@@ -230,30 +230,13 @@ void DataReader::Run(){
                 MSG_FATAL("[DAQ-FATAL] KILL command received");
                 MSG_FATAL("[DAQ-FATAL] Safely close current data file and exit");
 
-                //Write the data from the RAWData structure to the TTree
-                for(Uint i=0; i<TDCData.EventList->size(); i++){
-                    EventCount  = TDCData.EventList->at(i);
-                    nHits       = TDCData.NHitsList->at(i);
-                    TDCCh       = TDCData.ChannelList->at(i);
-                    TDCTS       = TDCData.TimeStampList->at(i);
-
-                    RAWDataTree->Fill();
-                }
-
-                RAWDataTree->Print();
-                outputFile = RAWDataTree->GetCurrentFile();
-
-                delete RAWDataTree;
-
-                outputFile->Close();
-
-                delete outputFile;
-
-                exit(EXIT_FAILURE);
+                break;
             }
             checkKill = 0;
         }
     }
+
+    MSG_INFO("[DAQ] Run "+outputFileName+" 100%");
 
     //Write the data from the RAWData structure to the TTree
     for(Uint i=0; i<TDCData.EventList->size(); i++){
@@ -266,7 +249,7 @@ void DataReader::Run(){
     }
 
     RAWDataTree->Print();
-    outputFile = RAWDataTree->GetCurrentFile();
+    RAWDataTree->Write();
 
     delete RAWDataTree;
 
@@ -281,9 +264,9 @@ void DataReader::Run(){
     TH1I *Att       = new TH1I("Attenuators","Attenuators settings for this run",2,0,2);
     TH1I *Trig      = new TH1I("Triggers","Number of triggers for this run",1,0,1);
 
-    TH1I *HVeffs    = new TH1I("HVeffs","List of HVeff applied per chamber during this run",3,0,3);
+    TH1I *HVeffs    = new TH1I("HVeffs","List of HVeff applied per chamber during this run",1,0,1);
     HVeffs->SetCanExtend(TH1::kAllAxes);
-    TH1I *Thrs      = new TH1I("HVeffs","List of thresholds used per chamber during this run",3,0,3);
+    TH1I *Thrs      = new TH1I("Thrs","List of thresholds used per chamber during this run",1,0,1);
     Thrs->SetCanExtend(TH1::kAllAxes);
 
     string group;
@@ -297,15 +280,10 @@ void DataReader::Run(){
     TString electronics;
 
     //Branches from the config file
-    RunParameters->Branch("ScanID", &ID);
     RunParameters->Branch("RunType", &runtype);
-    RunParameters->Branch("MaxTriggers", &Trig);
     RunParameters->Branch("Beam", &beamstatus);
     RunParameters->Branch("Source", &sourcestatus);
-    RunParameters->Branch("Attenuators", &Att);
     RunParameters->Branch("ElectronicsType", &electronics);
-    RunParameters->Branch("HVeff", &HVeffs);
-    RunParameters->Branch("Threshold", &Thrs);
 
     //Now fill the configuration parameters
     IniFileData inidata = iniFile->GetFileData();
@@ -350,6 +328,12 @@ void DataReader::Run(){
         }
     }
 
+    ID->Write();
+    Att->Write();
+    Trig->Write();
+    HVeffs->Write();
+    Thrs->Write();
+
     //Then make histograms for the monitored parameters
     //These parameters are continuously stored into a file every 10 seconds
     //The first line is the number of parameters saved in the file
@@ -361,8 +345,7 @@ void DataReader::Run(){
 
     if(MonFile){
         //vector that will contain the parameter histograms
-        vector<TH1D *> Monitor;
-        Monitor.clear();
+        TH1D* Monitor[50];
 
         //read the number of monitored parameters in the file
         int nParam = 0;
@@ -374,37 +357,30 @@ void DataReader::Run(){
             string nameParam;
             MonFile >> nameParam;
 
-            TH1D* Histo = new TH1D(nameParam.c_str(),nameParam.c_str(),1,0,1);
-            Histo->SetCanExtend(TH1::kAllAxes);
-
-            Monitor.push_back(Histo);
-
-            //Branches for the monitored parameters
-            RunParameters->Branch(nameParam.c_str(), &Monitor[p]);
-
-            delete Histo;
+            Monitor[p] = new TH1D(nameParam.c_str(),nameParam.c_str(),10,0,1);
+	    Monitor[p]->SetCanExtend(TH1::kAllAxes);
         }
 
         //Start the loop over the values of the monitored parameters
         double paramValue = 0.;
 
-        cout << Monitor.size() << endl;
-
         while(MonFile.good()){
             for(int p = 0; p < nParam; p++){
-                cout << p << endl;
                 MonFile >> paramValue;
                 Monitor[p]->Fill(paramValue);
             }
         }
+
+        for(int p = 0; p < nParam; p++){
+            Monitor[p]->Write();
+        }
     }
 
     RunParameters->Fill();
-
     RunParameters->Print();
-    outputFile = RunParameters->GetCurrentFile();
+    RunParameters->Write();
 
-    outputFile->Write(0, TObject::kWriteDelete);
+    outputFile->Write();
     outputFile->Close();
 
     WriteRunRegistry(outputFileName);

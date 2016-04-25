@@ -7,7 +7,7 @@
 using namespace std;
 
 #define RUNNING     3
-#define NEXT        2
+#define DAQ_RDY     2
 #define START       1
 #define STOP       -1
 #define STATUS_ERR -2
@@ -33,7 +33,7 @@ string  floatTostring(float value);
 string  GetRunStatus();
 int     SetRunStatus(string& runStatus);
 int     CtrlRunStatus(string& runStatus);
-int     GetTimeStamp();
+long long     GetTimeStamp();
 string  GetLogTimeStamp();
 
 #endif // UTILS_H
