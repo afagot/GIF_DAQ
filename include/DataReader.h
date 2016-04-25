@@ -39,6 +39,7 @@ class DataReader
         void                Init(string inifilename);
         void                Update();
         string              GetFileName();
+        void                WriteRunRegistry(string filename);
         void                Run();
 };
 

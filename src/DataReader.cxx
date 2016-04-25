@@ -127,6 +127,17 @@ string DataReader::GetFileName(){
 
 // ****************************************************************************************************
 
+void DataReader::WriteRunRegistry(string filename){
+    ofstream runregistry(__registrypath.c_str(),ios::app);
+
+    string filepath = filename.substr(0,filename.find_last_of("/"));
+    string name = filename.substr(filename.find_last_of("/")+1);
+
+    runregistry << GetTimeStamp() << '\t' << name << '\t' << filepath << '\n';
+}
+
+// ****************************************************************************************************
+
 void DataReader::Run(){
     //Get the output file name and create the ROOT file
     Uint TriggerCount = 0;
@@ -386,6 +397,8 @@ void DataReader::Run(){
 
     outputFile->Write(0, TObject::kWriteDelete);
     outputFile->Close();
+
+    WriteRunRegistry(outputFileName);
 
     delete outputFile;
 }
