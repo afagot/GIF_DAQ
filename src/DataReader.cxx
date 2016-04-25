@@ -102,7 +102,13 @@ string DataReader::GetFileName(){
     int ScanNumber = iniFile->intType("General","ScanID",999999);
 
     //Create the folder to contain the data file is it doesn't exist yet
-    string datafolder = __datapath + iniFile->stringType("General","ScanID","") + "/";
+    //We will use a convention of 6 digits for the Scan ID
+    straingstream ss;
+    ss << setfill('0') << setw(6) << ScanNumber;
+    string ScanID;
+    ss >> ScanID;
+
+    string datafolder = __datapath + ScanID + "/";
     string mkdirScanFolder = "mkdir -p " + datafolder;
     system(mkdirScanFolder.c_str());
 
@@ -112,12 +118,12 @@ string DataReader::GetFileName(){
     //use a stream to construct the name with the different variable types
     stringstream fNameStream;
 
-    fNameStream << datafolder                   //destination
+    fNameStream << datafolder   //destination
                 << "Scan"
-                << ScanNumber                   //scan ID
+                << ScanID       //scan ID
                 << "_Run"
-                << RunNumber                    //run number
-                << ".root";                     //extension
+                << RunNumber    //run number
+                << ".root";     //extension
 
     string outputfName;
     fNameStream >> outputfName;
@@ -382,8 +388,11 @@ void DataReader::Run(){
         //Start the loop over the values of the monitored parameters
         double paramValue = 0.;
 
+        cout << Monitor.size() << endl;
+
         while(MonFile.good()){
             for(int p = 0; p < nParam; p++){
+                cout << p << endl;
                 MonFile >> paramValue;
                 Monitor[p]->Fill(paramValue);
             }
