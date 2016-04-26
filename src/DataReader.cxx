@@ -191,7 +191,8 @@ void DataReader::Run(){
     int last_print = 0;     // keep track of the last percentage printed
 
     //Every 20 seconds read the run file to check for a KILL command
-    Uint checkKill = 0;
+    //Create a check kill clock
+    Uint CKill_Clk = 0;
 
     //Read the output buffer until the min number of trigger is achieved
     while(TriggerCount < GetMaxTriggers()){
@@ -220,19 +221,13 @@ void DataReader::Run(){
             VME->SendBUSY(OFF);
         }
 
-        checkKill++;
-        string runStatus = "";
+        //Increment the kill clock
+        CKill_Clk++;
 
         //check inside the run file for a KILL command every 10s
-        if(checkKill == 50){
-            runStatus = GetRunStatus();
-            if(CtrlRunStatus(runStatus) == FATAL){
-                MSG_FATAL("[DAQ-FATAL] KILL command received");
-                MSG_FATAL("[DAQ-FATAL] Safely close current data file and exit");
-
-                break;
-            }
-            checkKill = 0;
+        if(CKill_Clk == 50){
+            CheckKILL();
+            CKill_Clk = 0;
         }
     }
 
@@ -358,7 +353,7 @@ void DataReader::Run(){
             MonFile >> nameParam;
 
             Monitor[p] = new TH1D(nameParam.c_str(),nameParam.c_str(),10,0,1);
-	    Monitor[p]->SetCanExtend(TH1::kAllAxes);
+        Monitor[p]->SetCanExtend(TH1::kAllAxes);
         }
 
         //Start the loop over the values of the monitored parameters

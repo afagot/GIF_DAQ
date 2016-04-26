@@ -24,16 +24,17 @@ const string __configpath       = __nfspath + "DAQ_RUN/daqgifpp.ini";
 const string __parampath        = __nfspath + "DAQ_RUN/mon";
 const string __registrypath     = __nfspath + "DAQ_RUN/runregistry";
 
-string  shortTostring(short value);
-string  intTostring(int value);
-string  UintTostring(Uint value);
-string  longTostring(long value);
-string  longlongTostring(long long value);
-string  floatTostring(float value);
-string  GetRunStatus();
-int     SetRunStatus(string& runStatus);
-int     CtrlRunStatus(string& runStatus);
-long long     GetTimeStamp();
-string  GetLogTimeStamp();
+string      shortTostring(short value);
+string      intTostring(int value);
+string      UintTostring(Uint value);
+string      longTostring(long value);
+string      longlongTostring(long long value);
+string      floatTostring(float value);
+string      GetRunStatus();
+int         SetRunStatus(string& runStatus);
+int         CtrlRunStatus(string& runStatus);
+void        CheckKILL();
+long long   GetTimeStamp();
+string      GetLogTimeStamp();
 
 #endif // UTILS_H

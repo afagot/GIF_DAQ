@@ -88,8 +88,8 @@ string GetRunStatus(){
     } else {
         MSG_ERROR("[DAQ-ERROR] Error opening the run status file.Please check "+__runstatuspath);
         runStatus = "DAQ_ERR";
-	SetRunStatus(runStatus);
-	runStatus = "RD_ERR";
+    SetRunStatus(runStatus);
+    runStatus = "RD_ERR";
         return runStatus;
     }
 }
@@ -130,9 +130,21 @@ int CtrlRunStatus(string& runStatus){
     else{
         MSG_ERROR("[DAQ-ERROR] Run status is unknown ("+runStatus+")");
         runStatus = "DAQ_ERR";
-	SetRunStatus(runStatus);
+    SetRunStatus(runStatus);
         runStatus = "STATUS_ERR";
         return STATUS_ERR;
+    }
+}
+
+// ****************************************************************************************************
+
+void CheckKILL(){
+    string runStatus = GetRunStatus();
+
+    if(CtrlRunStatus(runStatus) == FATAL){
+        MSG_FATAL("[DAQ-KILL] KILL command received");
+        MSG_FATAL("[DAQ-KILL] DAQ will stop");
+        exit(EXIT_FAILURE);
     }
 }
 

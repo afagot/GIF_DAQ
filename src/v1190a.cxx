@@ -51,6 +51,9 @@ v1190a::~v1190a(){}
 // *************************************************************************************************************
 
 Data16 v1190a::read_op_reg(Data32 address, string error){
+    //Before executing the command, check if a KILL has been sent
+    CheckKILL();
+
     //Checks the Read OK bit
     int time = 0;
     Data16 ro_bit;
@@ -74,6 +77,9 @@ Data16 v1190a::read_op_reg(Data32 address, string error){
 // *************************************************************************************************************
 
 Data16 v1190a::write_op_reg(Data32 address, int code, string error){
+    //Before executing the command, check if a KILL has been sent
+    CheckKILL();
+
     //Checks the Write OK bit
     int time = 0;
     Data16 wo_bit;
@@ -97,44 +103,29 @@ Data16 v1190a::write_op_reg(Data32 address, int code, string error){
 // *************************************************************************************************************
 
 void v1190a::Reset(int ntdcs){ //Reset the TDCs (Software clear) and wait 1s
-    string runStatus;
-
     int reset=0x0;
 
-    for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
-
+    for(int tdc=0; tdc < ntdcs; tdc++)
         CAENVME_WriteCycle(Handle,Address[tdc]+ADD_MOD_RESET_V1190A,&reset,AddressModifier,DataWidth);
-    }
+
     sleep(1);
 }
 
 // *************************************************************************************************************
 
 void v1190a::Clear(int ntdcs){ //Clear the TDC Buffers and wait 1s
-    string runStatus;
-
     int clear=0x0;
 
-    for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
-
+    for(int tdc=0; tdc < ntdcs; tdc++)
         CAENVME_WriteCycle(Handle,Address[tdc]+ADD_SW_CLEAR_V1190A,&clear,AddressModifier,DataWidth);
-    }
+
     sleep(1);
 }
 
 // *************************************************************************************************************
 
 void v1190a::TestWR(Data16 value, int ntdcs){ //Test : try to write/read 16 bit word
-    string runStatus;
-
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
-
         Data16 test=value;
         CAENVME_WriteCycle(Handle,Address[tdc]+ADD_DUMMY16_V1190A,&test,AddressModifier,DataWidth);
 
@@ -151,29 +142,18 @@ void v1190a::TestWR(Data16 value, int ntdcs){ //Test : try to write/read 16 bit 
 // *************************************************************************************************************
 
 void v1190a::CheckTDCStatus(int ntdcs){ //Status of the TDCs (Status register)
-    string runStatus;
-
     Data16 status;
 
-    for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
-
+    for(int tdc=0; tdc < ntdcs; tdc++)
         CAENVME_ReadCycle(Handle,Address[tdc]+ADD_STATUS_V1190A,&status,AddressModifier,DataWidth);
-    }
 }
 
 // *************************************************************************************************************
 
 void v1190a::CheckCommunication(int ntdcs){//Check the communication with the micro controller
-    string runStatus;
-
     int check = 0;
 
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
-
         write_op_reg(Address[tdc],OPCODE_READ_SPARE_V1190A,"CheckCommunication");
         check = read_op_reg(Address[tdc],"CheckCommunication");
         if(check != 0x5555){
@@ -186,70 +166,39 @@ void v1190a::CheckCommunication(int ntdcs){//Check the communication with the mi
 // *************************************************************************************************************
 
 void v1190a::SetTDCTestMode(Data16 mode, int ntdcs){//Enable/Disable TDC test mode
-    string runStatus;
-
-    if(mode == ENABLE){
-        for(int tdc=0; tdc < ntdcs; tdc++){
-	    runStatus = GetRunStatus();
-	    if(CtrlRunStatus(runStatus) == FATAL) return;
-
+    if(mode == ENABLE)
+        for(int tdc=0; tdc < ntdcs; tdc++)
             write_op_reg(Address[tdc], OPCODE_EN_TEST_MODE_V1190A, "SetTDCTestMode - Step 1");
-	}
-    } else if(mode == DISABLE){
-        for(int tdc=0; tdc < ntdcs; tdc++){
-	    runStatus = GetRunStatus();
-	    if(CtrlRunStatus(runStatus) == FATAL) return;
 
+    else if(mode == DISABLE)
+        for(int tdc=0; tdc < ntdcs; tdc++)
             write_op_reg(Address[tdc], OPCODE_DIS_TEST_MODE_V1190A, "SetTDCTestMode - Step 2");
-        }
-    }
 }
 
 // *************************************************************************************************************
 
 void v1190a::SetTrigMatching(int ntdcs){//Set trigger matching mode
-    string runStatus;
-
-    for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
-
+    for(int tdc=0; tdc < ntdcs; tdc++)
         write_op_reg(Address[tdc], OPCODE_TRG_MATCH_V1190A, "SetTrigMatching");
-    }
 }
 
 // *************************************************************************************************************
 
 void v1190a::SetTrigTimeSubstraction(Data16 mode, int ntdcs){//Enable/Disable substraction of trigger time
-    string runStatus;
-
-    if(mode == ENABLE){
-        for(int tdc=0; tdc < ntdcs; tdc++){
-	    runStatus = GetRunStatus();
-	    if(CtrlRunStatus(runStatus) == FATAL) return;
-
+    if(mode == ENABLE)
+        for(int tdc=0; tdc < ntdcs; tdc++)
             write_op_reg(Address[tdc], OPCODE_EN_SUB_TRG_V1190A,"SetTrigTimeSubstraction - Step 1");
-	}
-    } else if(mode == DISABLE){
-        for(int tdc=0; tdc < ntdcs; tdc++){
-     	    runStatus = GetRunStatus();
-	    if(CtrlRunStatus(runStatus) == FATAL) return;
 
+    else if(mode == DISABLE)
+        for(int tdc=0; tdc < ntdcs; tdc++)
             write_op_reg(Address[tdc], OPCODE_DIS_SUB_TRG_V1190A, "SetTrigTimeSubstraction - Step 2");
-	}
-    }
 }
 
 // *************************************************************************************************************
 
 void v1190a::SetTrigWindowWidth(Uint windowWidth,int ntdcs){
-    string runStatus;
-
     // Time unit = 25ns
-    for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
-
+    for(int tdc=0; tdc < ntdcs; tdc++)
         write_op_reg(Address[tdc], OPCODE_SET_WIN_WIDTH_V1190A, "SetTrigWindowWidth - Step 1");
         write_op_reg(Address[tdc], windowWidth, "SetTrigWindowWidth - Step 2");
     }
@@ -262,8 +211,8 @@ void v1190a::SetTrigWindowOffset(Uint windowOffset, int ntdcs){
 
     // Time unit = 25ns
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL) return;
 
         write_op_reg(Address[tdc], OPCODE_SET_WIN_OFFSET_V1190A, "SetTrigWindowOffset - Step 1");
         write_op_reg(Address[tdc], windowOffset, "SetTrigWindowOffset - Step 2");
@@ -277,8 +226,8 @@ void v1190a::SetTrigSearchMargin(Uint searchMargin, int ntdcs){
 
     // Time unit = 25ns
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL) return;
 
         write_op_reg(Address[tdc], OPCODE_SET_SW_MARGIN_V1190A, "SetTrigSearchMargin - Step 1");
         write_op_reg(Address[tdc], searchMargin, "SetTrigSearchMargin - Step 2");
@@ -292,8 +241,8 @@ void v1190a::SetTrigRejectionMargin(Uint rejectMargin, int ntdcs){
 
     // Time unit = 25ns
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL) return;
 
         write_op_reg(Address[tdc], OPCODE_SET_REJ_MARGIN_V1190A, "SetTrigRejectionMargin - Step 1");
         write_op_reg(Address[tdc], rejectMargin, "SetTrigRejectionMargin - Step 2");
@@ -306,8 +255,8 @@ void v1190a::GetTrigConfiguration(int ntdcs){ //Read and print trigger configura
     string runStatus;
 
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL) return;
 
         string tdcnumber = intTostring(tdc);
 
@@ -373,8 +322,8 @@ void v1190a::SetTDCDetectionMode(Data16 mode, int ntdcs){
     string runStatus;
 
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL) return;
 
         string tdcnumber = intTostring(tdc);
         write_op_reg(Address[tdc],OPCODE_SET_DETECTION_V1190A, "SetTDCDetectionMode - Step 1"); //Edge detection selection
@@ -392,8 +341,8 @@ void v1190a::SetTDCResolution(Data16 lsb, int ntdcs){ //Resolution readout
     string runStatus;
 
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL) return;
 
         string tdcnumber = intTostring(tdc);
         write_op_reg(Address[tdc],OPCODE_SET_TR_LEAD_LSB_V1190A, "SetTDCResolution - Step 1"); //Set LSB of leading/trailing edge
@@ -411,8 +360,8 @@ void v1190a::SetTDCDeadTime(Data16 time, int ntdcs){
     string runStatus;
 
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL) return;
 
         string tdcnumber = intTostring(tdc);
         write_op_reg(Address[tdc],OPCODE_SET_DEAD_TIME_V1190A, "SetTDCDeadTime - Step 1"); //Set channel dead time
@@ -431,23 +380,23 @@ void v1190a::SetTDCHeadTrailer(Data16 mode, int ntdcs){ //Enable/Disable TDC hea
 
     if(mode == 1){
         for(int tdc=0; tdc < ntdcs; tdc++){
-	    runStatus = GetRunStatus();
-	    if(CtrlRunStatus(runStatus) == FATAL) return;
+        runStatus = GetRunStatus();
+        if(CtrlRunStatus(runStatus) == FATAL) return;
 
             write_op_reg(Address[tdc],OPCODE_EN_HEAD_TRAILER_V1190A, "SetTDCHeadTrailer - Step 1");
-	}
+    }
     } else if(mode == 0){
         for(int tdc=0; tdc < ntdcs; tdc++){
-	    runStatus = GetRunStatus();
-	    if(CtrlRunStatus(runStatus) == FATAL) return;
+        runStatus = GetRunStatus();
+        if(CtrlRunStatus(runStatus) == FATAL) return;
 
             write_op_reg(Address[tdc],OPCODE_DIS_HEAD_TRAILER_V1190A, "SetTDCHeadTrailer - Step 2");
-	}
+    }
     }
 
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL) return;
 
         string tdcnumber = intTostring(tdc);
         write_op_reg(Address[tdc],OPCODE_READ_HEAD_TRAILER_V1190A, "SetTDCHeadTrailer - Step 3");
@@ -463,8 +412,8 @@ void v1190a::SetTDCEventSize(Data16 size,int ntdcs){ //Maximum number of hits pe
     string runStatus;
 
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL) return;
 
         string tdcnumber = intTostring(tdc);
         write_op_reg(Address[tdc],OPCODE_SET_EVENT_SIZE_V1190A, "SetTDCEventSize - Step 1");
@@ -489,8 +438,8 @@ void v1190a::SwitchChannels(IniFile *inifile, int ntdcs){
     //Enable - Disable channels according to configuration file
 
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL) return;
 
         string tdcnumber = intTostring(tdc);
         char groupname[10];
@@ -550,11 +499,11 @@ void v1190a::SetIRQ(Data32 level, Data32 count, int ntdcs) {
     // IRQ lines go from 1 to 7, so line 0 disables the IRQ function
     if (level == DISABLE){
         for(int tdc=0; tdc < ntdcs; tdc++){
-	    runStatus = GetRunStatus();
-	    if(CtrlRunStatus(runStatus) == FATAL) return;
+        runStatus = GetRunStatus();
+        if(CtrlRunStatus(runStatus) == FATAL) return;
 
             CAENVME_WriteCycle(Handle,Address[tdc]+ADD_INT_LEVEL_V1190A,&level,AddressModifier,DataWidth);
-	}
+    }
         return;
     }
 
@@ -578,8 +527,8 @@ void v1190a::SetIRQ(Data32 level, Data32 count, int ntdcs) {
     }
 
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL) return;
 
         // Set the IRQ line we want the module to use
         CAENVME_WriteCycle(Handle,Address[tdc]+ADD_INT_LEVEL_V1190A,&level,AddressModifier,DataWidth);
@@ -597,8 +546,8 @@ void v1190a::SetBlockTransferMode(Data16 mode, int ntdcs) {
     Data16 num = (Data16) (mode==ENABLE ? (BLOCK_SIZE / 20) : 0);
 
     for(int tdc=0; tdc < ntdcs; tdc++){
-	runStatus = GetRunStatus();
-	if(CtrlRunStatus(runStatus) == FATAL) return;
+    runStatus = GetRunStatus();
+    if(CtrlRunStatus(runStatus) == FATAL) return;
 
         CAENVME_WriteCycle(Handle,Address[tdc]+ADD_BLT_EVENT_NUM_V1190A,&num,AddressModifier,DataWidth);
     }

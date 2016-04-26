@@ -18,7 +18,9 @@ int main (int argc ,char *argv[])
     MSG_INFO("****************************************************");
 
     DataReader *DR = new DataReader();
-    string runStatus;
+
+    //Define a string variable to exchange status with WEB DCS
+    string runStatus = "";
 
     //The DAQ is communicating with the WEB DCS. It reads a file containing
     //run commands from the DCS (RAMP, WAIT, START and STOP) and gives feedback
@@ -33,13 +35,6 @@ int main (int argc ,char *argv[])
     MSG_INFO("[DAQ] Initialisation of the TDCs. Please wait, this may take a few minutes...");
 
     DR->Init(__configpath);
-
-    runStatus = GetRunStatus();
-    if(CtrlRunStatus(runStatus) == FATAL){
-        MSG_INFO("[DAQ] KILL command received");
-        MSG_INFO("[DAQ] DAQ will shut down");
-        return CtrlRunStatus(runStatus);
-    }
 
     MSG_INFO("[DAQ] Initialisation done");
 
@@ -75,11 +70,6 @@ int main (int argc ,char *argv[])
 
             runStatus = GetRunStatus();
 
-	    if(CtrlRunStatus(runStatus) == FATAL){
-                MSG_INFO("[DAQ] DAQ will shut down");
-                return CtrlRunStatus(runStatus);
-            }
-
             MSG_INFO("[DAQ] Run finished. Waiting for the next signal...");
 
             runStatus = "DAQ_RDY";
@@ -95,7 +85,7 @@ int main (int argc ,char *argv[])
         }
     }
 
-    MSG_INFO("[DAQ] DAQ will shut down");
+    MSG_INFO("[DAQ-STOP] DAQ will shut down");
     return CtrlRunStatus(runStatus);
 }
 
