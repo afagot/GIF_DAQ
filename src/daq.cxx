@@ -13,6 +13,24 @@ using namespace std;
 
 int main (int argc ,char *argv[])
 {
+    MSG_INFO("                                                    ");
+    MSG_INFO("                                                    ");
+    MSG_INFO("                                                    ");
+    MSG_INFO("           *****       *****   *****                ");
+    MSG_INFO("        ***********    *****   *****                ");
+    MSG_INFO("      **************   *****   *****                ");
+    MSG_INFO("     ******     *****  *****   *******              ");
+    MSG_INFO("    ******    ******   *****   *******             .");
+    MSG_INFO("    ******   ******    *****   *****                ");
+    MSG_INFO("     ******            *****   *****   *            ");
+    MSG_INFO("      ******  *****    *****    ***** ***           ");
+    MSG_INFO("        **********     *****     *********          ");
+    MSG_INFO("            ***                    ****             ");
+    MSG_INFO("                                         **     **  ");
+    MSG_INFO("                                       ****** ******");
+    MSG_INFO("                                         **     **  ");
+    MSG_INFO("                                                    ");
+    MSG_INFO("                                                    ");
     MSG_INFO("****************************************************");
     MSG_INFO("******    DAQ Program XX/0X/16 Version 3.0    ******");
     MSG_INFO("****************************************************");
@@ -76,6 +94,7 @@ int main (int argc ,char *argv[])
             SetRunStatus(runStatus);
             if(CtrlRunStatus(runStatus) != DAQ_RDY) break;
 
+            //Wait for the WEB DCS to send a new signal
             while(CtrlRunStatus(runStatus) == DAQ_RDY){
                 sleep(20);
                 runStatus = GetRunStatus();
