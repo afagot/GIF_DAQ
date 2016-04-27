@@ -198,7 +198,7 @@ void v1190a::SetTrigTimeSubstraction(Data16 mode, int ntdcs){//Enable/Disable su
 
 void v1190a::SetTrigWindowWidth(Uint windowWidth,int ntdcs){
     // Time unit = 25ns
-    for(int tdc=0; tdc < ntdcs; tdc++)
+    for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc], OPCODE_SET_WIN_WIDTH_V1190A, "SetTrigWindowWidth - Step 1");
         write_op_reg(Address[tdc], windowWidth, "SetTrigWindowWidth - Step 2");
     }
