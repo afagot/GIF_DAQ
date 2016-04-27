@@ -11,6 +11,7 @@ using namespace std;
 #define START       1
 #define STOP       -1
 #define STATUS_ERR -2
+#define DAQ_ERR    -3
 
 #define WR_OK       4
 #define WR_ERR     -4
@@ -33,7 +34,13 @@ string      floatTostring(float value);
 string      GetRunStatus();
 int         SetRunStatus(string& runStatus);
 int         CtrlRunStatus(string& runStatus);
+void        SendDAQReady();
+void        SendDAQRunning();
+void        SendDAQError();
+void        WaitDCSSignal(Uint delay);
 void        CheckKILL();
+bool        CheckSTART();
+bool        CheckSTOP();
 long long   GetTimeStamp();
 string      GetLogTimeStamp();
 

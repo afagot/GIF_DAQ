@@ -6,6 +6,7 @@
 // *   22/04/2016
 //***************************************************************
 
+#include "../include/CAENVMEtypes.h"
 #include <string>
 
 using namespace std;
@@ -28,6 +29,8 @@ void MSG_INFO(string message);
 void MSG_DEBUG(string message);
 void MSG_VERBOSE(string message);
 void MSG_ALWAYS(string message);
+
+void PrintLogV1190(int tdc, string parameter, Data16 value);
 
 #endif
 

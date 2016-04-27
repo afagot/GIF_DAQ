@@ -57,50 +57,40 @@ int main (int argc ,char *argv[])
     MSG_INFO("[DAQ] Initialisation done");
 
     //When the initialisation is done, send to the WEBDCS a DAQ_RDY signal
-    runStatus = "DAQ_RDY";
-
-    SetRunStatus(runStatus);
+    SendDAQReady();
 
     /* Run */
 
     //Enter the DAQ Loop only if we got a first START
     //If the DAQ was ready before the ramping, wait until START
-    while(CtrlRunStatus(runStatus) == DAQ_RDY){
-        sleep(10);
-        runStatus = GetRunStatus();
-    }
+    WaitDCSSignal(10);
 
-    if(CtrlRunStatus(runStatus) == START){
+    if(CheckSTART()){
 
         //Stay in the run loop while you don't have STOP
-        //or an error
-        while(CtrlRunStatus(runStatus) != STOP){
+        while(!CheckSTOP()){
+            //Start the run after having updated the configuration file
             MSG_INFO("[DAQ] Run about to start...");
 
-            runStatus = "RUNNING";
-            SetRunStatus(runStatus);
-
-            //If you got a writing error, exit
-            if(CtrlRunStatus(runStatus) != RUNNING) break;
-
+            SendDAQRunning();
             DR->Update();
             DR->Run();
 
-            runStatus = GetRunStatus();
-
             MSG_INFO("[DAQ] Run finished. Waiting for the next signal...");
 
-            runStatus = "DAQ_RDY";
-            SetRunStatus(runStatus);
-            if(CtrlRunStatus(runStatus) != DAQ_RDY) break;
+            //When run is done, send a DAQ_RDY signal
+            SendDAQReady();
 
-            //Wait for the WEB DCS to send a new signal
-            while(CtrlRunStatus(runStatus) == DAQ_RDY){
-                sleep(20);
-                runStatus = GetRunStatus();
+            //Wait for the WEB DCS to send a new signal and control
+            //that it's START or STOP
+            WaitDCSSignal(10);
+
+            if(!CheckSTART() && !CheckSTOP()){
+                MSG_ERROR("[DAQ-ERROR] Wrong DCS signal received");
+                MSG_ERROR("[DAQ-ERROR] DAQ will shut down");
+                SendDAQError();
+                exit(EXIT_FAILURE);
             }
-
-            if(CtrlRunStatus(runStatus) != START) break;
         }
     }
 

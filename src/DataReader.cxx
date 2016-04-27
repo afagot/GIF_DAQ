@@ -134,9 +134,10 @@ string DataReader::GetFileName(){
 // ****************************************************************************************************
 
 void DataReader::WriteRunRegistry(string filename){
+    //Open the run registry file and wirte the new file name
     ofstream runregistry(__registrypath.c_str(),ios::app);
 
-    string filepath = filename.substr(0,filename.find_last_of("/"));
+    string filepath = filename.substr(0,filename.find_last_of("/")+1);
     string name = filename.substr(filename.find_last_of("/")+1);
 
     runregistry << GetTimeStamp() << '\t' << name << '\t' << filepath << '\n';
@@ -172,7 +173,7 @@ void DataReader::Run(){
     RAWDataTree->Branch("TDC_channel",    &TDCCh);
     RAWDataTree->Branch("TDC_TimeStamp",  &TDCTS);
 
-    //Cleaning all the vectors that wi9ll contain the data
+    //Cleaning all the vectors that will contain the data
     TDCData.EventList->clear();
     TDCData.NHitsList->clear();
     TDCData.ChannelList->clear();
@@ -187,19 +188,21 @@ void DataReader::Run(){
     MSG_INFO("[DAQ] Run "+outputFileName+" started");
     MSG_INFO("[DAQ] Run "+outputFileName+" 0%");
 
-    int percentage = 0;     // percentage of the run done
-    int last_print = 0;     // keep track of the last percentage printed
+    Uint percentage = 0;     // percentage of the run done
+    Uint last_print = 0;     // keep track of the last percentage printed
 
-    //Every 20 seconds read the run file to check for a KILL command
+    //Every once in a while read the run file to check for a KILL command
     //Create a check kill clock
     Uint CKill_Clk = 0;
 
     //Read the output buffer until the min number of trigger is achieved
     while(TriggerCount < GetMaxTriggers()){
-        usleep(200000);
+        //Check the TDC buffers for data every .1s (100ms)
+        usleep(100000);
 
         if(VME->CheckIRQ()){
-            //Stop data acquisition with BUSY as VETO
+            //Stop data acquisition with BUSY as VETO (the rising of
+            //the signal is of the order of 1ms)
             VME->SendBUSY(ON);
             usleep(1000);
 
@@ -209,8 +212,8 @@ void DataReader::Run(){
             //percentage update
             percentage = (100*TriggerCount) / GetMaxTriggers();
 
-            //dump the status in the logfile every 10%
-            if(percentage % 10 == 0 && percentage != last_print){
+            //dump the status in the logfile every 5%
+            if(percentage % 5 == 0 && percentage != last_print){
                 string log_percent = intTostring(percentage);
 
                 MSG_INFO("[DAQ] Run "+outputFileName+" "+log_percent+"%");
@@ -248,37 +251,48 @@ void DataReader::Run(){
 
     delete RAWDataTree;
 
-    //Create the parameters TTree
-    //For each run, the HVeff, Threshold, mean HVmon, Imon and environmental
+    //******************************************************************************
+
+    //At the end of each run, the HVeff, Threshold, mean HVmon, Imon and environmental
     //parameters values, beam and source status, Attenuator settings, Run type,
     //Scan ID, Number of triggers, start and stop time stamps are saved
+
+    //----------------------- CONFIGURATION FILE DATA
+
+    //Create the parameters TTree to save the string parameters
     TTree *RunParameters = new TTree("RunParameters","RunParameters");
 
-    //First read the parameters inside the config file
-    TH1D *ID        = new TH1D("ID","Identifiers of this run",3,0,3);
-    TH1I *Att       = new TH1I("Attenuators","Attenuators settings for this run",2,0,2);
-    TH1I *Trig      = new TH1I("Triggers","Number of triggers for this run",1,0,1);
+    //String parameters are to be read from the config file and saved into
+    //the TTree
+    TString runtype;        //Type of run (Efficiency, rate or test)
+    TString beamstatus;     //Beam status (ON or OFF)
+    TString sourcestatus;   //Source Status (ON or OFF)
+    TString electronics;    //Electronics used (for now only CMS-FEB)
 
-    TH1I *HVeffs    = new TH1I("HVeffs","List of HVeff applied per chamber during this run",1,0,1);
+    //Branches linking the string variables to the TTree
+    RunParameters->Branch("RunType",            &runtype);
+    RunParameters->Branch("Beam",               &beamstatus);
+    RunParameters->Branch("Source",             &sourcestatus);
+    RunParameters->Branch("ElectronicsType",    &electronics);
+
+    //Int parameters are to be read from the config file and saved into
+    //histograms
+    TH1D *ID        = new TH1D("ID","Identifiers of this run",3,0,3); //To save Scan ID, Start and Stop time stamps
+    TH1I *Att       = new TH1I("Attenuators","Attenuators settings for this run",2,0,2); //Attenuators used
+    TH1I *Trig      = new TH1I("Triggers","Number of triggers for this run",1,0,1); //Number of triggers
+
+    TH1I *HVeffs    = new TH1I("HVeffs","List of HVeff applied per chamber during this run",1,0,1); //List of HVeffs
     HVeffs->SetCanExtend(TH1::kAllAxes);
-    TH1I *Thrs      = new TH1I("Thrs","List of thresholds used per chamber during this run",1,0,1);
+
+    TH1I *Thrs      = new TH1I("Thrs","List of thresholds used per chamber during this run",1,0,1); //List of Thresholds
     Thrs->SetCanExtend(TH1::kAllAxes);
 
+    //Needed variable to go through the configuration file
     string group;
     string Parameter;
     string RPClabel;
     int value = 0;
 
-    TString runtype;
-    TString beamstatus;
-    TString sourcestatus;
-    TString electronics;
-
-    //Branches from the config file
-    RunParameters->Branch("RunType", &runtype);
-    RunParameters->Branch("Beam", &beamstatus);
-    RunParameters->Branch("Source", &sourcestatus);
-    RunParameters->Branch("ElectronicsType", &electronics);
 
     //Now fill the configuration parameters
     IniFileData inidata = iniFile->GetFileData();
@@ -290,6 +304,7 @@ void DataReader::Run(){
 
         group = Iter->first.substr(0, separator_pos);
 
+        //Parameters to be found in the [General] group
         if(group == "General"){
             Parameter = Iter->first.substr(separator_pos+1);
             if(Parameter == "ScanID"){
@@ -297,7 +312,7 @@ void DataReader::Run(){
                 ID->Fill(Parameter.c_str(),value);
                 ID->Fill("Start stamp",startstamp);
                 ID->Fill("Stop stamp", GetTimeStamp());
-            } if(Parameter == "RunType"){
+            } else if(Parameter == "RunType"){
                 runtype = iniFile->stringType(group,Parameter,"");
             } else if(Parameter == "MaxTriggers"){
                 value = iniFile->intType(group,Parameter,0);
@@ -312,22 +327,36 @@ void DataReader::Run(){
             } else if(Parameter == "ElectronicsType"){
                 electronics = iniFile->stringType(group,Parameter,"");
             }
-        } else if(group == "HighVoltage"){
+        }
+
+        //Parameters to be found in the [HighVoltage] group
+        else if(group == "HighVoltage"){
             RPClabel = Iter->first.substr(separator_pos+1);
             value = iniFile->intType(group,RPClabel,0);
             HVeffs->Fill(RPClabel.c_str(),value);
-        } else if (group == "Threshold"){
+        }
+
+        //Parameters to be found in the [Threshold] group
+        else if (group == "Threshold"){
             RPClabel = Iter->first.substr(separator_pos+1);
             value = iniFile->intType(group,RPClabel,0);
             Thrs->Fill(RPClabel.c_str(),value);
         }
     }
 
+    //Write the histograms into the ROOT file
     ID->Write();
     Att->Write();
     Trig->Write();
     HVeffs->Write();
     Thrs->Write();
+
+    //Fill the parameters tree, print it and write it into the ROOT file
+    RunParameters->Fill();
+    RunParameters->Print();
+    RunParameters->Write();
+
+    //----------------------- MONITORING FILE DATA
 
     //Then make histograms for the monitored parameters
     //These parameters are continuously stored into a file every 10 seconds
@@ -343,17 +372,19 @@ void DataReader::Run(){
         TH1D* Monitor[50];
 
         //read the number of monitored parameters in the file
+        // (first line)
         int nParam = 0;
         MonFile >> nParam;
 
+        //Save the names of the parameters and use them to initialise
+        //a histogram that will fill the previously created vector
+        // (second line)
         for(int p = 0; p < nParam; p++){
-            //Save the names od the parameters and use them to initialise
-            //a histogram that will fill the previously created vector
             string nameParam;
             MonFile >> nameParam;
 
             Monitor[p] = new TH1D(nameParam.c_str(),nameParam.c_str(),10,0,1);
-        Monitor[p]->SetCanExtend(TH1::kAllAxes);
+            Monitor[p]->SetCanExtend(TH1::kAllAxes);
         }
 
         //Start the loop over the values of the monitored parameters
@@ -371,13 +402,9 @@ void DataReader::Run(){
         }
     }
 
-    RunParameters->Fill();
-    RunParameters->Print();
-    RunParameters->Write();
-
-    outputFile->Write();
     outputFile->Close();
 
+    //If the data taking went well, add the data file to the run registry
     WriteRunRegistry(outputFileName);
 
     delete outputFile;

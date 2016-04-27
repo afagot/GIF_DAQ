@@ -6,6 +6,7 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <unistd.h>
 
 using namespace std;
 
@@ -123,16 +124,63 @@ int CtrlRunStatus(string& runStatus){
         return STOP;
     else if(runStatus == "KILL")
         return FATAL;
+    else if(runStatus == "DAQ_ERR")
+        return DAQ_ERR;
     else if(runStatus == "RD_ERR")
         return RD_ERR;
     else if(runStatus == "WR_ERR")
         return WR_ERR;
     else{
         MSG_ERROR("[DAQ-ERROR] Run status is unknown ("+runStatus+")");
-        runStatus = "DAQ_ERR";
+        SendDAQError();
+        exit(EXIT_FAILURE);
+    }
+}
+
+// ****************************************************************************************************
+
+void SendDAQReady(){
+    string runStatus = "DAQ_RDY";
     SetRunStatus(runStatus);
-        runStatus = "STATUS_ERR";
-        return STATUS_ERR;
+
+    if(CtrlRunStatus(runStatus) != DAQ_RDY){
+        MSG_ERROR("[DAQ-ERROR] DAQ_RDY not well written ("+runStatus+")");
+        exit(EXIT_FAILURE);
+    }
+}
+
+// ****************************************************************************************************
+
+void SendDAQRunning(){
+    string runStatus = "RUNNING";
+    SetRunStatus(runStatus);
+
+    if(CtrlRunStatus(runStatus) != RUNNING){
+        MSG_ERROR("[DAQ-ERROR] RUNNING not well written ("+runStatus+")");
+        exit(EXIT_FAILURE);
+    }
+}
+
+// ****************************************************************************************************
+
+void SendDAQError(){
+    string runStatus = "DAQ_ERR";
+    SetRunStatus(runStatus);
+
+    if(CtrlRunStatus(runStatus) != DAQ_ERR){
+        MSG_ERROR("[DAQ-ERROR] DAQ_ERR not well written ("+runStatus+")");
+        exit(EXIT_FAILURE);
+    }
+}
+
+// ****************************************************************************************************
+
+void WaitDCSSignal(Uint delay){
+    string runStatus = GetRunStatus();
+
+    while(CtrlRunStatus(runStatus) == DAQ_RDY){
+        sleep(delay);
+        runStatus = GetRunStatus();
     }
 }
 
@@ -143,9 +191,27 @@ void CheckKILL(){
 
     if(CtrlRunStatus(runStatus) == FATAL){
         MSG_FATAL("[DAQ-KILL] KILL command received");
-        MSG_FATAL("[DAQ-KILL] DAQ will stop");
+        MSG_FATAL("[DAQ-KILL] DAQ will shut down");
         exit(EXIT_FAILURE);
     }
+}
+
+// ****************************************************************************************************
+
+bool CheckSTART(){
+    string runStatus = GetRunStatus();
+
+    if(CtrlRunStatus(runStatus) == START) return true;
+    else return false;
+}
+
+// ****************************************************************************************************
+
+bool CheckSTOP(){
+    string runStatus = GetRunStatus();
+
+    if(CtrlRunStatus(runStatus) == STOP) return true;
+    else return false;
 }
 
 // ****************************************************************************************************
