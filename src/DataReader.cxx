@@ -337,7 +337,6 @@ void DataReader::Run(){
     ID->Write();
     Att->Write();
     Trig->Write();
-    HVeffs->Write();
     Thrs->Write();
 
     //Fill the parameters tree, print it and write it into the ROOT file
