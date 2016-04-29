@@ -280,12 +280,8 @@ void DataReader::Run(){
     TH1D *ID        = new TH1D("ID","Identifiers of this run",3,0,3); //To save Scan ID, Start and Stop time stamps
     TH1I *Att       = new TH1I("Attenuators","Attenuators settings for this run",2,0,2); //Attenuators used
     TH1I *Trig      = new TH1I("Triggers","Number of triggers for this run",1,0,1); //Number of triggers
-
-    TH1I *HVeffs    = new TH1I("HVeffs","List of HVeff applied per chamber during this run",1,0,1); //List of HVeffs
-    HVeffs->SetCanExtend(TH1::kAllAxes);
-
     TH1I *Thrs      = new TH1I("Thrs","List of thresholds used per chamber during this run",1,0,1); //List of Thresholds
-    Thrs->SetCanExtend(TH1::kAllAxes);
+    Thrs->SetCanExtend(TH1::kAllAxes); //Since the number of chambers can change, I chose a dynamical axis
 
     //Needed variable to go through the configuration file
     string group;
@@ -329,13 +325,6 @@ void DataReader::Run(){
             }
         }
 
-        //Parameters to be found in the [HighVoltage] group
-        else if(group == "HighVoltage"){
-            RPClabel = Iter->first.substr(separator_pos+1);
-            value = iniFile->intType(group,RPClabel,0);
-            HVeffs->Fill(RPClabel.c_str(),value);
-        }
-
         //Parameters to be found in the [Threshold] group
         else if (group == "Threshold"){
             RPClabel = Iter->first.substr(separator_pos+1);
@@ -369,7 +358,7 @@ void DataReader::Run(){
 
     if(MonFile){
         //vector that will contain the parameter histograms
-        TH1D* Monitor[50];
+        TH1D* Monitor[200];
 
         //read the number of monitored parameters in the file
         // (first line)
