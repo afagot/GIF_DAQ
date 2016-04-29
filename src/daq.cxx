@@ -37,9 +37,6 @@ int main (int argc ,char *argv[])
 
     DataReader *DR = new DataReader();
 
-    //Define a string variable to exchange status with WEB DCS
-    string runStatus = "";
-
     //The DAQ is communicating with the WEB DCS. It reads a file containing
     //run commands from the DCS (RAMP, WAIT, START and STOP) and gives feedback
     //on the run status (DAQ_RDY, RUNNING, NEXT).
@@ -95,6 +92,6 @@ int main (int argc ,char *argv[])
     }
 
     MSG_INFO("[DAQ-STOP] DAQ will shut down");
-    return CtrlRunStatus(runStatus);
+    return 0;
 }
 
