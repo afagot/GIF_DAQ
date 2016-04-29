@@ -376,12 +376,14 @@ void DataReader::Run(){
         }
 
         //Start the loop over the values of the monitored parameters
-        double paramValue = 0.;
+        double paramValue = -1.;
 
         while(MonFile.good()){
             for(int p = 0; p < nParam; p++){
                 MonFile >> paramValue;
-                Monitor[p]->Fill(paramValue);
+                if(paramValue > 0.) Monitor[p]->Fill(paramValue);
+
+                paramValue = -1.;
             }
         }
 
