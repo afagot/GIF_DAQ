@@ -19,11 +19,13 @@ using namespace std;
 
 const string __nfspath          = "/mnt/nfs/daq_data/";
 const string __datapath         = __nfspath + "DAQ/";
-const string __logpath          = __nfspath + "DAQ_RUN/log";
-const string __runstatuspath    = __nfspath + "DAQ_RUN/run";
-const string __configpath       = __nfspath + "DAQ_RUN/daqgifpp.ini";
-const string __parampath        = __nfspath + "DAQ_RUN/mon";
-const string __registrypath     = __nfspath + "DAQ_RUN/runregistry";
+const string __runpath          = __nfspath + "DAQ_RUN/";
+const string __logpath          = __runpath + "log";
+const string __runstatuspath    = __runpath + "run";
+const string __configpath       = __runpath + "daqgifpp.ini";
+const string __parampath        = __runpath + "mon";
+const string __registrypath     = __runpath + "runregistry";
+const string __lastfilepath     = __runpath + "last";
 
 string      shortTostring(short value);
 string      intTostring(int value);

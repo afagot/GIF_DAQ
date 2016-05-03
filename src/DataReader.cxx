@@ -141,6 +141,13 @@ void DataReader::WriteRunRegistry(string filename){
     string name = filename.substr(filename.find_last_of("/")+1);
 
     runregistry << GetTimeStamp() << '\t' << name << '\t' << filepath << '\n';
+    runregistry.close();
+
+    //Save the last run name in the "last" file (useful to start
+    //offline analysis from DCS)
+    ofstream last(__lastfilepath.c_str(),ios::out);
+    last << name.substr(0,name.find_last_of("."));
+    last.close();
 }
 
 // ****************************************************************************************************
