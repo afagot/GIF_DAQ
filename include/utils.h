@@ -6,6 +6,7 @@
 
 using namespace std;
 
+#define PROCESSING  4
 #define RUNNING     3
 #define DAQ_RDY     2
 #define START       1
@@ -13,9 +14,9 @@ using namespace std;
 #define STATUS_ERR -2
 #define DAQ_ERR    -3
 
-#define WR_OK       4
-#define WR_ERR     -4
-#define RD_ERR     -5
+#define WR_OK       5
+#define WR_ERR     -5
+#define RD_ERR     -6
 
 const string __nfspath          = "/mnt/nfs/daq_data/";
 const string __datapath         = __nfspath + "DAQ/";
@@ -37,6 +38,7 @@ string      GetRunStatus();
 int         SetRunStatus(string& runStatus);
 int         CtrlRunStatus(string& runStatus);
 void        SendDAQReady();
+void        SendDAQProcess();
 void        SendDAQRunning();
 void        SendDAQError();
 void        WaitDCSSignal(Uint delay);

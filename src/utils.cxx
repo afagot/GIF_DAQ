@@ -118,6 +118,8 @@ int CtrlRunStatus(string& runStatus){
         return START;
     else if(runStatus == "DAQ_RDY")
         return DAQ_RDY;
+    else if(runStatus == "PROCESSING")
+        return PROCESSING;
     else if(runStatus == "RUNNING")
         return RUNNING;
     else if(runStatus == "STOP")
@@ -145,6 +147,18 @@ void SendDAQReady(){
 
     if(CtrlRunStatus(runStatus) != DAQ_RDY){
         MSG_ERROR("[DAQ-ERROR] DAQ_RDY not well written ("+runStatus+")");
+        exit(EXIT_FAILURE);
+    }
+}
+
+// ****************************************************************************************************
+
+void SendDAQProcess(){
+    string runStatus = "PROCESSING";
+    SetRunStatus(runStatus);
+
+    if(CtrlRunStatus(runStatus) != PROCESSING){
+        MSG_ERROR("[DAQ-ERROR] PROCESSING not well written ("+runStatus+")");
         exit(EXIT_FAILURE);
     }
 }

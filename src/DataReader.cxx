@@ -363,6 +363,10 @@ void DataReader::Run(){
     ifstream MonFile(__parampath.c_str(), ios::in);
 
     if(MonFile){
+        //Send a PROCESSING signal to WEB DCS to tell it we are reading
+        //into the Monitoring file
+        SendDAQProcess();
+
         //vector that will contain the parameter histograms
         TH1D* Monitor[200];
 
