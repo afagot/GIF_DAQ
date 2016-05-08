@@ -225,12 +225,12 @@ void DataReader::Run(){
 
     //Read the output buffer until the min number of trigger is achieved
     while(TriggerCount < GetMaxTriggers()){
-        usleep(200000);
+        usleep(100000);
 
         if(VME->CheckIRQ()){
             //Stop data acquisition with BUSY as VETO
             VME->SendBUSY(ON);
-            usleep(1000);
+            usleep(2000);
 
             //Read the data
             TriggerCount = TDCs->Read(&TDCData,nTDCs);

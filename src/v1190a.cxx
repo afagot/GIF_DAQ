@@ -377,9 +377,18 @@ void v1190a::SwitchChannels(IniFile *inifile, int ntdcs){
 
                 int status = inifile->intType(groupname,keyname,ENABLE);
 
-                if(status == ENABLE)
-                    StatusList[2*c+ch] = 0xFFFF;
-                else if(status == DISABLE)
+                //Disable channels 1036 and 1038 that are noisy in the Chinese chamber
+                //These channels are channels 36 and 38 of TDC1
+                //This means they are on the connector B (second set of 32 channels)
+                //This means they are the fifth and the seventh channels this B connector
+                //that are on the first 16 channels flat cable
+                //Then the corresponding pattern I have to send not to enable these
+                //channels is : 1111 1111 1010 1111 = 0xFFAF
+
+                if(status == ENABLE){
+                    if(tdc == 1 && c == 1 && ch == 0) StatusList[2*c+ch] = 0xFFAF;
+                    else StatusList[2*c+ch] = 0xFFFF;
+                } else if(status == DISABLE)
                     StatusList[2*c+ch] = 0x0000;
 
                 write_op_reg(Address[tdc],StatusList[2*c+ch]);
