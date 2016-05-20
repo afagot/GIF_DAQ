@@ -12,6 +12,8 @@ DAQ_SRC_DIR  = ./src
 DAQ_OBJ_DIR  = ./obj
 RUN_REGISTRY = ./RunRegistry
 
+CC = g++ -std=c++11
+
 ROOT_INC     := $(ROOTSYS)/include
 ROOTCFLAGS   := $(shell root-config --cflags)
 ROOTLIBS     := $(shell root-config --libs)
@@ -37,19 +39,19 @@ daq: 	daq.o v1718.o v1190a.o DataReader.o IniFile.o utils.o MsgSvc.o
         -l CAENVME -l curses
 
 daq.o:
-	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/daq.cxx -o $(DAQ_OBJ_DIR)/daq.o
+	$(CC) $(CFLAGS) -c $(DAQ_SRC_DIR)/daq.cxx -o $(DAQ_OBJ_DIR)/daq.o
 v1718.o:
-	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/v1718.cxx -o $(DAQ_OBJ_DIR)/v1718.o
+	$(CC) $(CFLAGS) -c $(DAQ_SRC_DIR)/v1718.cxx -o $(DAQ_OBJ_DIR)/v1718.o
 v1190a.o:
-	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/v1190a.cxx -o $(DAQ_OBJ_DIR)/v1190a.o
+	$(CC) $(CFLAGS) -c $(DAQ_SRC_DIR)/v1190a.cxx -o $(DAQ_OBJ_DIR)/v1190a.o
 DataReader.o:
-	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/DataReader.cxx -o $(DAQ_OBJ_DIR)/DataReader.o
+	$(CC) $(CFLAGS) -c $(DAQ_SRC_DIR)/DataReader.cxx -o $(DAQ_OBJ_DIR)/DataReader.o
 IniFile.o:
-	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/IniFile.cxx -o $(DAQ_OBJ_DIR)/IniFile.o
+	$(CC) $(CFLAGS) -c $(DAQ_SRC_DIR)/IniFile.cxx -o $(DAQ_OBJ_DIR)/IniFile.o
 utils.o:
-	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/utils.cxx -o $(DAQ_OBJ_DIR)/utils.o
+	$(CC) $(CFLAGS) -c $(DAQ_SRC_DIR)/utils.cxx -o $(DAQ_OBJ_DIR)/utils.o
 MsgSvc.o:
-	g++ -std=c++11 -c $(CFLAGS) $(DAQ_SRC_DIR)/MsgSvc.cxx -o $(DAQ_OBJ_DIR)/MsgSvc.o
+	$(CC) $(CFLAGS) -c $(DAQ_SRC_DIR)/MsgSvc.cxx -o $(DAQ_OBJ_DIR)/MsgSvc.o
 
 $(RUN_REGISTRY):
 	mkdir -p $(RUN_REGISTRY)/

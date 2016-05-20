@@ -18,9 +18,9 @@ using namespace std;
 #define WR_ERR     -5
 #define RD_ERR     -6
 
-const string __nfspath          = "/mnt/nfs/daq_data/";
-const string __datapath         = __nfspath + "DAQ/";
-const string __runpath          = __nfspath + "DAQ_RUN/";
+const string __nfspath          = "/var/operation/";
+const string __datapath         = __nfspath + "HVSCAN_DAQ/";
+const string __runpath          = __nfspath + "RUN/";
 const string __logpath          = __runpath + "log";
 const string __runstatuspath    = __runpath + "run";
 const string __configpath       = __runpath + "daqgifpp.ini";
