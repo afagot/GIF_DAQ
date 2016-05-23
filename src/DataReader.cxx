@@ -115,6 +115,9 @@ string DataReader::GetFileName(){
     //Get the run number (start time of the run)
     long long RunNumber = GetTimeStamp();
 
+    //Get the HV step
+    string HVstep = iniFile->stringType("General","HV","HVX");
+
     //use a stream to construct the name with the different variable types
     stringstream fNameStream;
 
@@ -123,6 +126,8 @@ string DataReader::GetFileName(){
                 << ScanID       //scan ID
                 << "_Run"
                 << RunNumber    //run number
+                << "_"
+                << HVstep       //HV step
                 << ".root";     //extension
 
     string outputfName;
@@ -284,7 +289,7 @@ void DataReader::Run(){
 
     //Int parameters are to be read from the config file and saved into
     //histograms
-    TH1D *ID        = new TH1D("ID","Identifiers of this run",3,0,3); //To save Scan ID, Start and Stop time stamps
+    TH1D *ID        = new TH1D("ID","Identifiers of this run",4,0,4); //To save Scan ID, HV step, Start and Stop time stamps
     TH1I *Att       = new TH1I("Attenuators","Attenuators settings for this run",2,0,2); //Attenuators used
     TH1I *Trig      = new TH1I("Triggers","Number of triggers for this run",1,0,1); //Number of triggers
     TH1I *Thrs      = new TH1I("Thrs","List of thresholds used per chamber during this run",1,0,1); //List of Thresholds
@@ -312,10 +317,12 @@ void DataReader::Run(){
             Parameter = Iter->first.substr(separator_pos+1);
             if(Parameter == "ScanID"){
                 value = iniFile->intType(group,Parameter,0);
-                ID->Fill(Parameter.c_str(),value);
-                ID->Fill("Start stamp",startstamp);
+                ID->Fill(Parameter.c_str(), value);
+                ID->Fill("Start stamp", startstamp);
                 ID->Fill("Stop stamp", GetTimeStamp());
-            } else if(Parameter == "RunType"){
+            } else if (Parameter == "HV"){
+                ID->Fill(Parameter.c_str(), value);
+            }else if(Parameter == "RunType"){
                 runtype = iniFile->stringType(group,Parameter,"");
             } else if(Parameter == "MaxTriggers"){
                 value = iniFile->intType(group,Parameter,0);
@@ -350,58 +357,6 @@ void DataReader::Run(){
     RunParameters->Fill();
     RunParameters->Print();
     RunParameters->Write();
-
-    //----------------------- MONITORING FILE DATA
-
-    //Then make histograms for the monitored parameters
-    //These parameters are continuously stored into a file every 10 seconds
-    //The first line is the number of parameters saved in the file
-    //The second line is the header of each column corresponding to a parameter
-    //Then the rest of the file are the monitored parameters
-    //The number of parameters can change from 1 run to another
-    //It is needed to create a vector that will be filled with histograms for each parameters
-    ifstream MonFile(__parampath.c_str(), ios::in);
-
-    if(MonFile){
-        //Send a PROCESSING signal to WEB DCS to tell it we are reading
-        //into the Monitoring file
-        SendDAQProcess();
-
-        //vector that will contain the parameter histograms
-        TH1D* Monitor[200];
-
-        //read the number of monitored parameters in the file
-        // (first line)
-        int nParam = 0;
-        MonFile >> nParam;
-
-        //Save the names of the parameters and use them to initialise
-        //a histogram that will fill the previously created vector
-        // (second line)
-        for(int p = 0; p < nParam; p++){
-            string nameParam;
-            MonFile >> nameParam;
-
-            Monitor[p] = new TH1D(nameParam.c_str(),nameParam.c_str(),10,0,1);
-            Monitor[p]->SetCanExtend(TH1::kAllAxes);
-        }
-
-        //Start the loop over the values of the monitored parameters
-        double paramValue = -1.;
-
-        while(MonFile.good()){
-            for(int p = 0; p < nParam; p++){
-                MonFile >> paramValue;
-                if(paramValue > 0.) Monitor[p]->Fill(paramValue);
-
-                paramValue = -1.;
-            }
-        }
-
-        for(int p = 0; p < nParam; p++){
-            Monitor[p]->Write();
-        }
-    }
 
     outputFile->Close();
 

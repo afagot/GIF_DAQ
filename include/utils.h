@@ -24,7 +24,6 @@ const string __runpath          = __nfspath + "RUN/";
 const string __logpath          = __runpath + "log";
 const string __runstatuspath    = __runpath + "run";
 const string __configpath       = __runpath + "daqgifpp.ini";
-const string __parampath        = __runpath + "mon";
 const string __registrypath     = __runpath + "runregistry";
 const string __lastfilepath     = __runpath + "last";
 
