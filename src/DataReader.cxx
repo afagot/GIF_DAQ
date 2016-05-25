@@ -126,7 +126,7 @@ string DataReader::GetFileName(){
                 << ScanID       //scan ID
                 << "_Run"
                 << RunNumber    //run number
-                << "_"
+                << "_HV"
                 << HVstep       //HV step
                 << ".root";     //extension
 
