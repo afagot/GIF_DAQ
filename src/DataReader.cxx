@@ -329,13 +329,6 @@ void DataReader::Run(){
                 Trig->Fill(Parameter.c_str(),value);
             } else if(Parameter == "Beam"){
                 beamstatus = iniFile->stringType(group,Parameter,"");
-            } else if(Parameter == "Source"){
-                sourcestatus = iniFile->stringType(group,Parameter,"");
-            } else if(Parameter == "AttU" || Parameter == "AttD"){
-                value = iniFile->intType(group,Parameter,0);
-                Att->Fill(Parameter.c_str(),value);
-            } else if(Parameter == "ElectronicsType"){
-                electronics = iniFile->stringType(group,Parameter,"");
             }
         }
 
