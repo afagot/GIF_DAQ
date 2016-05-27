@@ -128,6 +128,7 @@ string DataReader::GetFileName(){
                 << RunNumber    //run number
                 << "_HV"
                 << HVstep       //HV step
+                << "_DAQ"
                 << ".root";     //extension
 
     string outputfName;
@@ -225,7 +226,7 @@ void DataReader::Run(){
             percentage = (100*TriggerCount) / GetMaxTriggers();
 
             //dump the status in the logfile every 5%
-            if(percentage % 5 == 0 && percentage != last_print){
+            if(percentage != 0 && percentage % 5 == 0 && percentage != last_print){
                 string log_percent = intTostring(percentage);
 
                 MSG_INFO("[DAQ] Run "+outputFileName+" "+log_percent+"%");
@@ -245,8 +246,6 @@ void DataReader::Run(){
             CKill_Clk = 0;
         }
     }
-
-    MSG_INFO("[DAQ] Run "+outputFileName+" 100%");
 
     //Write the data from the RAWData structure to the TTree
     for(Uint i=0; i<TDCData.EventList->size(); i++){
@@ -357,4 +356,8 @@ void DataReader::Run(){
     WriteRunRegistry(outputFileName);
 
     delete outputFile;
+
+    //Finally give the permission to the DCS to delete the file if necessary
+    string GivePermission = "chmod 775 " + outputFileName;
+    system(GivePermission.c_str());
 }

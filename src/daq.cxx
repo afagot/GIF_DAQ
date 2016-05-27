@@ -20,7 +20,7 @@ int main (int argc ,char *argv[])
     MSG_INFO("        ***********    *****   *****                ");
     MSG_INFO("      **************   *****   *****                ");
     MSG_INFO("     ******     *****  *****   *******              ");
-    MSG_INFO("    ******    ******   *****   *******             .");
+    MSG_INFO("    ******    ******   *****   *******              ");
     MSG_INFO("    ******   ******    *****   *****                ");
     MSG_INFO("     ******            *****   *****   *            ");
     MSG_INFO("      ******  *****    *****    ***** ***           ");
@@ -60,7 +60,7 @@ int main (int argc ,char *argv[])
 
     //Enter the DAQ Loop only if we got a first START
     //If the DAQ was ready before the ramping, wait until START
-    WaitDCSSignal(10);
+    WaitDCSSignal(2);
 
     if(CheckSTART()){
 
@@ -80,7 +80,7 @@ int main (int argc ,char *argv[])
 
             //Wait for the WEB DCS to send a new signal and control
             //that it's START or STOP
-            WaitDCSSignal(10);
+            WaitDCSSignal(2);
 
             if(!CheckSTART() && !CheckSTOP()){
                 MSG_ERROR("[DAQ-ERROR] Wrong DCS signal received");
