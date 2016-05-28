@@ -277,21 +277,19 @@ void DataReader::Run(){
     //the TTree
     TString runtype;        //Type of run (Efficiency, rate or test)
     TString beamstatus;     //Beam status (ON or OFF)
-    TString sourcestatus;   //Source Status (ON or OFF)
-    TString electronics;    //Electronics used (for now only CMS-FEB)
 
     //Branches linking the string variables to the TTree
     RunParameters->Branch("RunType",            &runtype);
     RunParameters->Branch("Beam",               &beamstatus);
-    RunParameters->Branch("Source",             &sourcestatus);
-    RunParameters->Branch("ElectronicsType",    &electronics);
 
     //Int parameters are to be read from the config file and saved into
     //histograms
     TH1D *ID        = new TH1D("ID","Identifiers of this run",4,0,4); //To save Scan ID, HV step, Start and Stop time stamps
-    TH1I *Att       = new TH1I("Attenuators","Attenuators settings for this run",2,0,2); //Attenuators used
+    ID->SetOption("TEXT");
     TH1I *Trig      = new TH1I("Triggers","Number of triggers for this run",1,0,1); //Number of triggers
+    Trig->SetOption("TEXT");
     TH1I *Thrs      = new TH1I("Thrs","List of thresholds used per chamber during this run",1,0,1); //List of Thresholds
+    Thrs->SetOption("TEXT");
     Thrs->SetCanExtend(TH1::kAllAxes); //Since the number of chambers can change, I chose a dynamical axis
 
     //Needed variable to go through the configuration file
@@ -341,7 +339,6 @@ void DataReader::Run(){
 
     //Write the histograms into the ROOT file
     ID->Write();
-    Att->Write();
     Trig->Write();
     Thrs->Write();
 
