@@ -521,7 +521,7 @@ int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const uns
 
 // *************************************************************************************************************
 
-Uint v1190a::Read(RAWData *DataList, int ntdcs){
+Uint v1190a::Read(RAWData *DataList, int ntdcs, TriggerType whichTrigger){
     vector<Data16> EventStored;
     EventStored.clear();
 
@@ -591,17 +591,20 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                                 MSG_WARNING("[DAQ-WARNING] Some events are not well written : the trigger rate is too high");
                             for(int i=0; i<Difference-1; i++){
                                 DataList->EventList->push_back(EventCount-Difference+i);
+                                DataList->Trigger->push_back(2); //Mark the problematic events with a trigger 2
                                 DataList->NHitsList->push_back(0);
                                 DataList->ChannelList->push_back({0});
                                 DataList->TimeStampList->push_back({0.});
                             }
                             DataList->EventList->push_back(EventCount);
+                            DataList->Trigger->push_back(whichTrigger);
                             DataList->NHitsList->push_back(nHits);
                             DataList->ChannelList->push_back(TDCCh);
                             DataList->TimeStampList->push_back(TDCTS);
                         } else {
                             Uint it = EventCount-1;
                             DataList->EventList->at(it) = EventCount;
+                            DataList->Trigger->at(it) = whichTrigger;
                             DataList->NHitsList->at(it) = DataList->NHitsList->at(it) + nHits;
                             DataList->ChannelList->at(it).insert(DataList->ChannelList->at(it).end(),TDCCh.begin(),TDCCh.end());
                             DataList->TimeStampList->at(it).insert(DataList->TimeStampList->at(it).end(),TDCTS.begin(),TDCTS.end());

@@ -27,6 +27,7 @@
 
 #include "../include/v1718.h"
 #include "../include/MsgSvc.h"
+#include "../include/utils.h"
 
 using namespace std;
 
@@ -171,6 +172,17 @@ bool v1718::CheckIRQ(){
 
     // Pick the requested IRQ line from the data and return its status
     return (((data>>(Level-1)) & 1) > 0);
+}
+
+// *************************************************************************************************************
+// Get input 0 level - used to switch from random to beam trigger
+
+bool v1718::GetInputLevel() {
+    Uint data = 0;
+
+    // Get the input register data
+    CheckStatus(CAENVME_ReadRegister(Handle, cvInputReg, &data));
+    return ((data & cvIn0Bit) > 0);
 }
 
 // *************************************************************************************************************

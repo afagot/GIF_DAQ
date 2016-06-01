@@ -176,6 +176,7 @@ typedef enum _SetMode {
 
 struct RAWData{
     vector<int>            *EventList;
+    vector<int>            *Trigger;
     vector<int>            *NHitsList;
     vector<vector<int> >   *ChannelList;
     vector<vector<float> > *TimeStampList;
@@ -222,7 +223,7 @@ class v1190a
     void                Set(IniFile *inifile,int ntdcs);
     void                CheckStatus(CVErrorCodes status) const;
     int                 ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const unsigned int words, bool ignore_berr);
-    Uint                Read(RAWData *DataList,int ntdcs);
+    Uint                Read(RAWData *DataList, int ntdcs, TriggerType whichTrigger);
 };
 
 

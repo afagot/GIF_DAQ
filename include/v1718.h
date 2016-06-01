@@ -41,6 +41,11 @@ typedef enum _BusyLevel {
     OFF                     = 0
 } BusyLevel;
 
+typedef enum _TriggerType {
+    BEAM                    = 1,
+    RANDOM                  = 0
+} TriggerType;
+
 
 class v1718{
 
@@ -70,6 +75,7 @@ class v1718{
         Data16              GetBaseAddress(void);
         void                CheckStatus(CVErrorCodes status) const;
         bool                CheckIRQ();
+        bool                GetInputLevel();
         void                SetPulsers();
         void                SendBUSY(BusyLevel level);
 };
