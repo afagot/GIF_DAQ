@@ -318,6 +318,7 @@ void DataReader::Run(){
                 ID->Fill("Start stamp", startstamp);
                 ID->Fill("Stop stamp", GetTimeStamp());
             } else if (Parameter == "HV"){
+                value = iniFile->intType(group,Parameter,0);
                 ID->Fill(Parameter.c_str(), value);
             }else if(Parameter == "RunType"){
                 runtype = iniFile->stringType(group,Parameter,"");
