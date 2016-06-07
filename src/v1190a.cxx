@@ -134,7 +134,7 @@ void v1190a::TestWR(Data16 value, int ntdcs){ //Test : try to write/read 16 bit 
 
         if(test != value){
             string tdcnumber = intTostring(tdc);
-            MSG_ERROR("[TDC"+tdcnumber+"-ERROR]:  Result of W/R test is not 0xBEEF");
+            MSG_ERROR("[TDC"+tdcnumber+"-ERROR]  Result of W/R test is not 0xBEEF");
         }
     }
 }
@@ -627,7 +627,8 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                     case TDC_DATA_V1190A: {
                         if(!Header) break;
                         //each TDC module separated by 1000 in channel numbers
-                        channel = ((words[w]>>19) & 0x7F) + tdc*1000;
+                        if(Address[0] == 0) channel = ((words[w]>>19) & 0x7F) + tdc*1000;
+                        else if(Address[0] == 858980352) channel = ((words[w]>>19) & 0x7F) + (tdc+3)*1000;
                         TDCCh.push_back(channel);
 
                         timing = words[w] & 0x7FFFF;
