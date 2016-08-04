@@ -112,9 +112,6 @@ string DataReader::GetFileName(){
     string mkdirScanFolder = "mkdir -p " + datafolder;
     system(mkdirScanFolder.c_str());
 
-    //Get the run number (start time of the run)
-    long long RunNumber = GetTimeStamp();
-
     //Get the HV step
     string HVstep = iniFile->stringType("General","HV","HVX");
 
@@ -124,11 +121,9 @@ string DataReader::GetFileName(){
     fNameStream << datafolder   //destination
                 << "Scan"
                 << ScanID       //scan ID
-                << "_Run"
-                << RunNumber    //run number
                 << "_"
                 << HVstep       //HV step
-                << ".root";     //extension
+                << "_DAQ.root";     //extension
 
     string outputfName;
     fNameStream >> outputfName;
@@ -225,7 +220,7 @@ void DataReader::Run(){
             percentage = (100*TriggerCount) / GetMaxTriggers();
 
             //dump the status in the logfile every 5%
-            if(percentage % 5 == 0 && percentage != last_print){
+            if(percentage != 0 && percentage % 5 == 0 && percentage != last_print){
                 string log_percent = intTostring(percentage);
 
                 MSG_INFO("[DAQ] Run "+outputFileName+" "+log_percent+"%");
@@ -245,8 +240,6 @@ void DataReader::Run(){
             CKill_Clk = 0;
         }
     }
-
-    MSG_INFO("[DAQ] Run "+outputFileName+" 100%");
 
     //Write the data from the RAWData structure to the TTree
     for(Uint i=0; i<TDCData.EventList->size(); i++){
@@ -278,21 +271,19 @@ void DataReader::Run(){
     //the TTree
     TString runtype;        //Type of run (Efficiency, rate or test)
     TString beamstatus;     //Beam status (ON or OFF)
-    TString sourcestatus;   //Source Status (ON or OFF)
-    TString electronics;    //Electronics used (for now only CMS-FEB)
 
     //Branches linking the string variables to the TTree
     RunParameters->Branch("RunType",            &runtype);
     RunParameters->Branch("Beam",               &beamstatus);
-    RunParameters->Branch("Source",             &sourcestatus);
-    RunParameters->Branch("ElectronicsType",    &electronics);
 
     //Int parameters are to be read from the config file and saved into
     //histograms
     TH1D *ID        = new TH1D("ID","Identifiers of this run",4,0,4); //To save Scan ID, HV step, Start and Stop time stamps
-    TH1I *Att       = new TH1I("Attenuators","Attenuators settings for this run",2,0,2); //Attenuators used
+    ID->SetOption("TEXT");
     TH1I *Trig      = new TH1I("Triggers","Number of triggers for this run",1,0,1); //Number of triggers
+    Trig->SetOption("TEXT");
     TH1I *Thrs      = new TH1I("Thrs","List of thresholds used per chamber during this run",1,0,1); //List of Thresholds
+    Thrs->SetOption("TEXT");
     Thrs->SetCanExtend(TH1::kAllAxes); //Since the number of chambers can change, I chose a dynamical axis
 
     //Needed variable to go through the configuration file
@@ -321,6 +312,7 @@ void DataReader::Run(){
                 ID->Fill("Start stamp", startstamp);
                 ID->Fill("Stop stamp", GetTimeStamp());
             } else if (Parameter == "HV"){
+                value = iniFile->intType(group,Parameter,0);
                 ID->Fill(Parameter.c_str(), value);
             }else if(Parameter == "RunType"){
                 runtype = iniFile->stringType(group,Parameter,"");
@@ -329,13 +321,6 @@ void DataReader::Run(){
                 Trig->Fill(Parameter.c_str(),value);
             } else if(Parameter == "Beam"){
                 beamstatus = iniFile->stringType(group,Parameter,"");
-            } else if(Parameter == "Source"){
-                sourcestatus = iniFile->stringType(group,Parameter,"");
-            } else if(Parameter == "AttU" || Parameter == "AttD"){
-                value = iniFile->intType(group,Parameter,0);
-                Att->Fill(Parameter.c_str(),value);
-            } else if(Parameter == "ElectronicsType"){
-                electronics = iniFile->stringType(group,Parameter,"");
             }
         }
 
@@ -349,7 +334,6 @@ void DataReader::Run(){
 
     //Write the histograms into the ROOT file
     ID->Write();
-    Att->Write();
     Trig->Write();
     Thrs->Write();
 
@@ -364,4 +348,8 @@ void DataReader::Run(){
     WriteRunRegistry(outputFileName);
 
     delete outputFile;
+
+    //Finally give the permission to the DCS to delete the file if necessary
+    string GivePermission = "chmod 775 " + outputFileName;
+    system(GivePermission.c_str());
 }

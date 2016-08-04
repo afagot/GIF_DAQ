@@ -13,6 +13,7 @@ using namespace std;
 #define STOP       -1
 #define STATUS_ERR -2
 #define DAQ_ERR    -3
+#define ARGC_ERR   -4
 
 #define WR_OK       5
 #define WR_ERR     -5

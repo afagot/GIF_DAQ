@@ -8,11 +8,24 @@
 #include "../include/utils.h"
 #include "../include/MsgSvc.h"
 #include <limits>
+#include <fstream>
 
 using namespace std;
 
 int main (int argc ,char *argv[])
 {
+    //The program needs 2 arguments to run : its own name and the path to the
+    //log file that is written inside the log file in the RUN directory. The
+    //will then be used by the MSG functions to know where to write the logs.
+    if(argc == 2){
+        ofstream logpathfile(__logpath.c_str(), ios::out);
+        logpathfile << argv[1];
+        logpathfile.close();
+    } else {
+        SendDAQError();
+        exit(EXIT_FAILURE);
+    }
+
     MSG_INFO("                                                    ");
     MSG_INFO("                                                    ");
     MSG_INFO("                                                    ");
@@ -20,7 +33,7 @@ int main (int argc ,char *argv[])
     MSG_INFO("        ***********    *****   *****                ");
     MSG_INFO("      **************   *****   *****                ");
     MSG_INFO("     ******     *****  *****   *******              ");
-    MSG_INFO("    ******    ******   *****   *******             .");
+    MSG_INFO("    ******    ******   *****   *******              ");
     MSG_INFO("    ******   ******    *****   *****                ");
     MSG_INFO("     ******            *****   *****   *            ");
     MSG_INFO("      ******  *****    *****    ***** ***           ");
@@ -60,7 +73,7 @@ int main (int argc ,char *argv[])
 
     //Enter the DAQ Loop only if we got a first START
     //If the DAQ was ready before the ramping, wait until START
-    WaitDCSSignal(10);
+    WaitDCSSignal(2);
 
     if(CheckSTART()){
 
@@ -80,7 +93,7 @@ int main (int argc ,char *argv[])
 
             //Wait for the WEB DCS to send a new signal and control
             //that it's START or STOP
-            WaitDCSSignal(10);
+            WaitDCSSignal(2);
 
             if(!CheckSTART() && !CheckSTOP()){
                 MSG_ERROR("[DAQ-ERROR] Wrong DCS signal received");

@@ -14,7 +14,16 @@
 using namespace std;
 
 int MSG(string message, int level){
-    ofstream logfile(__logpath.c_str(), ios::app);
+    //First we need to get the log file path into the log life
+    //in the RUN directory, then we will know where to write the
+    //logs.
+    string logpath;
+
+    ifstream logpathfile(__logpath.c_str(), ios::in);
+    logpathfile >> logpath;
+    logpathfile.close();
+
+    ofstream logfile(logpath.c_str(), ios::app);
 
     if(logfile){
         logfile << GetLogTimeStamp() << message << endl;
