@@ -121,9 +121,9 @@ string DataReader::GetFileName(){
     fNameStream << datafolder   //destination
                 << "Scan"
                 << ScanID       //scan ID
-                << "_"
+                << "_HV"
                 << HVstep       //HV step
-                << "_DAQ.root";     //extension
+                << "_DAQ.root"; //extension
 
     string outputfName;
     fNameStream >> outputfName;
