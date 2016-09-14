@@ -630,7 +630,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //check which TDC are included in the data taking and
                         //adapt using an offset to always write the data at the
                         //right place
-                        int offset = (Address[0] % 0x11110000);
+                        int offset = (Address[0] / 0x11110000);
                         channel = ((words[w]>>19) & 0x7F) + (tdc+offset)*1000;
                         TDCCh.push_back(channel);
 

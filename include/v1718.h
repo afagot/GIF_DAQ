@@ -28,7 +28,7 @@
 
 using namespace std;
 
-#define BASEV1718 0x000000              //Page 32 Fig.3.3
+#define BASEV1718 0xFF0000              //Page 32 Fig.3.3
                                         //The address is given by 2 rotary
                                         //switches where hexadecimal digits
                                         //are written. The position of the
