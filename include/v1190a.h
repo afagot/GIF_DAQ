@@ -42,17 +42,17 @@ using namespace std;
 
 /*** Address map for the model V1190A ***/
 
-#define ADD_OUT_BUFFER_V1190A				0x0000			/* Output buffer */
-#define ADD_STATUS_V1190A					0x1002			/* Status register */
-#define ADD_INT_LEVEL_V1190A				0x100A			/* Interrupt level register */
-#define ADD_MOD_RESET_V1190A				0x1014			/* Module reset register */
-#define ADD_SW_CLEAR_V1190A					0x1016			/* Software clear register */
-#define ADD_EVENT_STORED_V1190A				0x1020			/* Event stored register */
-#define ADD_ALMOST_FULL_LVL_V1190A			0x1022			/* Almost full level register */
-#define ADD_BLT_EVENT_NUM_V1190A			0x1024			/* BLT event number register */
-#define ADD_MICRO_V1190A					0x102E			/* Micro register */
-#define ADD_MICRO_HND_V1190A				0x1030			/* Micro handshake register */
-#define ADD_DUMMY16_V1190A                  0x1204          /* Dummy 16bit */
+#define ADD_OUT_BUFFER_V1190A			0x0000			/* Output buffer */
+#define ADD_STATUS_V1190A			0x1002			/* Status register */
+#define ADD_INT_LEVEL_V1190A			0x100A			/* Interrupt level register */
+#define ADD_MOD_RESET_V1190A			0x1014			/* Module reset register */
+#define ADD_SW_CLEAR_V1190A			0x1016			/* Software clear register */
+#define ADD_EVENT_STORED_V1190A			0x1020			/* Event stored register */
+#define ADD_ALMOST_FULL_LVL_V1190A		0x1022			/* Almost full level register */
+#define ADD_BLT_EVENT_NUM_V1190A		0x1024			/* BLT event number register */
+#define ADD_MICRO_V1190A			0x102E			/* Micro register */
+#define ADD_MICRO_HND_V1190A			0x1030			/* Micro handshake register */
+#define ADD_DUMMY16_V1190A                  	0x1204          	/* Dummy 16bit */
 
 // ****************************************************************************************************
 
