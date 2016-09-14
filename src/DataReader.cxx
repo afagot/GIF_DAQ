@@ -270,11 +270,11 @@ void DataReader::Run(){
     //String parameters are to be read from the config file and saved into
     //the TTree
     TString runtype;        //Type of run (Efficiency, rate or test)
-    TString beamstatus;     //Beam status (ON or OFF)
+    TString trigger;        //Trigger used (Cosmics or Random)
 
     //Branches linking the string variables to the TTree
-    RunParameters->Branch("RunType",            &runtype);
-    RunParameters->Branch("Beam",               &beamstatus);
+    RunParameters->Branch("RunType", &runtype);
+    RunParameters->Branch("Trigger", &trigger);
 
     //Int parameters are to be read from the config file and saved into
     //histograms
@@ -319,16 +319,9 @@ void DataReader::Run(){
             } else if(Parameter == "MaxTriggers"){
                 value = iniFile->intType(group,Parameter,0);
                 Trig->Fill(Parameter.c_str(),value);
-            } else if(Parameter == "Beam"){
-                beamstatus = iniFile->stringType(group,Parameter,"");
+            } else if(Parameter == "Trigger"){
+                trigger = iniFile->stringType(group,Parameter,"");
             }
-        }
-
-        //Parameters to be found in the [Threshold] group
-        else if (group == "Threshold"){
-            RPClabel = Iter->first.substr(separator_pos+1);
-            value = iniFile->intType(group,RPClabel,0);
-            Thrs->Fill(RPClabel.c_str(),value);
         }
     }
 
