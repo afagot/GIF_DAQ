@@ -268,15 +268,15 @@ void v1190a::SetTrigConfiguration(IniFile *inifile,int ntdcs){ //Set and print t
     // is part of a Rate scan and needs a longer width (10000ns = 400 clocks) and offset (-10025ns =
     // -401 clocks) to ensure a long integrated time for the rate calculation.
 
-    string beamstatus = inifile->stringType("General","Beam","OFF");
-    if(beamstatus == "ON"){
+    string runtype = inifile->stringType("General","RunType","rate");
+    if(runtype == "rate"){
         width = TRIG_EFF_WIDTH_V1990A;
         offset = TRIG_EFF_OFFSET_V1190A;
-    } else if(beamstatus == "OFF"){
+    } else if(runtype == "efficiency" || runtype == "noise_reference" || runtype == "test" || runtype == "calibration" || runtype == "impaired"){
         width = TRIG_RATE_WIDTH_V1990A;
         offset = TRIG_RATE_OFFSET_V1190A;
     } else
-        MSG_WARNING("[IniFile-WARNING] The beam status is different from ON or OFF : used default TDC settings");
+        MSG_WARNING("[IniFile-WARNING] Wrong run type (rate,efficiency,noise_rate,calibration,impaired or test) : used default TDC settings");
 
     SetTrigWindowWidth(width,ntdcs);
     SetTrigWindowOffset(offset,ntdcs);
