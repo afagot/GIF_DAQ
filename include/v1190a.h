@@ -74,7 +74,7 @@ using namespace std;
 #define TRIG_DEF_WIDTH_V1990A               40
 #define TRIG_DEF_OFFSET_V1190A             -41
 #define TRIG_EFF_WIDTH_V1990A               24
-#define TRIG_EFF_OFFSET_V1190A             -29
+#define TRIG_EFF_OFFSET_V1190A             -30
 #define TRIG_RATE_WIDTH_V1990A              400
 #define TRIG_RATE_OFFSET_V1190A            -401
 #define TRIG_SRCH_MARGIN_V1190A             0x04
