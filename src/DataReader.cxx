@@ -28,12 +28,14 @@ DataReader::DataReader(){
     TDCData.NHitsList = new vector<int>;
     TDCData.ChannelList = new vector< vector<int> >;
     TDCData.TimeStampList = new vector< vector<float> >;
+    TDCData.PulseWidthList = new vector< vector<float> >;
 
     //Cleaning all the vectors
     TDCData.EventList->clear();
     TDCData.NHitsList->clear();
     TDCData.ChannelList->clear();
     TDCData.TimeStampList->clear();
+    TDCData.PulseWidthList->clear();
 
     StopFlag = false;
 }
