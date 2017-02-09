@@ -179,6 +179,7 @@ struct RAWData{
     vector<int>            *NHitsList;
     vector<vector<int> >   *ChannelList;
     vector<vector<float> > *TimeStampList;
+    vector<vector<float> > *PulseWidthList;
 };
 
 /*** CLASS ***/

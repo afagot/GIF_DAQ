@@ -472,9 +472,9 @@ void v1190a::Set(IniFile * inifile, int ntdcs){
     SetTrigTimeSubstraction(inifile->intType("TDCSettings","TriggerTimeSubstraction",ENABLE),ntdcs);
     SetTrigConfiguration(inifile,ntdcs);
 
-    SetTDCDetectionMode(inifile->intType("TDCSettings","TdcDetectionMode",EdgeMode_Both),ntdcs);
+    SetTDCDetectionMode(inifile->intType("TDCSettings","TdcDetectionMode",EdgeMode_Pair),ntdcs);
     SetTDCResolution(inifile->intType("TDCSettings","TdcResolution",Res_100ps),ntdcs);
-    SetTDCDeadTime(inifile->intType("TDCSettings","TdcDeadTime",DT_5ns),ntdcs);
+    SetTDCDeadTime(inifile->intType("TDCSettings","TdcDeadTime",DT_100ns),ntdcs);
 
     SetTDCHeadTrailer(inifile->intType("TDCSettings","TdcHeadTrailer",ENABLE),ntdcs);
     SetTDCEventSize(inifile->intType("TDCSettings","TdcEventSize",HITS_UNLIMITED),ntdcs);
@@ -537,14 +537,17 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
         Uint Count = EventStored[tdc];
         Data32 channel = 9999;
         Data32 timing = 8888;
+        Data32 pulse = 7777;
 
         int EventCount = -99;
         int nHits = -88;
         vector<int> TDCCh;
         vector<float> TDCTS;
+        vector<float> TDCPW;
 
         TDCCh.clear();
         TDCTS.clear();
+        TDCPW.clear();
 
         //Sometimes, the header is not weel read out in the buffer. To control this, the previous
         //good word having been read out to know when this happens. When this happens, the bool
@@ -594,17 +597,21 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                                 DataList->NHitsList->push_back(0);
                                 DataList->ChannelList->push_back({0});
                                 DataList->TimeStampList->push_back({0.});
+                                DataList->PulseWidthList->push_back({0.});
+
                             }
                             DataList->EventList->push_back(EventCount);
                             DataList->NHitsList->push_back(nHits);
                             DataList->ChannelList->push_back(TDCCh);
                             DataList->TimeStampList->push_back(TDCTS);
+                            DataList->PulseWidthList->push_back(TDCPW);
                         } else {
                             Uint it = EventCount-1;
                             DataList->EventList->at(it) = EventCount;
                             DataList->NHitsList->at(it) = DataList->NHitsList->at(it) + nHits;
                             DataList->ChannelList->at(it).insert(DataList->ChannelList->at(it).end(),TDCCh.begin(),TDCCh.end());
                             DataList->TimeStampList->at(it).insert(DataList->TimeStampList->at(it).end(),TDCTS.begin(),TDCTS.end());
+                            DataList->PulseWidthList->at(it).insert(DataList->PulseWidthList->at(it).end(),TDCPW.begin(),TDCPW.end());
                         }
 
                         //Decrement the counter and if it reaches 0 compare the last event number to
@@ -618,6 +625,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         nHits = -88;
                         TDCCh.clear();
                         TDCTS.clear();
+                        TDCPW.clear();
 
                         //Save GLOBAL_TRAILER as the last good word
                         //previous_word = word_type;
@@ -634,8 +642,11 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         channel = ((words[w]>>19) & 0x7F) + (tdc+offset)*1000;
                         TDCCh.push_back(channel);
 
-                        timing = words[w] & 0x7FFFF;
+                        timing = words[w] & 0x70FFF;
                         TDCTS.push_back((float)timing/10.);
+
+                        pulse = words[w] & 0x7F000;
+                        TDCPW.push_back((float)pulse/10.);
 
                         //Save TDC_DATA as the last good word
                         //previous_word = word_type;

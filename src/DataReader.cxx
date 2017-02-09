@@ -170,21 +170,25 @@ void DataReader::Run(){
     int               nHits = -8;       //Number of fired TDC channels in event
     vector<int>       TDCCh;            //List of fired TDC channels in event
     vector<float>     TDCTS;            //list of fired TDC channels time stamps
+    vector<float>     TDCPW;            //list of fired TDC channels pulse width
 
     TDCCh.clear();
     TDCTS.clear();
+    TDCPW.clear();
 
     //Set the branches that will contain the previously defined variables
     RAWDataTree->Branch("EventNumber",    &EventCount,  "EventNumber/I");
     RAWDataTree->Branch("number_of_hits", &nHits,       "number_of_hits/I");
     RAWDataTree->Branch("TDC_channel",    &TDCCh);
     RAWDataTree->Branch("TDC_TimeStamp",  &TDCTS);
+    RAWDataTree->Branch("TDC_PulseWidth", &TDCPW);
 
     //Cleaning all the vectors that will contain the data
     TDCData.EventList->clear();
     TDCData.NHitsList->clear();
     TDCData.ChannelList->clear();
     TDCData.TimeStampList->clear();
+    TDCData.PulseWidthList->clear();
 
     //Clear all the buffers and start data taking
     VME->SendBUSY(ON);
@@ -247,6 +251,7 @@ void DataReader::Run(){
         nHits       = TDCData.NHitsList->at(i);
         TDCCh       = TDCData.ChannelList->at(i);
         TDCTS       = TDCData.TimeStampList->at(i);
+        TDCPW       = TDCData.PulseWidthList->at(i);
 
         RAWDataTree->Fill();
     }
