@@ -638,15 +638,15 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //check which TDC are included in the data taking and
                         //adapt using an offset to always write the data at the
                         //right place
+                        timing = words[w] & 0xFFF;
+                        TDCTS.push_back((float)timing/10.);
+
+                        pulse = (words[w]>>12) & 0x7F;
+                        TDCPW.push_back((float)pulse/10.);
+
                         int offset = (Address[0] / 0x11110000);
                         channel = ((words[w]>>19) & 0x7F) + (tdc+offset)*1000;
                         TDCCh.push_back(channel);
-
-                        timing = words[w] & 0x70FFF;
-                        TDCTS.push_back((float)timing/10.);
-
-                        pulse = words[w] & 0x7F000;
-                        TDCPW.push_back((float)pulse/10.);
 
                         //Save TDC_DATA as the last good word
                         //previous_word = word_type;
