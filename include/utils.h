@@ -20,8 +20,8 @@ using namespace std;
 #define WR_ERR     -5
 #define RD_ERR     -6
 
+const string __datapath         = "/var/webdcs/HVSCAN/";
 const string __nfspath          = "/var/operation/";
-const string __datapath         = __nfspath + "HVSCAN/";
 const string __runpath          = __nfspath + "RUN/";
 const string __logpath          = __runpath + "log-daq";
 const string __runstatuspath    = __runpath + "run";
