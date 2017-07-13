@@ -114,7 +114,9 @@ int SetRunStatus(string& runStatus){
 // ****************************************************************************************************
 
 int CtrlRunStatus(string& runStatus){
-    if(runStatus == "START")
+    if(runStatus == "INIT")
+        return INIT;
+    else if(runStatus == "START")
         return START;
     else if(runStatus == "DAQ_RDY")
         return DAQ_RDY;

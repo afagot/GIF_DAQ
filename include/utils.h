@@ -10,6 +10,7 @@ using namespace std;
 #define RUNNING     3
 #define DAQ_RDY     2
 #define START       1
+#define INIT        0
 #define STOP       -1
 #define STATUS_ERR -2
 #define DAQ_ERR    -3
