@@ -597,6 +597,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                                 DataList->ChannelList->push_back({0});
                                 DataList->TimeStampList->push_back({0.});
                             }
+
                             DataList->EventList->push_back(EventCount);
                             DataList->NHitsList->push_back(nHits);
                             DataList->QFlagList->push_back(GOOD);

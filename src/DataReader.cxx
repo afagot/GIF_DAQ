@@ -250,7 +250,7 @@ void DataReader::Run(){
     for(Uint i=0; i<TDCData.EventList->size(); i++){
         EventCount  = TDCData.EventList->at(i);
         nHits       = TDCData.NHitsList->at(i);
-        nHits       = TDCData.QFlagList->at(i);
+        qflag       = TDCData.QFlagList->at(i);
         TDCCh       = TDCData.ChannelList->at(i);
         TDCTS       = TDCData.TimeStampList->at(i);
 
