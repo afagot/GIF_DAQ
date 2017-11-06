@@ -31,6 +31,8 @@
 
 using namespace std;
 
+// *************************************************************************************************************
+
 v1190a::v1190a(long handle, IniFile * inifile, int ntdcs){
     Address.clear();
 
@@ -39,6 +41,7 @@ v1190a::v1190a(long handle, IniFile * inifile, int ntdcs){
         sprintf(groupname,"TDC%i",tdc);
         Address.push_back(inifile->addressType(groupname,"BaseAddress",BASEV1190A)); //See page 35
     }
+
     DataWidth=cvD16;              //See in CAENVMEtypes.h CVDataWidth enum
     AddressModifier=cvA24_U_DATA; //See in CAENVMEtypes.h CVAddressModifier enum
     Handle=handle;
@@ -509,7 +512,7 @@ void v1190a::CheckStatus(CVErrorCodes status) const{
 
 // *************************************************************************************************************
 
-int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const unsigned int words, bool ignore_berr) {
+int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const Uint words, bool ignore_berr) {
     int read;
 
     CVErrorCodes ret = CAENVME_BLTReadCycle(Handle, address + Address[tdc], data, words * 4, cvA32_U_BLT, cvD32, &read);
@@ -580,23 +583,23 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
 
                         //When the event entry is not yet created in the data lists, a new
                         //entry is created. The difference in entries is saved. If it is
-                        //greater than 1 (what shouldn't be possible), a log error message
-                        //is printed out but the acquisition isn't stopped and an empty
-                        //entry is created instead of the missing one.
+                        //greater than 1 (what shouldn't be possible), the quality flag
+                        //is set to 0 (=CORRUPTED) and an empty entry is created instead
+                        //of the missing one.
                         //Else, the data is added to the already existing entry.
                         if(EventCount > (int)DataList->EventList->size()){
                             int Difference = EventCount - (int)DataList->EventList->size();
 
-                            if(Difference > 1)
-                                MSG_WARNING("[DAQ-WARNING] Some events are not well written : the trigger rate is too high");
                             for(int i=0; i<Difference-1; i++){
                                 DataList->EventList->push_back(EventCount-Difference+i);
                                 DataList->NHitsList->push_back(0);
+                                DataList->QFlagList->push_back(CORRUPTED);
                                 DataList->ChannelList->push_back({0});
                                 DataList->TimeStampList->push_back({0.});
                             }
                             DataList->EventList->push_back(EventCount);
                             DataList->NHitsList->push_back(nHits);
+                            DataList->QFlagList->push_back(GOOD);
                             DataList->ChannelList->push_back(TDCCh);
                             DataList->TimeStampList->push_back(TDCTS);
                         } else {

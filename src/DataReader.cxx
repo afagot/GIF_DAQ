@@ -26,12 +26,14 @@ DataReader::DataReader(){
     //Initialisation of the RAWData vectors
     TDCData.EventList = new vector<int>;
     TDCData.NHitsList = new vector<int>;
+    TDCData.QFlagList = new vector<int>;
     TDCData.ChannelList = new vector< vector<int> >;
     TDCData.TimeStampList = new vector< vector<float> >;
 
     //Cleaning all the vectors
     TDCData.EventList->clear();
     TDCData.NHitsList->clear();
+    TDCData.QFlagList->clear();
     TDCData.ChannelList->clear();
     TDCData.TimeStampList->clear();
 
@@ -166,23 +168,26 @@ void DataReader::Run(){
     //hits.
     TTree *RAWDataTree = new TTree("RAWData","RAWData");
 
-    int               EventCount = -9;  //Event tag
-    int               nHits = -8;       //Number of fired TDC channels in event
-    vector<int>       TDCCh;            //List of fired TDC channels in event
-    vector<float>     TDCTS;            //list of fired TDC channels time stamps
+    int           EventCount = -9;  //Event tag
+    int           nHits = -8;       //Number of fired TDC channels in event
+    int           qflag = -7;       //Event quality flag (0 = CORRUPTED | 1 = GOOD)
+    vector<int>   TDCCh;            //List of fired TDC channels in event
+    vector<float> TDCTS;            //list of fired TDC channels time stamps
 
     TDCCh.clear();
     TDCTS.clear();
 
     //Set the branches that will contain the previously defined variables
-    RAWDataTree->Branch("EventNumber",    &EventCount,  "EventNumber/I");
-    RAWDataTree->Branch("number_of_hits", &nHits,       "number_of_hits/I");
+    RAWDataTree->Branch("EventNumber",    &EventCount, "EventNumber/I");
+    RAWDataTree->Branch("number_of_hits", &nHits,      "number_of_hits/I");
+    RAWDataTree->Branch("Quality_flag",   &qflag,      "Quality_flag/I");
     RAWDataTree->Branch("TDC_channel",    &TDCCh);
     RAWDataTree->Branch("TDC_TimeStamp",  &TDCTS);
 
     //Cleaning all the vectors that will contain the data
     TDCData.EventList->clear();
     TDCData.NHitsList->clear();
+    TDCData.QFlagList->clear();
     TDCData.ChannelList->clear();
     TDCData.TimeStampList->clear();
 
@@ -245,6 +250,7 @@ void DataReader::Run(){
     for(Uint i=0; i<TDCData.EventList->size(); i++){
         EventCount  = TDCData.EventList->at(i);
         nHits       = TDCData.NHitsList->at(i);
+        nHits       = TDCData.QFlagList->at(i);
         TDCCh       = TDCData.ChannelList->at(i);
         TDCTS       = TDCData.TimeStampList->at(i);
 

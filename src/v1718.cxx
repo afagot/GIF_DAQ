@@ -30,6 +30,8 @@
 
 using namespace std;
 
+// *************************************************************************************************************
+
 v1718::v1718(IniFile *inifile){
    //Get the base address from the configuration file
    Data32 baseaddress = inifile->addressType("VMEInterface","BaseAddress",BASEV1718);

@@ -22,13 +22,13 @@ using namespace std;
 
 int MSG(string message, int level);
 
-void MSG_FATAL(string message);
-void MSG_ERROR(string message);
-void MSG_WARNING(string message);
-void MSG_INFO(string message);
-void MSG_DEBUG(string message);
-void MSG_VERBOSE(string message);
-void MSG_ALWAYS(string message);
+void MSG_FATAL   (string message);
+void MSG_ERROR   (string message);
+void MSG_WARNING (string message);
+void MSG_INFO    (string message);
+void MSG_DEBUG   (string message);
+void MSG_VERBOSE (string message);
+void MSG_ALWAYS  (string message);
 
 void PrintLogV1190(int tdc, string parameter, Data16 value);
 
