@@ -77,7 +77,8 @@ using namespace std;
 
 #define MAXTRIGGERS_V1190A                  1000
 
-#define BLOCK_SIZE                          4096
+#define BLOCK_SIZE                          100
+#define IRQ_BUFFER                          2048
 
 // ****************************************************************************************************
 
@@ -165,6 +166,11 @@ typedef enum _SetMode {
     DISABLE                                   = 0
 } SetMode;
 
+typedef enum _Quality {
+    GOOD                                      = 1,
+    CORRUPTED                                 = 0
+} Quality;
+
 // ****************************************************************************************************
 
 /*** STRUCTURE ***/
@@ -172,6 +178,7 @@ typedef enum _SetMode {
 struct RAWData{
     vector<int>            *EventList;
     vector<int>            *NHitsList;
+    vector<int>            *QFlagList;
     vector<vector<int> >   *ChannelList;
     vector<vector<float> > *TimeStampList;
 };

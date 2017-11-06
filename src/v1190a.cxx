@@ -453,7 +453,7 @@ void v1190a::SetBlockTransferMode(Data16 mode, int ntdcs) {
     if(mode == ENABLE) MSG_INFO("[v1190]: Enabling block transfer\n");
     else if(mode == DISABLE) MSG_INFO("[v1190]: Disabling block transfer\n");
 
-    Data16 num = (Data16) (mode==ENABLE ? (BLOCK_SIZE / 20) : 0);
+    Data16 num = (Data16) (mode==ENABLE ? BLOCK_SIZE : 0);
 
     for(int tdc=0; tdc < ntdcs; tdc++)
         CAENVME_WriteCycle(Handle,Address[tdc]+ADD_BLT_EVENT_NUM_V1190A,&num,AddressModifier,DataWidth);
@@ -484,7 +484,7 @@ void v1190a::Set(IniFile * inifile, int ntdcs){
 
     SwitchChannels(inifile,ntdcs);
 
-    SetIRQ(1,BLOCK_SIZE,ntdcs);
+    SetIRQ(1,IRQ_BUFFER,ntdcs);
 }
 
 // *************************************************************************************************************
@@ -595,11 +595,13 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                             for(int i=0; i<Difference-1; i++){
                                 DataList->EventList->push_back(EventCount-Difference+i);
                                 DataList->NHitsList->push_back(0);
+                                DataList->QFlagList->push_back(CORRUPTED);
                                 DataList->ChannelList->push_back({0});
                                 DataList->TimeStampList->push_back({0.});
                             }
                             DataList->EventList->push_back(EventCount);
                             DataList->NHitsList->push_back(nHits);
+                            DataList->QFlagList->push_back(GOOD);
                             DataList->ChannelList->push_back(TDCCh);
                             DataList->TimeStampList->push_back(TDCTS);
                         } else {

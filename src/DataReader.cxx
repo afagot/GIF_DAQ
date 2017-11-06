@@ -22,12 +22,14 @@ DataReader::DataReader(){
     //Initialisation of the RAWData vectors
     TDCData.EventList = new vector<int>;
     TDCData.NHitsList = new vector<int>;
+    TDCData.QFlagList = new vector<int>;
     TDCData.ChannelList = new vector< vector<int> >;
     TDCData.TimeStampList = new vector< vector<float> >;
 
     //Cleaning all the vectors
     TDCData.EventList->clear();
     TDCData.NHitsList->clear();
+    TDCData.QFlagList->clear();
     TDCData.ChannelList->clear();
     TDCData.TimeStampList->clear();
 
@@ -195,6 +197,7 @@ void DataReader::Run(){
     //Cleaning all the vectors
     TDCData.EventList->clear();
     TDCData.NHitsList->clear();
+    TDCData.QFlagList->clear();
     TDCData.ChannelList->clear();
     TDCData.TimeStampList->clear();
 
@@ -212,6 +215,7 @@ void DataReader::Run(){
 
     int               EventCount = -9;
     int               nHits = -8;
+    int               qflag = -7;
     vector<int>       TDCCh;
     vector<float>     TDCTS;
 
@@ -220,6 +224,7 @@ void DataReader::Run(){
 
     RAWDataTree->Branch("EventNumber",    &EventCount,  "EventNumber/I");
     RAWDataTree->Branch("number_of_hits", &nHits,       "number_of_hits/I");
+    RAWDataTree->Branch("Quality_flag",   &qflag,       "Quality_flag/I");
     RAWDataTree->Branch("TDC_channel",    &TDCCh);
     RAWDataTree->Branch("TDC_TimeStamp",  &TDCTS);
 
@@ -246,6 +251,7 @@ void DataReader::Run(){
     for(Uint i=0; i<TDCData.EventList->size(); i++){
         EventCount  = TDCData.EventList->at(i);
         nHits       = TDCData.NHitsList->at(i);
+        qflag       = TDCData.QFlagList->at(i);
         TDCCh       = TDCData.ChannelList->at(i);
         TDCTS       = TDCData.TimeStampList->at(i);
 
