@@ -530,6 +530,11 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
 
     Uint MaxEventStored = 0;
 
+    //Keep track of the DataList size before starting data transfer. This will be useful to
+    //initialize LastEventCount later. Indeed, LastEventCount will have to start at the same
+    //value for each tdc
+    int StartingCount = DataList->EventList->size();
+
     for(int tdc=0; tdc < ntdcs; tdc++){
         EventStored.push_back(0);
 
@@ -552,8 +557,13 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
         //Sometimes, the header is not weel read out in the buffer. To control this, the previous
         //good word having been read out to know when this happens. When this happens, the bool
         //Header stays at false.
-//        Data32 previous_word = 0; //used for debug purpose
         bool Header = false;
+
+        //Due to this problem of header readout, some events are then corrupted and missing. To
+        //Check out for these missing events, we need to keep track of the last saved event ID
+        //and compare it with the current ID. If events are missing (if CurrentID - LastID > 1)
+        //then the QFlag for this TDC's event should be marked as CORRUPTED.
+        int LastEventCount = StartingCount;
 
         while(Count > 0){
             int words_read = ReadBlockD32(tdc,ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
@@ -567,10 +577,38 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //Get the event count from the global header (very first word)
                         EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
 
-                        //Save GLOBAL_HEADER as the last good word and Header is true
-                        //previous_word = word_type;
                         Header = true;
+                        break;
+                    }
+                    case TDC_HEADER_V1190A:{
+                        if(!Header) break;
+                        break;
+                    }
+                    case TDC_DATA_V1190A: {
+                        if(!Header) break;
+                        //each TDC module separated by 1000 in channel numbers
+                        //check which TDC are included in the data taking and
+                        //adapt using an offset to always write the data at the
+                        //right place
+                        int tdc_offset = (Address[0] / 0x11110000);
+                        channel = ((words[w]>>19) & 0x7F) + (tdc+tdc_offset)*1000;
+                        TDCCh.push_back(channel);
 
+                        timing = words[w] & 0x7FFFF;
+                        TDCTS.push_back((float)timing/10.);
+
+                        break;
+                    }
+                    case TDC_ERROR_V1190A:{
+                        if(!Header) break;
+                        break;
+                    }
+                    case TDC_TRAILER_V1190A:{
+                        if(!Header) break;
+                        break;
+                    }
+                    case GLOBAL_TRIGGER_TIME_TAG_V1190A:{
+                        if(!Header) break;
                         break;
                     }
                     case GLOBAL_TRAILER_V1190A: {
@@ -587,20 +625,23 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //is set to 0 (=CORRUPTED) and an empty entry is created instead
                         //of the missing one.
                         //Else, the data is added to the already existing entry.
-                        if(EventCount > (int)DataList->EventList->size()){
-                            int Difference = EventCount - (int)DataList->EventList->size();
+                        if(EventCount > LastEventCount){
+                            int tdc_offset = (Address[0] / 0x11110000);
+                            int qflag_offset = (tdc+tdc_offset)*10;
+
+                            int Difference = EventCount - LastEventCount;
 
                             for(int i=0; i<Difference-1; i++){
                                 DataList->EventList->push_back(EventCount-Difference+i);
                                 DataList->NHitsList->push_back(0);
-                                DataList->QFlagList->push_back(CORRUPTED);
-                                DataList->ChannelList->push_back({0});
-                                DataList->TimeStampList->push_back({0.});
+                                DataList->QFlagList->push_back(qflag_offset+CORRUPTED);
+                                DataList->ChannelList->push_back({});
+                                DataList->TimeStampList->push_back({});
                             }
 
                             DataList->EventList->push_back(EventCount);
                             DataList->NHitsList->push_back(nHits);
-                            DataList->QFlagList->push_back(GOOD);
+                            DataList->QFlagList->push_back(qflag_offset+GOOD);
                             DataList->ChannelList->push_back(TDCCh);
                             DataList->TimeStampList->push_back(TDCTS);
                         } else {
@@ -617,61 +658,15 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         if(Count == 0 && EventCount > (int)MaxEventStored)
                             MaxEventStored = EventCount;
 
+                        //Give LastEventCount the value of EventCount
+                        LastEventCount = EventCount;
+
                         //The reinitialise our temporary variables
                         EventCount = -99;
                         nHits = -88;
                         TDCCh.clear();
                         TDCTS.clear();
 
-                        //Save GLOBAL_TRAILER as the last good word
-                        //previous_word = word_type;
-
-                        break;
-                    }
-                    case TDC_DATA_V1190A: {
-                        if(!Header) break;
-                        //each TDC module separated by 1000 in channel numbers
-                        //check which TDC are included in the data taking and
-                        //adapt using an offset to always write the data at the
-                        //right place
-                        int offset = (Address[0] / 0x11110000);
-                        channel = ((words[w]>>19) & 0x7F) + (tdc+offset)*1000;
-                        TDCCh.push_back(channel);
-
-                        timing = words[w] & 0x7FFFF;
-                        TDCTS.push_back((float)timing/10.);
-
-                        //Save TDC_DATA as the last good word
-                        //previous_word = word_type;
-
-                        break;
-                    }
-                    case TDC_HEADER_V1190A:{
-                        if(!Header) break;
-
-                        //Save TDC_HEADER as the last good word
-                        //previous_word = word_type;
-                        break;
-                    }
-                    case TDC_ERROR_V1190A:{
-                        if(!Header) break;
-
-                        //Save TDC_ERROR as the last good word
-                        //previous_word = word_type;
-                        break;
-                    }
-                    case TDC_TRAILER_V1190A:{
-                        if(!Header) break;
-
-                        //Save TDC_TRAILER as the last good word
-                        //previous_word = word_type;
-                        break;
-                    }
-                    case GLOBAL_TRIGGER_TIME_TAG_V1190A:{
-                        if(!Header) break;
-
-                        //Save GLOBAL_TRIGGER_TIME as the last good word
-                        //previous_word = word_type;
                         break;
                     }
                     default:{
