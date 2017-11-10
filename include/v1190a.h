@@ -77,6 +77,11 @@ using namespace std;
 
 #define MAXTRIGGERS_V1190A                  1000
 
+//INCASE OF EFFICIENCY SCAN
+//#define BLOCK_SIZE                          20
+//#define IRQ_BUFFER                          256
+
+//IN CASE OF RATE SCAN
 #define BLOCK_SIZE                          100
 #define IRQ_BUFFER                          2048
 

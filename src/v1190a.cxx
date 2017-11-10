@@ -552,8 +552,12 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
         //Sometimes, the header is not weel read out in the buffer. To control this, the previous
         //good word having been read out to know when this happens. When this happens, the bool
         //Header stays at false.
-//        Data32 previous_word = 0; //used for debug purpose
         bool Header = false;
+
+        //Variable to keep track of the last EventCount to check for corrupted events
+        //Initialize it to the size of the DataList (it gives the expected Event ID
+        //for the last event that was written into the list)
+        int LastEventCount = DataList->EventList->size();
 
         while(Count > 0){
             int words_read = ReadBlockD32(tdc,ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
@@ -567,10 +571,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //Get the event count from the global header (very first word)
                         EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
 
-                        //Save GLOBAL_HEADER as the last good word and Header is true
-                        //previous_word = word_type;
                         Header = true;
-
                         break;
                     }
                     case GLOBAL_TRAILER_V1190A: {
@@ -587,18 +588,17 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //is printed out but the acquisition isn't stopped and an empty
                         //entry is created instead of the missing one.
                         //Else, the data is added to the already existing entry.
-                        if(EventCount > (int)DataList->EventList->size()){
-                            int Difference = EventCount - (int)DataList->EventList->size();
+                        if(EventCount > LastEventCount){
+                            int Difference = EventCount - LastEventCount;
 
-                            if(Difference > 1)
-                                MSG_ERROR("[TDC%i] : \t %i events are missing. Event %d is actual event.",tdc,Difference-1,EventCount);
                             for(int i=0; i<Difference-1; i++){
                                 DataList->EventList->push_back(EventCount-Difference+i);
                                 DataList->NHitsList->push_back(0);
                                 DataList->QFlagList->push_back(CORRUPTED);
-                                DataList->ChannelList->push_back({0});
-                                DataList->TimeStampList->push_back({0.});
+                                DataList->ChannelList->push_back({});
+                                DataList->TimeStampList->push_back({});
                             }
+
                             DataList->EventList->push_back(EventCount);
                             DataList->NHitsList->push_back(nHits);
                             DataList->QFlagList->push_back(GOOD);
@@ -618,14 +618,14 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         if(Count == 0 && EventCount > (int)MaxEventStored)
                             MaxEventStored = EventCount;
 
+                        //LastEventCount is now EventCount
+                        LastEventCount = EventCount;
+
                         //The reinitialise our temporary variables
                         EventCount = -99;
                         nHits = -88;
                         TDCCh.clear();
                         TDCTS.clear();
-
-                        //Save GLOBAL_TRAILER as the last good word
-                        //previous_word = word_type;
 
                         break;
                     }
@@ -638,23 +638,14 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         timing = words[w] & 0x7FFFF;
                         TDCTS.push_back((float)timing/10.);
 
-                        //Save TDC_DATA as the last good word
-                        //previous_word = word_type;
-
                         break;
                     }
                     case TDC_HEADER_V1190A:{
                         if(!Header) break;
-
-                        //Save TDC_HEADER as the last good word
-                        //previous_word = word_type;
                         break;
                     }
                     case TDC_ERROR_V1190A:{
                         if(!Header) break;
-
-                        //Save TDC_ERROR as the last good word
-                        //previous_word = word_type;
                         break;
                     }
                     case TDC_TRAILER_V1190A:{
@@ -666,13 +657,9 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                     }
                     case GLOBAL_TRIGGER_TIME_TAG_V1190A:{
                         if(!Header) break;
-
-                        //Save GLOBAL_TRIGGER_TIME as the last good word
-                        //previous_word = word_type;
                         break;
                     }
                     default:{
-                        //MSG_ERROR("[TDC%i] : \t Encountered unknown word type while processing events - %08X - Previous word - %08X\n",tdc,word_type,previous_word);
                         break;
                     }
                 }
