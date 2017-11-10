@@ -622,26 +622,43 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //When the event entry is not yet created in the data lists, a new
                         //entry is created. The difference in entries is saved. If it is
                         //greater than 1 (what shouldn't be possible), the quality flag
-                        //is set to 0 (=CORRUPTED) and an empty entry is created instead
+                        //is set to 2 (=CORRUPTED) and an empty entry is created instead
                         //of the missing one.
                         //Else, the data is added to the already existing entry.
+                        //At the end, since there will be 1 RAWData entry per tdc for each
+                        //event (meaning ntdcs different entries), the flags of each TDC
+                        //will be added together. The final format is a number of ntdcs
+                        //digits where each digit is the flag of a specific TDC. This is
+                        //constructed using powers of 10 like follows :
+                        // assuming a flag format of GOOD = 1 and CORRUPTED = 2
+                        // TDC 0 QFLAG = 1e0 * FLAG
+                        // TDC 1 QFLAG = 1e1 * FLAG
+                        // ...
+                        // TDC N QFLAG = 1eN * FLAG
+                        // and the final flag to be with N digits:
+                        // QFLAG = n....3210
+                        // each digit being 1 or 2
+                        //An example with a 4 TDCs setup. If all TDCs were good :
+                        // QFLAG = 1111
+                        //If TDC 2 was corrupted :
+                        // QFLAG = 1211
                         if(EventCount > LastEventCount){
                             int tdc_offset = (Address[0] / 0x11110000);
-                            int qflag_offset = (tdc+tdc_offset)*10;
+                            int qflag_offset = pow(1,tdc+tdc_offset);
 
                             int Difference = EventCount - LastEventCount;
 
                             for(int i=0; i<Difference-1; i++){
                                 DataList->EventList->push_back(EventCount-Difference+i);
                                 DataList->NHitsList->push_back(0);
-                                DataList->QFlagList->push_back(qflag_offset+CORRUPTED);
+                                DataList->QFlagList->push_back(qflag_offset*CORRUPTED);
                                 DataList->ChannelList->push_back({});
                                 DataList->TimeStampList->push_back({});
                             }
 
                             DataList->EventList->push_back(EventCount);
                             DataList->NHitsList->push_back(nHits);
-                            DataList->QFlagList->push_back(qflag_offset+GOOD);
+                            DataList->QFlagList->push_back(qflag_offset*GOOD);
                             DataList->ChannelList->push_back(TDCCh);
                             DataList->TimeStampList->push_back(TDCTS);
                         } else {

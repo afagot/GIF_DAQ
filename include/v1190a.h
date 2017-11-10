@@ -171,7 +171,7 @@ typedef enum _SetMode {
 
 typedef enum _QualityFlag {
     GOOD      = 1,
-    CORRUPTED = 0
+    CORRUPTED = 2
 } QualityFlag;
 
 // ****************************************************************************************************
