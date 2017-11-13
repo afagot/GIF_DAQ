@@ -642,31 +642,46 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         // QFLAG = 1111
                         //If TDC 2 was corrupted :
                         // QFLAG = 1211
-                        if(EventCount > LastEventCount){
-                            int tdc_offset = (Address[0] / 0x11110000);
-                            int qflag_offset = pow(1,tdc+tdc_offset);
 
-                            int Difference = EventCount - LastEventCount;
+                        int tdc_offset = (Address[0] / 0x11110000);
+                        int qflag_offset = pow(1,tdc+tdc_offset);
 
-                            for(int i=0; i<Difference-1; i++){
-                                DataList->EventList->push_back(EventCount-Difference+i);
-                                DataList->NHitsList->push_back(0);
-                                DataList->QFlagList->push_back(qflag_offset*CORRUPTED);
-                                DataList->ChannelList->push_back({});
-                                DataList->TimeStampList->push_back({});
+                        int Difference = EventCount - LastEventCount;
+
+                        if(EventCount > (int)DataList->EventList->size()){
+                            if(EventCount > LastEventCount){
+                                for(int i=0; i<Difference-1; i++){
+                                    DataList->EventList->push_back(EventCount-Difference+i);
+                                    DataList->NHitsList->push_back(0);
+                                    DataList->QFlagList->push_back(qflag_offset*CORRUPTED);
+                                    DataList->ChannelList->push_back({});
+                                    DataList->TimeStampList->push_back({});
+                                }
+                                DataList->EventList->push_back(EventCount);
+                                DataList->NHitsList->push_back(nHits);
+                                DataList->QFlagList->push_back(qflag_offset*GOOD);
+                                DataList->ChannelList->push_back(TDCCh);
+                                DataList->TimeStampList->push_back(TDCTS);
+                            } else {
+                                string tdcnumber = intTostring(tdc);
+                                MSG_ERROR("[TDC"+tdcnumber+"-ERROR] Event error Type 1");
                             }
-
-                            DataList->EventList->push_back(EventCount);
-                            DataList->NHitsList->push_back(nHits);
-                            DataList->QFlagList->push_back(qflag_offset*GOOD);
-                            DataList->ChannelList->push_back(TDCCh);
-                            DataList->TimeStampList->push_back(TDCTS);
                         } else {
-                            Uint it = EventCount-1;
-                            DataList->EventList->at(it) = EventCount;
-                            DataList->NHitsList->at(it) = DataList->NHitsList->at(it) + nHits;
-                            DataList->ChannelList->at(it).insert(DataList->ChannelList->at(it).end(),TDCCh.begin(),TDCCh.end());
-                            DataList->TimeStampList->at(it).insert(DataList->TimeStampList->at(it).end(),TDCTS.begin(),TDCTS.end());
+                            if(EventCount > LastEventCount){
+                                Uint it = EventCount-1;
+
+                                for(int i=0; i<Difference-1; i++)
+                                    DataList->QFlagList->at(it-Difference+i) =
+                                            DataList->QFlagList->at(it-Difference+i) + qflag_offset*CORRUPTED;
+
+                                DataList->NHitsList->at(it) = DataList->NHitsList->at(it) + nHits;
+                                DataList->QFlagList->at(it) = DataList->QFlagList->at(it) + qflag_offset*GOOD;
+                                DataList->ChannelList->at(it).insert(DataList->ChannelList->at(it).end(),TDCCh.begin(),TDCCh.end());
+                                DataList->TimeStampList->at(it).insert(DataList->TimeStampList->at(it).end(),TDCTS.begin(),TDCTS.end());
+                            } else {
+                                string tdcnumber = intTostring(tdc);
+                                MSG_ERROR("[TDC"+tdcnumber+"-ERROR] Event error Type 2");
+                            }
                         }
 
                         //Decrement the counter and if it reaches 0 compare the last event number to
