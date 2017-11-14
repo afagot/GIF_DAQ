@@ -644,7 +644,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         // QFLAG = 1211
 
                         int tdc_offset = (Address[0] / 0x11110000);
-                        int qflag_offset = pow(1,tdc+tdc_offset);
+                        int qflag_offset = pow(10,tdc+tdc_offset);
 
                         int Difference = EventCount - LastEventCount;
 
