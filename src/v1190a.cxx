@@ -670,7 +670,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                             if(EventCount > LastEventCount){
                                 Uint it = EventCount-1;
 
-                                for(int i=0; i<Difference-1; i++)
+                                for(int i=1; i<Difference; i++)
                                     DataList->QFlagList->at(it-Difference+i) =
                                             DataList->QFlagList->at(it-Difference+i) + qflag_offset*CORRUPTED;
 
