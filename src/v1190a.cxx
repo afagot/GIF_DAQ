@@ -667,7 +667,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                                 MSG_ERROR("[TDC"+tdcnumber+"-ERROR] Event error Type 1");
                             }
                         } else {
-                            if(EventCount > LastEventCount){
+                            if(EventCount > LastEventCount || LastEventCount == StartingCount){
                                 Uint it = EventCount-1;
 
                                 for(int i=1; i<Difference; i++)
