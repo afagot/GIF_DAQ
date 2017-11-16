@@ -36,6 +36,7 @@ class DataReader
         Data32   GetMaxTriggers();
         void     SetVME();
         void     SetTDC();
+        int      GetQFlag(Uint it);
         void     Init(string inifilename);
         void     Update();
         string   GetFileName();

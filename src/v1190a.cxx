@@ -622,7 +622,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //When the event entry is not yet created in the data lists, a new
                         //entry is created. The difference in entries is saved. If it is
                         //greater than 1 (what shouldn't be possible), the quality flag
-                        //is set to 2 (=CORRUPTED) and an empty entry is created instead
+                        //is set to 0 (=CORRUPTED) and an empty entry is created instead
                         //of the missing one.
                         //Else, the data is added to the already existing entry.
                         //At the end, since there will be 1 RAWData entry per tdc for each
@@ -630,18 +630,35 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //will be added together. The final format is a number of ntdcs
                         //digits where each digit is the flag of a specific TDC. This is
                         //constructed using powers of 10 like follows :
-                        // assuming a flag format of GOOD = 1 and CORRUPTED = 2
+                        // assuming a flag format of GOOD = 1 and CORRUPTED = 0
                         // TDC 0 QFLAG = 1e0 * FLAG
                         // TDC 1 QFLAG = 1e1 * FLAG
                         // ...
                         // TDC N QFLAG = 1eN * FLAG
                         // and the final flag to be with N digits:
                         // QFLAG = n....3210
-                        // each digit being 1 or 2
+                        // each digit being 1 or 0
                         //An example with a 4 TDCs setup. If all TDCs were good :
                         // QFLAG = 1111
                         //If TDC 2 was corrupted :
-                        // QFLAG = 1211
+                        // QFLAG = 1011
+                        //
+                        //Then later, all the 0s will be changed into 2, but only when data
+                        //taking will be over. This will be the case because it will make it
+                        //easier to translate the Qflag without knowing the number of TDCs
+                        //beforehand. indeed, a QFlag 111 could be due to a 3 TDC setup with
+                        //3 good TDC flags or to a more than 3 TDC setup with TDCs 4, 5, etc...
+                        //giving a 0.
+                        //Also, to keep it simple, there is no tracking of the last event
+                        //filled per TDC. Thus it happens that sometimes a corrupted events
+                        //is not filed as one but is just kept empty for this specific TDC
+                        //and thus the flag turns out to be at 0 too. The point is that, if
+                        //EventCount < DataList->EventList->size() and LastEventCount ==
+                        //StartingCount, it is hard to know which one was the last event filled
+                        //for the current TDC to be readout. It is assumed that then this TDC
+                        //will not contribute to number_of_hits, TDC_channel or TDC_TimeStamp.
+                        //Finally, contrary to the offline analysis, the DAQ knows how many
+                        //TDCs are used and knows how many digits to expect for the QFlag.
 
                         int tdc_offset = (Address[0] / 0x11110000);
                         int qflag_offset = pow(10,tdc+tdc_offset);

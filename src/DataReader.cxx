@@ -83,6 +83,25 @@ void DataReader::SetTDC(){
 
 // ****************************************************************************************************
 
+int DataReader::GetQFlag(Uint it){
+    int flag = TDCData.QFlagList->at(it);
+    int nDigits = nTDCs;
+
+    int tmpflag = flag;
+    while(nDigits != 0){
+        int tdcflag = tmpflag/(int)pow(10,nDigits-1);
+
+        if(tdcflag == CORRUPTED) flag = flag + 2*(int)pow(10,nDigits-1);
+
+        tmpflag = tmpflag%(int)pow(10,nDigits-1);
+        nDigits--;
+    }
+
+    return flag;
+}
+
+// ****************************************************************************************************
+
 void DataReader::Init(string inifilename){
     SetIniFile(inifilename);
     SetMaxTriggers();
@@ -246,11 +265,13 @@ void DataReader::Run(){
         }
     }
 
-    //Write the data from the RAWData structure to the TTree
+    //Write the data from the RAWData structure to the TTree and
+    //change the QFlag digits that are equal to 0, to 2 for later
+    //offline analysis.
     for(Uint i=0; i<TDCData.EventList->size(); i++){
         EventCount  = TDCData.EventList->at(i);
         nHits       = TDCData.NHitsList->at(i);
-        qflag       = TDCData.QFlagList->at(i);
+        qflag       = GetQFlag(i);
         TDCCh       = TDCData.ChannelList->at(i);
         TDCTS       = TDCData.TimeStampList->at(i);
 
