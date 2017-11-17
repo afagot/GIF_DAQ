@@ -10,41 +10,43 @@ using namespace std;
 #define RUNNING     3
 #define DAQ_RDY     2
 #define START       1
+#define INIT        0
 #define STOP       -1
 #define STATUS_ERR -2
 #define DAQ_ERR    -3
+#define ARGC_ERR   -4
 
 #define WR_OK       5
 #define WR_ERR     -5
 #define RD_ERR     -6
 
-const string __nfspath          = "/var/operation/";
-const string __datapath         = __nfspath + "HVSCAN/";
-const string __runpath          = __nfspath + "RUN/";
-const string __logpath          = __runpath + "log";
-const string __runstatuspath    = __runpath + "run";
-const string __configpath       = __runpath + "daqgifpp.ini";
-const string __registrypath     = __runpath + "runregistry";
-const string __lastfilepath     = __runpath + "last";
+const string __datapath      = "/var/webdcs/HVSCAN/";
+const string __nfspath       = "/var/operation/";
+const string __runpath       = __nfspath + "RUN/";
+const string __logpath       = __runpath + "log-daq";
+const string __runstatuspath = __runpath + "run";
+const string __configpath    = __runpath + "daqgifpp.ini";
+const string __registrypath  = __runpath + "runregistry";
+const string __lastfilepath  = __runpath + "last";
 
-string      shortTostring(short value);
-string      intTostring(int value);
-string      UintTostring(Uint value);
-string      longTostring(long value);
-string      longlongTostring(long long value);
-string      floatTostring(float value);
-string      GetRunStatus();
-int         SetRunStatus(string& runStatus);
-int         CtrlRunStatus(string& runStatus);
-void        SendDAQReady();
-void        SendDAQProcess();
-void        SendDAQRunning();
-void        SendDAQError();
-void        WaitDCSSignal(Uint delay);
-void        CheckKILL();
-bool        CheckSTART();
-bool        CheckSTOP();
-long long   GetTimeStamp();
-string      GetLogTimeStamp();
+string    shortTostring(short value);
+string    intTostring(int value);
+string    UintTostring(Uint value);
+string    longTostring(long value);
+string    longlongTostring(long long value);
+string    floatTostring(float value);
+string    GetRunStatus();
+int       SetRunStatus(string& runStatus);
+int       CtrlRunStatus(string& runStatus);
+void      SendDAQReady();
+void      SendDAQProcess();
+void      SendDAQRunning();
+void      SendDAQError();
+void      WaitDCSSignal(Uint delay);
+void      CheckKILL();
+bool      CheckSTART();
+bool      CheckSTOP();
+long long GetTimeStamp();
+string    GetLogTimeStamp();
 
 #endif // UTILS_H

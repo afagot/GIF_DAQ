@@ -26,12 +26,14 @@ DataReader::DataReader(){
     //Initialisation of the RAWData vectors
     TDCData.EventList = new vector<int>;
     TDCData.NHitsList = new vector<int>;
+    TDCData.QFlagList = new vector<int>;
     TDCData.ChannelList = new vector< vector<int> >;
     TDCData.TimeStampList = new vector< vector<float> >;
 
     //Cleaning all the vectors
     TDCData.EventList->clear();
     TDCData.NHitsList->clear();
+    TDCData.QFlagList->clear();
     TDCData.ChannelList->clear();
     TDCData.TimeStampList->clear();
 
@@ -53,48 +55,20 @@ void DataReader::SetIniFile(string inifilename){
 
 // ****************************************************************************************************
 
-void DataReader::SetNtriggers(){
-    nTriggers[0] = iniFile->intType("General","RdmTriggers",MAXTRIGGERS_V1190A);
-    nTriggers[1] = iniFile->intType("General","BeamTriggers",MAXTRIGGERS_V1190A);
+void DataReader::SetMaxTriggers(){
+    MaxTriggers = iniFile->intType("General","MaxTriggers",MAXTRIGGERS_V1190A);
 }
 
 // ****************************************************************************************************
 
-Data32 DataReader::GetNtriggers(TriggerType whichTrigger){
-    return nTriggers[whichTrigger];
-}
-
-// ****************************************************************************************************
-
-bool DataReader::GotEnoughEvent(Data32 ntriggers[]){
-    bool EnoughRDMTriggers = (ntriggers[0] >= nTriggers[0]);
-    bool EnoughBEAMTriggers = (ntriggers[1] >= nTriggers[1]);
-    return (EnoughRDMTriggers && EnoughBEAMTriggers);
+Data32 DataReader::GetMaxTriggers(){
+    return MaxTriggers;
 }
 
 // ****************************************************************************************************
 
 void DataReader::SetVME(){
     VME = new v1718(iniFile);
-}
-
-// ****************************************************************************************************
-
-TriggerType DataReader::WhichTrigger(){
-    if(VME->GetInputLevel()) return RANDOM;
-    else return BEAM;
-}
-
-// ****************************************************************************************************
-
-void DataReader::SetCurrentTrigger(){
-    currentTrigger = WhichTrigger();
-}
-
-// ****************************************************************************************************
-
-bool DataReader::HasTriggerChanged(){
-    return (currentTrigger == WhichTrigger());
 }
 
 // ****************************************************************************************************
@@ -109,9 +83,28 @@ void DataReader::SetTDC(){
 
 // ****************************************************************************************************
 
+int DataReader::GetQFlag(Uint it){
+    int flag = TDCData.QFlagList->at(it);
+    int nDigits = nTDCs;
+
+    int tmpflag = flag;
+    while(nDigits != 0){
+        int tdcflag = tmpflag/(int)pow(10,nDigits-1);
+
+        if(tdcflag == CORRUPTED) flag = flag + 2*(int)pow(10,nDigits-1);
+
+        tmpflag = tmpflag%(int)pow(10,nDigits-1);
+        nDigits--;
+    }
+
+    return flag;
+}
+
+// ****************************************************************************************************
+
 void DataReader::Init(string inifilename){
     SetIniFile(inifilename);
-    SetNtriggers();
+    SetMaxTriggers();
     SetVME();
     SetTDC();
 }
@@ -120,7 +113,7 @@ void DataReader::Init(string inifilename){
 
 void DataReader::Update(){
     iniFile->Read();
-    SetNtriggers();
+    SetMaxTriggers();
 }
 
 // ****************************************************************************************************
@@ -148,9 +141,6 @@ string DataReader::GetFileName(){
     string mkdirScanFolder = "mkdir -p " + datafolder;
     system(mkdirScanFolder.c_str());
 
-    //Get the run number (start time of the run)
-    long long RunNumber = GetTimeStamp();
-
     //Get the HV step
     string HVstep = iniFile->stringType("General","HV","HVX");
 
@@ -160,38 +150,14 @@ string DataReader::GetFileName(){
     fNameStream << datafolder   //destination
                 << "Scan"
                 << ScanID       //scan ID
-                << "_Run"
-                << RunNumber    //run number
                 << "_HV"
                 << HVstep       //HV step
-                << "_DAQ"
-                << ".root";     //extension
+                << "_DAQ.root"; //extension
 
     string outputfName;
     fNameStream >> outputfName;
 
     return outputfName;
-}
-
-// ****************************************************************************************************
-
-void DataReader::PrintPercentage(string fName, Uint current[], Uint last[]){
-    //COntrol that 1 of the percentages is a multiple of 5
-    if(current[0] % 10 == 0 || current[1] % 10 ==0){
-
-        //Then make sure that at least one of the 2 has been
-        //updated since the last print
-        if(current[0] != last[0] || current[1] != last[1]){
-            MSG_INFO("[DAQ] Run "
-                     + fName
-                     + " - Noise "
-                     + intTostring(current[0])
-                     +"% - Beam "
-                     + intTostring(current[1])
-                     +"%"
-                    );
-        }
-    }
 }
 
 // ****************************************************************************************************
@@ -217,7 +183,7 @@ void DataReader::WriteRunRegistry(string filename){
 
 void DataReader::Run(){
     //Get the output file name and create the ROOT file
-    Uint TriggerCount[2] = {0};
+    Uint TriggerCount = 0;
     string outputFileName = GetFileName();
     long long startstamp = GetTimeStamp();
 
@@ -229,19 +195,19 @@ void DataReader::Run(){
     //hits.
     TTree *RAWDataTree = new TTree("RAWData","RAWData");
 
-    int               EventCount = -9;  //Event tag
-    int               TriggerTag = -7;  //Trigger tag
-    int               nHits = -8;       //Number of fired TDC channels in event
-    vector<int>       TDCCh;            //List of fired TDC channels in event
-    vector<float>     TDCTS;            //list of fired TDC channels time stamps
+    int           EventCount = -9;  //Event tag
+    int           nHits = -8;       //Number of fired TDC channels in event
+    int           qflag = -7;       //Event quality flag (0 = CORRUPTED | 1 = GOOD)
+    vector<int>   TDCCh;            //List of fired TDC channels in event
+    vector<float> TDCTS;            //list of fired TDC channels time stamps
 
     TDCCh.clear();
     TDCTS.clear();
 
     //Set the branches that will contain the previously defined variables
-    RAWDataTree->Branch("EventNumber",    &EventCount,  "EventNumber/I");
-    RAWDataTree->Branch("TriggerTag",     &TriggerTag,  "TriggerTag/I");
-    RAWDataTree->Branch("number_of_hits", &nHits,       "number_of_hits/I");
+    RAWDataTree->Branch("EventNumber",    &EventCount, "EventNumber/I");
+    RAWDataTree->Branch("number_of_hits", &nHits,      "number_of_hits/I");
+    RAWDataTree->Branch("Quality_flag",   &qflag,      "Quality_flag/I");
     RAWDataTree->Branch("TDC_channel",    &TDCCh);
     RAWDataTree->Branch("TDC_TimeStamp",  &TDCTS);
 
@@ -249,6 +215,7 @@ void DataReader::Run(){
     TDCData.EventList->clear();
     TDCData.Trigger->clear();
     TDCData.NHitsList->clear();
+    TDCData.QFlagList->clear();
     TDCData.ChannelList->clear();
     TDCData.TimeStampList->clear();
 
@@ -257,27 +224,15 @@ void DataReader::Run(){
     FlushBuffer();
     MSG_INFO("[DAQ] Run "+outputFileName+" started");
 
-    Uint percentage[2] = {0};     // percentage of the run done
-    Uint last_print[2] = {0};     // keep track of the last percentage printed
+    Uint percentage = 0;     // percentage of the run done
+    Uint last_print = 0;     // keep track of the last percentage printed
 
     //Every once in a while read the run file to check for a KILL command
     //Create a check kill clock
     Uint CKill_Clk = 0;
 
     //Read the output buffer until the min number of trigger is achieved
-    while(!GotEnoughEvent(TriggerCount)){
-        //First control that the trigger mode didn't change
-        //It it did change, flush the buffer to prepare for the next block
-        //transfer (we have to make sure that all the data contained in
-        //the buffer comes from the same buffer)
-        if(HasTriggerChanged()){
-            VME->SendBUSY(ON);
-            TDCs->Clear(nTDCs);
-            VME->SendBUSY(OFF);
-
-            SetCurrentTrigger();
-        }
-
+    while(TriggerCount < GetMaxTriggers()){
         //Check the TDC buffers for data every 100ms
         //If there is data, an interupt request is present
         usleep(100000);
@@ -289,15 +244,18 @@ void DataReader::Run(){
             usleep(1000);
 
             //Read the data
-            TriggerCount[currentTrigger] = TDCs->Read(&TDCData,nTDCs,currentTrigger);
+            TriggerCount = TDCs->Read(&TDCData,nTDCs);
 
             //percentage update
-            percentage[currentTrigger] = (100*TriggerCount[currentTrigger]) / GetNtriggers(currentTrigger);
+            percentage = (100*TriggerCount) / GetMaxTriggers();
 
-            //dump the status in the logfile every 10%
-            PrintPercentage(outputFileName,percentage,last_print);
-            last_print[0] = percentage[0];
-            last_print[1] = percentage[1];
+            //dump the status in the logfile every 5%
+            if(percentage != 0 && percentage % 5 == 0 && percentage != last_print){
+                string log_percent = intTostring(percentage);
+
+                MSG_INFO("[DAQ] Run "+outputFileName+" "+log_percent+"%");
+                last_print = percentage;
+            }
 
             //Resume data taking - Release VETO signal
             VME->SendBUSY(OFF);
@@ -313,11 +271,13 @@ void DataReader::Run(){
         }
     }
 
-    //Write the data from the RAWData structure to the TTree
+    //Write the data from the RAWData structure to the TTree and
+    //change the QFlag digits that are equal to 0, to 2 for later
+    //offline analysis.
     for(Uint i=0; i<TDCData.EventList->size(); i++){
         EventCount  = TDCData.EventList->at(i);
-        TriggerTag  = TDCData.Trigger->at(i);
         nHits       = TDCData.NHitsList->at(i);
+        qflag       = GetQFlag(i);
         TDCCh       = TDCData.ChannelList->at(i);
         TDCTS       = TDCData.TimeStampList->at(i);
 
@@ -346,16 +306,16 @@ void DataReader::Run(){
     TString beamstatus;     //Beam status (ON or OFF)
 
     //Branches linking the string variables to the TTree
-    RunParameters->Branch("RunType",            &runtype);
-    RunParameters->Branch("Beam",               &beamstatus);
+    RunParameters->Branch("RunType", &runtype);
+    RunParameters->Branch("Beam", &beamstatus);
 
     //Int parameters are to be read from the config file and saved into
     //histograms
-    TH1D *ID        = new TH1D("ID","Identifiers of this run",4,0,4); //To save Scan ID, HV step, Start and Stop time stamps
+    TH1D *ID   = new TH1D("ID","Identifiers of this run",4,0,4); //To save Scan ID, HV step, Start and Stop time stamps
     ID->SetOption("TEXT");
-    TH1I *Trig      = new TH1I("Triggers","Number of triggers for this run",1,0,1); //Number of triggers
+    TH1I *Trig = new TH1I("Triggers","Number of triggers for this run",1,0,1); //Number of triggers
     Trig->SetOption("TEXT");
-    TH1I *Thrs      = new TH1I("Thrs","List of thresholds used per chamber during this run",1,0,1); //List of Thresholds
+    TH1I *Thrs = new TH1I("Thrs","List of thresholds used per chamber during this run",1,0,1); //List of Thresholds
     Thrs->SetOption("TEXT");
     Thrs->SetCanExtend(TH1::kAllAxes); //Since the number of chambers can change, I chose a dynamical axis
 
@@ -385,6 +345,7 @@ void DataReader::Run(){
                 ID->Fill("Start stamp", startstamp);
                 ID->Fill("Stop stamp", GetTimeStamp());
             } else if (Parameter == "HV"){
+                value = iniFile->intType(group,Parameter,0);
                 ID->Fill(Parameter.c_str(), value);
             }else if(Parameter == "RunType"){
                 runtype = iniFile->stringType(group,Parameter,"");

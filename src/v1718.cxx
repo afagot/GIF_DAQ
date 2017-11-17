@@ -31,6 +31,8 @@
 
 using namespace std;
 
+// *************************************************************************************************************
+
 v1718::v1718(IniFile *inifile){
    //Get the base address from the configuration file
    Data32 baseaddress = inifile->addressType("VMEInterface","BaseAddress",BASEV1718);
@@ -172,17 +174,6 @@ bool v1718::CheckIRQ(){
 
     // Pick the requested IRQ line from the data and return its status
     return (((data>>(Level-1)) & 1) > 0);
-}
-
-// *************************************************************************************************************
-// Get input 0 level - used to switch from random to beam trigger
-
-bool v1718::GetInputLevel() {
-    Uint data = 0;
-
-    // Get the input register data
-    CheckStatus(CAENVME_ReadRegister(Handle, cvInputReg, &data));
-    return ((data & cvIn0Bit) > 0);
 }
 
 // *************************************************************************************************************

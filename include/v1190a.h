@@ -42,17 +42,17 @@ using namespace std;
 
 /*** Address map for the model V1190A ***/
 
-#define ADD_OUT_BUFFER_V1190A				0x0000			/* Output buffer */
-#define ADD_STATUS_V1190A					0x1002			/* Status register */
-#define ADD_INT_LEVEL_V1190A				0x100A			/* Interrupt level register */
-#define ADD_MOD_RESET_V1190A				0x1014			/* Module reset register */
-#define ADD_SW_CLEAR_V1190A					0x1016			/* Software clear register */
-#define ADD_EVENT_STORED_V1190A				0x1020			/* Event stored register */
-#define ADD_ALMOST_FULL_LVL_V1190A			0x1022			/* Almost full level register */
-#define ADD_BLT_EVENT_NUM_V1190A			0x1024			/* BLT event number register */
-#define ADD_MICRO_V1190A					0x102E			/* Micro register */
-#define ADD_MICRO_HND_V1190A				0x1030			/* Micro handshake register */
-#define ADD_DUMMY16_V1190A                  0x1204          /* Dummy 16bit */
+#define ADD_OUT_BUFFER_V1190A               0x0000    /* Output buffer */
+#define ADD_STATUS_V1190A                   0x1002    /* Status register */
+#define ADD_INT_LEVEL_V1190A                0x100A    /* Interrupt level register */
+#define ADD_MOD_RESET_V1190A                0x1014    /* Module reset register */
+#define ADD_SW_CLEAR_V1190A                 0x1016    /* Software clear register */
+#define ADD_EVENT_STORED_V1190A             0x1020    /* Event stored register */
+#define ADD_ALMOST_FULL_LVL_V1190A          0x1022    /* Almost full level register */
+#define ADD_BLT_EVENT_NUM_V1190A            0x1024    /* BLT event number register */
+#define ADD_MICRO_V1190A                    0x102E    /* Micro register */
+#define ADD_MICRO_HND_V1190A                0x1030    /* Micro handshake register */
+#define ADD_DUMMY16_V1190A                  0x1204    /* Dummy 16bit */
 
 // ****************************************************************************************************
 
@@ -88,43 +88,42 @@ using namespace std;
 
 /*** Micro register opcodes ***/
 
-typedef enum
-{
+typedef enum{
     // Micro register opcodes: ACQUISITION MODE
-     OPCODE_TRG_MATCH_V1190A				= 0x0000,		/* Trigger matching mode */
+     OPCODE_TRG_MATCH_V1190A         = 0x0000,    /* Trigger matching mode */
 
     // Micro register opcodes: TRIGGER
-     OPCODE_SET_WIN_WIDTH_V1190A			= 0x1000,		/* Set window width */
-     OPCODE_SET_WIN_OFFSET_V1190A			= 0x1100,		/* Set window offset */
-     OPCODE_SET_SW_MARGIN_V1190A			= 0x1200,		/* Set extra search margin */
-     OPCODE_SET_REJ_MARGIN_V1190A			= 0x1300,		/* Set reject margin */
-     OPCODE_EN_SUB_TRG_V1190A				= 0x1400,		/* Enable subtraction of trigger time */
-     OPCODE_DIS_SUB_TRG_V1190A				= 0x1500,		/* Disable subtraction of trigger time */
-     OPCODE_READ_TRG_CONF_V1190A			= 0x1600,		/* Read trigger configuration */
+     OPCODE_SET_WIN_WIDTH_V1190A     = 0x1000,    /* Set window width */
+     OPCODE_SET_WIN_OFFSET_V1190A    = 0x1100,    /* Set window offset */
+     OPCODE_SET_SW_MARGIN_V1190A     = 0x1200,    /* Set extra search margin */
+     OPCODE_SET_REJ_MARGIN_V1190A    = 0x1300,    /* Set reject margin */
+     OPCODE_EN_SUB_TRG_V1190A        = 0x1400,    /* Enable subtraction of trigger time */
+     OPCODE_DIS_SUB_TRG_V1190A       = 0x1500,    /* Disable subtraction of trigger time */
+     OPCODE_READ_TRG_CONF_V1190A     = 0x1600,    /* Read trigger configuration */
 
     // Micro register opcodes: TDC EDGE DETECTION & RESOLUTION
-     OPCODE_SET_DETECTION_V1190A			= 0x2200,		/* Enable paired meas. leading/trailing edge */
-     OPCODE_READ_DETECTION_V1190A			= 0x2300,		/* Read edge detection configuration */
-     OPCODE_SET_TR_LEAD_LSB_V1190A			= 0x2400,		/* Set LSB of leading/trailing edge */
-     OPCODE_READ_RES_V1190A					= 0x2600,		/* Read resolution */
-     OPCODE_SET_DEAD_TIME_V1190A			= 0x2800,		/* Set channel dead time between hits */
-     OPCODE_READ_DEAD_TIME_V1190A			= 0x2900,		/* Read channel dead time between hits */
+     OPCODE_SET_DETECTION_V1190A     = 0x2200,    /* Enable paired meas. leading/trailing edge */
+     OPCODE_READ_DETECTION_V1190A    = 0x2300,    /* Read edge detection configuration */
+     OPCODE_SET_TR_LEAD_LSB_V1190A   = 0x2400,    /* Set LSB of leading/trailing edge */
+     OPCODE_READ_RES_V1190A          = 0x2600,    /* Read resolution */
+     OPCODE_SET_DEAD_TIME_V1190A     = 0x2800,    /* Set channel dead time between hits */
+     OPCODE_READ_DEAD_TIME_V1190A    = 0x2900,    /* Read channel dead time between hits */
 
     // Micro register opcodes: TDC READOUT
-     OPCODE_EN_HEAD_TRAILER_V1190A			= 0x3000,		/* Enable TDC header and trailer */
-     OPCODE_DIS_HEAD_TRAILER_V1190A			= 0x3100,		/* Disable TDC header and trailer */
-     OPCODE_READ_HEAD_TRAILER_V1190A		= 0x3200,		/* Read status TDC header and trailer */
-     OPCODE_SET_EVENT_SIZE_V1190A			= 0x3300,		/* Set maximum number of hits per event */
-     OPCODE_READ_EVENT_SIZE_V1190A			= 0x3400,		/* Read maximum number of hits per event */
+     OPCODE_EN_HEAD_TRAILER_V1190A   = 0x3000,    /* Enable TDC header and trailer */
+     OPCODE_DIS_HEAD_TRAILER_V1190A  = 0x3100,    /* Disable TDC header and trailer */
+     OPCODE_READ_HEAD_TRAILER_V1190A = 0x3200,    /* Read status TDC header and trailer */
+     OPCODE_SET_EVENT_SIZE_V1190A    = 0x3300,    /* Set maximum number of hits per event */
+     OPCODE_READ_EVENT_SIZE_V1190A   = 0x3400,    /* Read maximum number of hits per event */
 
     // Micro register opcodes: CHANNEL ENABLE
-     OPCODE_WRITE_EN_PATTERN_V1190A			= 0x4400,		/* Write enable pattern for channels */
-     OPCODE_READ_EN_PATTERN_V1190A			= 0x4500,		/* Read enable pattern for channels */
+     OPCODE_WRITE_EN_PATTERN_V1190A  = 0x4400,    /* Write enable pattern for channels */
+     OPCODE_READ_EN_PATTERN_V1190A   = 0x4500,    /* Read enable pattern for channels */
 
     // Micro register opcodes: DEBUG AND TEST
-     OPCODE_READ_SPARE_V1190A				= 0xC400,		/* Read a 16 bit spare variable */
-     OPCODE_EN_TEST_MODE_V1190A				= 0xC500,		/* Enable TDC test mode */
-     OPCODE_DIS_TEST_MODE_V1190A			= 0xC600,		/* Disable TDC test mode */
+     OPCODE_READ_SPARE_V1190A        = 0xC400,    /* Read a 16 bit spare variable */
+     OPCODE_EN_TEST_MODE_V1190A      = 0xC500,    /* Enable TDC test mode */
+     OPCODE_DIS_TEST_MODE_V1190A     = 0xC600,    /* Disable TDC test mode */
 }  OPCODES_MICRO_V1190A;
 
 // ****************************************************************************************************
@@ -132,43 +131,48 @@ typedef enum
 /*** Parameters ***/
 
 typedef enum _EdgeMode {
-    EdgeMode_Pair                             = 0b00,
-    EdgeMode_Trailing                         = 0b01,
-    EdgeMode_Leading                          = 0b10,
-    EdgeMode_Both                             = 0b11
+    EdgeMode_Pair     = 0b00,
+    EdgeMode_Trailing = 0b01,
+    EdgeMode_Leading  = 0b10,
+    EdgeMode_Both     = 0b11
 
 } EdgeMode;
 
 typedef enum _Resolution {
-    Res_800ps                                 = 0b00,
-    Res_200ps                                 = 0b01,
-    Res_100ps                                 = 0b10
+    Res_800ps = 0b00,
+    Res_200ps = 0b01,
+    Res_100ps = 0b10
 } Resolution;
 
 typedef enum _DeadTime {
-    DT_5ns                                    = 0b00,
-    DT_10ns                                   = 0b01,
-    DT_30ns                                   = 0b10,
-    DT_100ns                                  = 0b11
+    DT_5ns   = 0b00,
+    DT_10ns  = 0b01,
+    DT_30ns  = 0b10,
+    DT_100ns = 0b11
 } DeadTime;
 
 typedef enum _HitMax {
-    HITS_0                                    = 0b0000,
-    HITS_1                                    = 0b0001,
-    HITS_2                                    = 0b0010,
-    HITS_4                                    = 0b0011,
-    HITS_8                                    = 0b0100,
-    HITS_16                                   = 0b0101,
-    HITS_32                                   = 0b0110,
-    HITS_64                                   = 0b0111,
-    HITS_128                                  = 0b1000,
-    HITS_UNLIMITED                            = 0b1001       /* No limit on hits. */
+    HITS_0         = 0b0000,
+    HITS_1         = 0b0001,
+    HITS_2         = 0b0010,
+    HITS_4         = 0b0011,
+    HITS_8         = 0b0100,
+    HITS_16        = 0b0101,
+    HITS_32        = 0b0110,
+    HITS_64        = 0b0111,
+    HITS_128       = 0b1000,
+    HITS_UNLIMITED = 0b1001    /* No limit on hits. */
 } HitMax;
 
 typedef enum _SetMode {
-    ENABLE                                    = 1,
-    DISABLE                                   = 0
+    ENABLE  = 1,
+    DISABLE = 0
 } SetMode;
+
+typedef enum _QualityFlag {
+    GOOD      = 1,
+    CORRUPTED = 0
+} QualityFlag;
 
 // ****************************************************************************************************
 
@@ -178,6 +182,7 @@ struct RAWData{
     vector<int>            *EventList;
     vector<int>            *Trigger;
     vector<int>            *NHitsList;
+    vector<int>            *QFlagList;
     vector<vector<int> >   *ChannelList;
     vector<vector<float> > *TimeStampList;
 };
@@ -187,43 +192,43 @@ struct RAWData{
 class v1190a
 {
  private :
-    long                Handle;
-    vector<Data32>      Address;
-    CVDataWidth         DataWidth;
-    CVAddressModifier   AddressModifier;
+    long              Handle;
+    vector<Data32>    Address;
+    CVDataWidth       DataWidth;
+    CVAddressModifier AddressModifier;
 
  public:
 
     v1190a(long handle, IniFile *inifile, int ntdcs);
     ~v1190a();
-    Data16              write_op_reg(Data32 address, int code, string error);
-    Data16              read_op_reg(Data32 address, string error);
-    void                Reset(int ntdcs);
-    void                Clear(int ntdcs);
-    void                TestWR(Data16 value,int ntdcs);
-    void                CheckTDCStatus(int ntdcs);
-    void                CheckCommunication(int ntdcs);
-    void                SetTDCTestMode(Data16 mode,int ntdcs);
-    void                SetTrigMatching(int ntdcs);
-    void                SetTrigTimeSubstraction(Data16 mode,int ntdcs);
-    void                SetTrigWindowWidth(Uint windowWidth,int ntdcs);
-    void                SetTrigWindowOffset(Uint windowOffset,int ntdcs);
-    void                SetTrigSearchMargin(Uint searchMargin,int ntdcs);
-    void                SetTrigRejectionMargin(Uint rejectMargin,int ntdcs);
-    void                GetTrigConfiguration(int ntdcs);
-    void                SetTrigConfiguration(IniFile *inifile,int ntdcs);
-    void                SetTDCDetectionMode(Data16 mode,int ntdcs);
-    void                SetTDCResolution(Data16 lsb,int ntdcs);
-    void                SetTDCDeadTime(Data16 time,int ntdcs);
-    void                SetTDCHeadTrailer(Data16 mode,int ntdcs);
-    void                SetTDCEventSize(Data16 size,int ntdcs);
-    void                SwitchChannels(IniFile *inifile,int ntdcs);
-    void                SetIRQ(Data32 level, Data32 count,int ntdcs);
-    void                SetBlockTransferMode(Data16 mode,int ntdcs);
-    void                Set(IniFile *inifile,int ntdcs);
-    void                CheckStatus(CVErrorCodes status) const;
-    int                 ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const unsigned int words, bool ignore_berr);
-    Uint                Read(RAWData *DataList, int ntdcs, TriggerType whichTrigger);
+    Data16 write_op_reg(Data32 address, int code, string error);
+    Data16 read_op_reg(Data32 address, string error);
+    void   Reset(int ntdcs);
+    void   Clear(int ntdcs);
+    void   TestWR(Data16 value,int ntdcs);
+    void   CheckTDCStatus(int ntdcs);
+    void   CheckCommunication(int ntdcs);
+    void   SetTDCTestMode(Data16 mode,int ntdcs);
+    void   SetTrigMatching(int ntdcs);
+    void   SetTrigTimeSubstraction(Data16 mode,int ntdcs);
+    void   SetTrigWindowWidth(Uint windowWidth,int ntdcs);
+    void   SetTrigWindowOffset(Uint windowOffset,int ntdcs);
+    void   SetTrigSearchMargin(Uint searchMargin,int ntdcs);
+    void   SetTrigRejectionMargin(Uint rejectMargin,int ntdcs);
+    void   GetTrigConfiguration(int ntdcs);
+    void   SetTrigConfiguration(IniFile *inifile,int ntdcs);
+    void   SetTDCDetectionMode(Data16 mode,int ntdcs);
+    void   SetTDCResolution(Data16 lsb,int ntdcs);
+    void   SetTDCDeadTime(Data16 time,int ntdcs);
+    void   SetTDCHeadTrailer(Data16 mode,int ntdcs);
+    void   SetTDCEventSize(Data16 size,int ntdcs);
+    void   SwitchChannels(IniFile *inifile,int ntdcs);
+    void   SetIRQ(Data32 level, Data32 count,int ntdcs);
+    void   SetBlockTransferMode(Data16 mode,int ntdcs);
+    void   Set(IniFile *inifile,int ntdcs);
+    void   CheckStatus(CVErrorCodes status) const;
+    int    ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const Uint words, bool ignore_berr);
+    Uint   Read(RAWData *DataList,int ntdcs);
 };
 
 

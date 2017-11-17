@@ -20,34 +20,29 @@ using namespace std;
 class DataReader
 {
     private:
-        bool                StopFlag;
-        IniFile            *iniFile;
-        Data32              nTriggers[2];
-        v1718              *VME;
-        int                 nTDCs;
-        v1190a             *TDCs;
-        RAWData             TDCData;
-        TriggerType         currentTrigger;
+        bool     StopFlag;
+        IniFile *iniFile;
+        Data32   MaxTriggers;
+        v1718   *VME;
+        int      nTDCs;
+        v1190a  *TDCs;
+        RAWData  TDCData;
 
     public:
         DataReader();
-        virtual            ~DataReader();
-        void                SetIniFile(string inifilename);
-        void                SetNtriggers();
-        Data32              GetNtriggers(TriggerType whichTrigger);
-        bool                GotEnoughEvent(Data32 ntriggers[]);
-        void                SetVME();
-        TriggerType         WhichTrigger();
-        void                SetCurrentTrigger();
-        bool                HasTriggerChanged();
-        void                SetTDC();
-        void                Init(string inifilename);
-        void                Update();
-        void                FlushBuffer();
-        string              GetFileName();
-        void                PrintPercentage(string fName, Uint current[], Uint last[]);
-        void                WriteRunRegistry(string filename);
-        void                Run();
+        virtual ~DataReader();
+        void     SetIniFile(string inifilename);
+        void     SetMaxTriggers();
+        Data32   GetMaxTriggers();
+        void     SetVME();
+        void     SetTDC();
+        int      GetQFlag(Uint it);
+        void     Init(string inifilename);
+        void     FlushBuffer();
+        void     Update();
+        string   GetFileName();
+        void     WriteRunRegistry(string filename);
+        void     Run();
 };
 
 #endif // DATAREADER_H

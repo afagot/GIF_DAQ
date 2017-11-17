@@ -31,6 +31,8 @@
 
 using namespace std;
 
+// *************************************************************************************************************
+
 v1190a::v1190a(long handle, IniFile * inifile, int ntdcs){
     Address.clear();
 
@@ -39,6 +41,7 @@ v1190a::v1190a(long handle, IniFile * inifile, int ntdcs){
         sprintf(groupname,"TDC%i",tdc);
         Address.push_back(inifile->addressType(groupname,"BaseAddress",BASEV1190A)); //See page 35
     }
+
     DataWidth=cvD16;              //See in CAENVMEtypes.h CVDataWidth enum
     AddressModifier=cvA24_U_DATA; //See in CAENVMEtypes.h CVAddressModifier enum
     Handle=handle;
@@ -134,7 +137,7 @@ void v1190a::TestWR(Data16 value, int ntdcs){ //Test : try to write/read 16 bit 
 
         if(test != value){
             string tdcnumber = intTostring(tdc);
-            MSG_ERROR("[TDC"+tdcnumber+"-ERROR]:  Result of W/R test is not 0xBEEF");
+            MSG_ERROR("[TDC"+tdcnumber+"-ERROR]  Result of W/R test is not 0xBEEF");
         }
     }
 }
@@ -268,15 +271,15 @@ void v1190a::SetTrigConfiguration(IniFile *inifile,int ntdcs){ //Set and print t
     // is part of a Rate scan and needs a longer width (10000ns = 400 clocks) and offset (-10025ns =
     // -401 clocks) to ensure a long integrated time for the rate calculation.
 
-    string beamstatus = inifile->stringType("General","Beam","OFF");
-    if(beamstatus == "ON"){
+    string runtype = inifile->stringType("General","RunType","rate");
+    if(runtype == "efficiency"){
         width = TRIG_EFF_WIDTH_V1990A;
         offset = TRIG_EFF_OFFSET_V1190A;
-    } else if(beamstatus == "OFF"){
+    } else if(runtype == "rate" || runtype == "noise_reference" || runtype == "test" || runtype == "calibration" || runtype == "impaired"){
         width = TRIG_RATE_WIDTH_V1990A;
         offset = TRIG_RATE_OFFSET_V1190A;
     } else
-        MSG_WARNING("[IniFile-WARNING] The beam status is different from ON or OFF : used default TDC settings");
+        MSG_WARNING("[IniFile-WARNING] Wrong run type (rate,efficiency,noise_rate,calibration,impaired or test) : used default TDC settings");
 
     SetTrigWindowWidth(width,ntdcs);
     SetTrigWindowOffset(offset,ntdcs);
@@ -509,7 +512,7 @@ void v1190a::CheckStatus(CVErrorCodes status) const{
 
 // *************************************************************************************************************
 
-int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const unsigned int words, bool ignore_berr) {
+int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const Uint words, bool ignore_berr) {
     int read;
 
     CVErrorCodes ret = CAENVME_BLTReadCycle(Handle, address + Address[tdc], data, words * 4, cvA32_U_BLT, cvD32, &read);
@@ -521,11 +524,16 @@ int v1190a::ReadBlockD32(Uint tdc, const Data16 address, Data32 *data, const uns
 
 // *************************************************************************************************************
 
-Uint v1190a::Read(RAWData *DataList, int ntdcs, TriggerType whichTrigger){
+Uint v1190a::Read(RAWData *DataList, int ntdcs){
     vector<Data16> EventStored;
     EventStored.clear();
 
     Uint MaxEventStored = 0;
+
+    //Keep track of the DataList size before starting data transfer. This will be useful to
+    //initialize LastEventCount later. Indeed, LastEventCount will have to start at the same
+    //value for each tdc
+    int StartingCount = DataList->EventList->size();
 
     for(int tdc=0; tdc < ntdcs; tdc++){
         EventStored.push_back(0);
@@ -549,8 +557,13 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs, TriggerType whichTrigger){
         //Sometimes, the header is not weel read out in the buffer. To control this, the previous
         //good word having been read out to know when this happens. When this happens, the bool
         //Header stays at false.
-//        Data32 previous_word = 0; //used for debug purpose
         bool Header = false;
+
+        //Due to this problem of header readout, some events are then corrupted and missing. To
+        //Check out for these missing events, we need to keep track of the last saved event ID
+        //and compare it with the current ID. If events are missing (if CurrentID - LastID > 1)
+        //then the QFlag for this TDC's event should be marked as CORRUPTED.
+        int LastEventCount = StartingCount;
 
         while(Count > 0){
             int words_read = ReadBlockD32(tdc,ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
@@ -564,10 +577,38 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs, TriggerType whichTrigger){
                         //Get the event count from the global header (very first word)
                         EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
 
-                        //Save GLOBAL_HEADER as the last good word and Header is true
-                        //previous_word = word_type;
                         Header = true;
+                        break;
+                    }
+                    case TDC_HEADER_V1190A:{
+                        if(!Header) break;
+                        break;
+                    }
+                    case TDC_DATA_V1190A: {
+                        if(!Header) break;
+                        //each TDC module separated by 1000 in channel numbers
+                        //check which TDC are included in the data taking and
+                        //adapt using an offset to always write the data at the
+                        //right place
+                        int tdc_offset = (Address[0] / 0x11110000);
+                        channel = ((words[w]>>19) & 0x7F) + (tdc+tdc_offset)*1000;
+                        TDCCh.push_back(channel);
 
+                        timing = words[w] & 0x7FFFF;
+                        TDCTS.push_back((float)timing/10.);
+
+                        break;
+                    }
+                    case TDC_ERROR_V1190A:{
+                        if(!Header) break;
+                        break;
+                    }
+                    case TDC_TRAILER_V1190A:{
+                        if(!Header) break;
+                        break;
+                    }
+                    case GLOBAL_TRIGGER_TIME_TAG_V1190A:{
+                        if(!Header) break;
                         break;
                     }
                     case GLOBAL_TRAILER_V1190A: {
@@ -580,34 +621,84 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs, TriggerType whichTrigger){
 
                         //When the event entry is not yet created in the data lists, a new
                         //entry is created. The difference in entries is saved. If it is
-                        //greater than 1 (what shouldn't be possible), a log error message
-                        //is printed out but the acquisition isn't stopped and an empty
-                        //entry is created instead of the missing one.
+                        //greater than 1 (what shouldn't be possible), the quality flag
+                        //is set to 0 (=CORRUPTED) and an empty entry is created instead
+                        //of the missing one.
                         //Else, the data is added to the already existing entry.
-                        if(EventCount > (int)DataList->EventList->size()){
-                            int Difference = EventCount - (int)DataList->EventList->size();
+                        //At the end, since there will be 1 RAWData entry per tdc for each
+                        //event (meaning ntdcs different entries), the flags of each TDC
+                        //will be added together. The final format is a number of ntdcs
+                        //digits where each digit is the flag of a specific TDC. This is
+                        //constructed using powers of 10 like follows :
+                        // assuming a flag format of GOOD = 1 and CORRUPTED = 0
+                        // TDC 0 QFLAG = 1e0 * FLAG
+                        // TDC 1 QFLAG = 1e1 * FLAG
+                        // ...
+                        // TDC N QFLAG = 1eN * FLAG
+                        // and the final flag to be with N digits:
+                        // QFLAG = n....3210
+                        // each digit being 1 or 0
+                        //An example with a 4 TDCs setup. If all TDCs were good :
+                        // QFLAG = 1111
+                        //If TDC 2 was corrupted :
+                        // QFLAG = 1011
+                        //
+                        //Then later, all the 0s will be changed into 2, but only when data
+                        //taking will be over. This will be the case because it will make it
+                        //easier to translate the Qflag without knowing the number of TDCs
+                        //beforehand. indeed, a QFlag 111 could be due to a 3 TDC setup with
+                        //3 good TDC flags or to a more than 3 TDC setup with TDCs 4, 5, etc...
+                        //giving a 0.
+                        //Also, to keep it simple, there is no tracking of the last event
+                        //filled per TDC. Thus it happens that sometimes a corrupted events
+                        //is not filed as one but is just kept empty for this specific TDC
+                        //and thus the flag turns out to be at 0 too. The point is that, if
+                        //EventCount < DataList->EventList->size() and LastEventCount ==
+                        //StartingCount, it is hard to know which one was the last event filled
+                        //for the current TDC to be readout. It is assumed that then this TDC
+                        //will not contribute to number_of_hits, TDC_channel or TDC_TimeStamp.
+                        //Finally, contrary to the offline analysis, the DAQ knows how many
+                        //TDCs are used and knows how many digits to expect for the QFlag.
 
-                            if(Difference > 1)
-                                MSG_WARNING("[DAQ-WARNING] Some events are not well written : the trigger rate is too high");
-                            for(int i=0; i<Difference-1; i++){
-                                DataList->EventList->push_back(EventCount-Difference+i);
-                                DataList->Trigger->push_back(2); //Mark the problematic events with a trigger 2
-                                DataList->NHitsList->push_back(0);
-                                DataList->ChannelList->push_back({0});
-                                DataList->TimeStampList->push_back({0.});
+                        int tdc_offset = (Address[0] / 0x11110000);
+                        int qflag_offset = pow(10,tdc+tdc_offset);
+
+                        int Difference = EventCount - LastEventCount;
+
+                        if(EventCount > (int)DataList->EventList->size()){
+                            if(EventCount > LastEventCount){
+                                for(int i=1; i<Difference; i++){
+                                    DataList->EventList->push_back(EventCount-Difference+i);
+                                    DataList->NHitsList->push_back(0);
+                                    DataList->QFlagList->push_back(qflag_offset*CORRUPTED);
+                                    DataList->ChannelList->push_back({});
+                                    DataList->TimeStampList->push_back({});
+                                }
+                                DataList->EventList->push_back(EventCount);
+                                DataList->NHitsList->push_back(nHits);
+                                DataList->QFlagList->push_back(qflag_offset*GOOD);
+                                DataList->ChannelList->push_back(TDCCh);
+                                DataList->TimeStampList->push_back(TDCTS);
+                            } else {
+                                string tdcnumber = intTostring(tdc);
+                                MSG_ERROR("[TDC"+tdcnumber+"-ERROR] Event error Type 1");
                             }
-                            DataList->EventList->push_back(EventCount);
-                            DataList->Trigger->push_back(whichTrigger);
-                            DataList->NHitsList->push_back(nHits);
-                            DataList->ChannelList->push_back(TDCCh);
-                            DataList->TimeStampList->push_back(TDCTS);
                         } else {
-                            Uint it = EventCount-1;
-                            DataList->EventList->at(it) = EventCount;
-                            DataList->Trigger->at(it) = whichTrigger;
-                            DataList->NHitsList->at(it) = DataList->NHitsList->at(it) + nHits;
-                            DataList->ChannelList->at(it).insert(DataList->ChannelList->at(it).end(),TDCCh.begin(),TDCCh.end());
-                            DataList->TimeStampList->at(it).insert(DataList->TimeStampList->at(it).end(),TDCTS.begin(),TDCTS.end());
+                            if(EventCount > LastEventCount || LastEventCount == StartingCount){
+                                Uint it = EventCount-1;
+
+                                for(int i=1; i<Difference; i++)
+                                    DataList->QFlagList->at(it-Difference+i) =
+                                            DataList->QFlagList->at(it-Difference+i) + qflag_offset*CORRUPTED;
+
+                                DataList->NHitsList->at(it) = DataList->NHitsList->at(it) + nHits;
+                                DataList->QFlagList->at(it) = DataList->QFlagList->at(it) + qflag_offset*GOOD;
+                                DataList->ChannelList->at(it).insert(DataList->ChannelList->at(it).end(),TDCCh.begin(),TDCCh.end());
+                                DataList->TimeStampList->at(it).insert(DataList->TimeStampList->at(it).end(),TDCTS.begin(),TDCTS.end());
+                            } else {
+                                string tdcnumber = intTostring(tdc);
+                                MSG_ERROR("[TDC"+tdcnumber+"-ERROR] Event error Type 2");
+                            }
                         }
 
                         //Decrement the counter and if it reaches 0 compare the last event number to
@@ -616,57 +707,15 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs, TriggerType whichTrigger){
                         if(Count == 0 && EventCount > (int)MaxEventStored)
                             MaxEventStored = EventCount;
 
+                        //Give LastEventCount the value of EventCount
+                        LastEventCount = EventCount;
+
                         //The reinitialise our temporary variables
                         EventCount = -99;
                         nHits = -88;
                         TDCCh.clear();
                         TDCTS.clear();
 
-                        //Save GLOBAL_TRAILER as the last good word
-                        //previous_word = word_type;
-
-                        break;
-                    }
-                    case TDC_DATA_V1190A: {
-                        if(!Header) break;
-                        //each TDC module separated by 1000 in channel numbers
-                        channel = ((words[w]>>19) & 0x7F) + tdc*1000;
-                        TDCCh.push_back(channel);
-
-                        timing = words[w] & 0x7FFFF;
-                        TDCTS.push_back((float)timing/10.);
-
-                        //Save TDC_DATA as the last good word
-                        //previous_word = word_type;
-
-                        break;
-                    }
-                    case TDC_HEADER_V1190A:{
-                        if(!Header) break;
-
-                        //Save TDC_HEADER as the last good word
-                        //previous_word = word_type;
-                        break;
-                    }
-                    case TDC_ERROR_V1190A:{
-                        if(!Header) break;
-
-                        //Save TDC_ERROR as the last good word
-                        //previous_word = word_type;
-                        break;
-                    }
-                    case TDC_TRAILER_V1190A:{
-                        if(!Header) break;
-
-                        //Save TDC_TRAILER as the last good word
-                        //previous_word = word_type;
-                        break;
-                    }
-                    case GLOBAL_TRIGGER_TIME_TAG_V1190A:{
-                        if(!Header) break;
-
-                        //Save GLOBAL_TRIGGER_TIME as the last good word
-                        //previous_word = word_type;
                         break;
                     }
                     default:{

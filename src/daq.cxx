@@ -8,11 +8,24 @@
 #include "../include/utils.h"
 #include "../include/MsgSvc.h"
 #include <limits>
+#include <fstream>
 
 using namespace std;
 
 int main (int argc ,char *argv[])
 {
+    //The program needs 2 arguments to run : its own name and the path to the
+    //log file that is written inside the log file in the RUN directory. The
+    //will then be used by the MSG functions to know where to write the logs.
+    if(argc == 2){
+        ofstream logpathfile(__logpath.c_str(), ios::out);
+        logpathfile << argv[1];
+        logpathfile.close();
+    } else {
+        SendDAQError();
+        exit(EXIT_FAILURE);
+    }
+
     MSG_INFO("                                                    ");
     MSG_INFO("                                                    ");
     MSG_INFO("                                                    ");
@@ -32,7 +45,7 @@ int main (int argc ,char *argv[])
     MSG_INFO("                                                    ");
     MSG_INFO("                                                    ");
     MSG_INFO("****************************************************");
-    MSG_INFO("******    DAQ Program 02/05/16 Version 3.0    ******");
+    MSG_INFO("******    DAQ Program 16/11/17 Version 4.0    ******");
     MSG_INFO("****************************************************");
 
     DataReader *DR = new DataReader();
