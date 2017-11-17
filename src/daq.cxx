@@ -45,7 +45,7 @@ int main (int argc ,char *argv[])
     MSG_INFO("                                                    ");
     MSG_INFO("                                                    ");
     MSG_INFO("****************************************************");
-    MSG_INFO("******    DAQ Program 02/05/16 Version 3.0    ******");
+    MSG_INFO("******    DAQ Program 16/11/17 Version 4.0    ******");
     MSG_INFO("****************************************************");
 
     DataReader *DR = new DataReader();
