@@ -213,7 +213,6 @@ void DataReader::Run(){
 
     //Cleaning all the vectors that will contain the data
     TDCData.EventList->clear();
-    TDCData.Trigger->clear();
     TDCData.NHitsList->clear();
     TDCData.QFlagList->clear();
     TDCData.ChannelList->clear();
@@ -223,6 +222,7 @@ void DataReader::Run(){
     //by incoming triggers and start data taking
     FlushBuffer();
     MSG_INFO("[DAQ] Run "+outputFileName+" started");
+    MSG_INFO("[DAQ] Run "+outputFileName+" 0%");
 
     Uint percentage = 0;     // percentage of the run done
     Uint last_print = 0;     // keep track of the last percentage printed

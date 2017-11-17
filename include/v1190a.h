@@ -180,7 +180,6 @@ typedef enum _QualityFlag {
 
 struct RAWData{
     vector<int>            *EventList;
-    vector<int>            *Trigger;
     vector<int>            *NHitsList;
     vector<int>            *QFlagList;
     vector<vector<int> >   *ChannelList;
