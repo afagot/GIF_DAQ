@@ -1,13 +1,12 @@
-#GIF++ DAQ v3.0
-####Author: Alexis Fagot
-####email : alexis.fagot@ugent.be
-####Tel.: +32 9 264 65 69
+# GIF++ DAQ v4.0
+#### Author: Alexis Fagot
+#### email : alexis.fagot@ugent.be
 
-##Compilation
+## Compilation
 
 This application requires 3 non-optional dependencies:
 
-* The **[CAEN USB Driver](http://www.caen.it/csite/CaenProd.jsp?idmod=417&parent=11)** to mount the VME hardware
+* **[CAEN USB Driver](http://www.caen.it/csite/CaenProd.jsp?idmod=417&parent=11)** to mount the VME hardware
 * **[CAEN VME Library](http://www.caen.it/csite/CaenProd.jsp?idmod=689&parent=38)** to communicate with the VME hardware
 * **[ROOT](https://root.cern.ch/downloading-root) to organize the collected data into a TTree**
 
