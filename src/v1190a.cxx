@@ -454,7 +454,7 @@ void v1190a::SetIRQ(Data32 level, Data32 count, int ntdcs) {
 // *************************************************************************************************************
 
 void v1190a::SetBlockTransferMode(Data16 mode, int ntdcs) {
-    Data16 num = (Data16) (mode==ENABLE ? (BLOCK_SIZE / 20) : 0);
+    Data16 num = (Data16) (mode==ENABLE ? BLOCK_SIZE : 0);
 
     for(int tdc=0; tdc < ntdcs; tdc++)
         CAENVME_WriteCycle(Handle,Address[tdc]+ADD_BLT_EVENT_NUM_V1190A,&num,AddressModifier,DataWidth);
@@ -484,7 +484,7 @@ void v1190a::Set(IniFile * inifile, int ntdcs){
 
     SwitchChannels(inifile,ntdcs);
 
-    SetIRQ(1,BLOCK_SIZE,ntdcs);
+    SetIRQ(1,IRQ_BUFFER,ntdcs);
 }
 
 // *************************************************************************************************************

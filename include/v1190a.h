@@ -82,7 +82,8 @@ using namespace std;
 
 #define MAXTRIGGERS_V1190A                  1000
 
-#define BLOCK_SIZE                          2048
+#define BLOCK_SIZE                          100
+#define IRQ_BUFFER                          4096
 
 // ****************************************************************************************************
 
