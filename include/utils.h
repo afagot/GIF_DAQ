@@ -2,7 +2,7 @@
 #define UTILS_H
 
 #include <string>
-#include "../include/CAENVMEtypes.h"
+#include "CAENVMEtypes.h"
 
 using namespace std;
 
@@ -20,14 +20,29 @@ using namespace std;
 #define WR_ERR     -5
 #define RD_ERR     -6
 
-const string __datapath      = "/var/webdcs/HVSCAN/";
 const string __nfspath       = "/var/operation/";
+const string __datapath      = __nfspath + "HVSCAN/";
 const string __runpath       = __nfspath + "RUN/";
 const string __logpath       = __runpath + "log-daq";
 const string __runstatuspath = __runpath + "run";
 const string __configpath    = __runpath + "daqgifpp.ini";
 const string __registrypath  = __runpath + "runregistry";
 const string __lastfilepath  = __runpath + "last";
+
+/*** Types ***/
+
+typedef unsigned char Uchar;
+typedef Uchar  Data8;
+
+typedef unsigned short Ushort;
+typedef Ushort Data16;
+typedef Ushort Word16;
+
+typedef unsigned int Uint;
+typedef Uint   Data32;
+typedef Uint   Word32;
+
+/*** Functions ***/
 
 string    shortTostring(short value);
 string    intTostring(int value);
