@@ -23,7 +23,7 @@
 #ifndef _v1718_h
 #define _v1718_h
 
-#include "CAENVMEtypes.h"
+#include "utils.h"
 #include "IniFile.h"
 
 using namespace std;

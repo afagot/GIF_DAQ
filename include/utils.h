@@ -2,7 +2,7 @@
 #define UTILS_H
 
 #include <string>
-#include "CAENVMEtypes.h"
+#include "utils.h"
 
 using namespace std;
 

@@ -13,7 +13,7 @@
 #include <string>
 #include <map>
 
-#include "CAENVMEtypes.h"
+#include "utils.h"
 
 using namespace std;
 

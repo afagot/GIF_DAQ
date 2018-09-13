@@ -22,8 +22,8 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "../include/CAENVMElib.h"
-#include "../include/CAENVMEoslib.h"
+#include "CAENVMElib.h"
+#include "CAENVMEoslib.h"
 
 #include "../include/v1718.h"
 #include "../include/MsgSvc.h"

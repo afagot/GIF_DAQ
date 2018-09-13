@@ -6,7 +6,7 @@
 // *   22/04/2016
 //***************************************************************
 
-#include "../include/CAENVMEtypes.h"
+#include "../include/utils.h"
 #include <string>
 
 using namespace std;

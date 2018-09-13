@@ -18,7 +18,7 @@
 #ifndef _v1190a_h
 #define _v1190a_h
 
-#include "CAENVMEtypes.h"
+#include "utils.h"
 #include "IniFile.h"
 #include "v1718.h"
 

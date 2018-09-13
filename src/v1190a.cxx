@@ -21,8 +21,8 @@
 #include <string>
 #include <unistd.h>
 
-#include "../include/CAENVMElib.h"
-#include "../include/CAENVMEoslib.h"
+#include "CAENVMElib.h"
+#include "CAENVMEoslib.h"
 
 #include "../include/utils.h"
 #include "../include/v1190a.h"
