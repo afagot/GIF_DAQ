@@ -14,7 +14,12 @@ The CAEN VME library will not be packaged by distributions and will need to be i
 
 To compile the GIF++ DAQ project, simply do :
 
-    make
+    mkdir build
+    cd build
+    cmake ..
+    make install
+
+You may want to erase and remake the build directory in between compilations to avoid problems (unless minor C++ code change).
 
 ## Usage
 
