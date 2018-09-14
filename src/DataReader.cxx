@@ -219,8 +219,15 @@ void DataReader::Run(){
     TDCData.TimeStampList->clear();
 
     //Clear all the buffers that can have started to be filled
-    //by incoming triggers and start data taking
+    //by incoming triggers and start data taking. If non efficiency
+    //tun type, turn ON trigger pulse.
     FlushBuffer();
+    TString runtype = iniFile->stringType("General","RunType","");
+    if(runtype == "rate" || runtype == "noise_reference" || runtype == "test"){
+        VME->RDMTriggerPulse(ON);
+        MSG_INFO("[DAQ] Run is of type "+(string)runtype+" - starting random trigger pulses");
+    }
+
     MSG_INFO("[DAQ] Run "+outputFileName+" started");
     MSG_INFO("[DAQ] Run "+outputFileName+" 0%");
 
@@ -271,6 +278,12 @@ void DataReader::Run(){
         }
     }
 
+    //Stop random trigger pulses if non efficiency run type
+    if(runtype == "rate" || runtype == "noise_reference" || runtype == "test"){
+        VME->RDMTriggerPulse(OFF);
+        MSG_INFO("[DAQ] Stopping random trigger pulses");
+    }
+
     //Write the data from the RAWData structure to the TTree and
     //change the QFlag digits that are equal to 0, to 2 for later
     //offline analysis.
@@ -302,7 +315,6 @@ void DataReader::Run(){
 
     //String parameters are to be read from the config file and saved into
     //the TTree
-    TString runtype;        //Type of run (Efficiency, rate or test)
     TString beamstatus;     //Beam status (ON or OFF)
 
     //Branches linking the string variables to the TTree
@@ -347,8 +359,6 @@ void DataReader::Run(){
             } else if (Parameter == "HV"){
                 value = iniFile->intType(group,Parameter,0);
                 ID->Fill(Parameter.c_str(), value);
-            }else if(Parameter == "RunType"){
-                runtype = iniFile->stringType(group,Parameter,"");
             } else if(Parameter == "MaxTriggers"){
                 value = iniFile->intType(group,Parameter,0);
                 Trig->Fill(Parameter.c_str(),value);

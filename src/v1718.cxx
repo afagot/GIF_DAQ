@@ -180,22 +180,47 @@ bool v1718::CheckIRQ(){
 //Set the width of the
 
 void v1718::SetPulsers() {
-    CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegClear, 0x3CFF)); //Clear the output register output 0 to 3
-    CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegSet, 0x000A));   //Set the output register to pulsers
+    //Clear all outputs
+    CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegClear, CLEARALL));
 
+    //Set outputs 0 and 1 to Pulser A and 2 and 3 to Pulser B
+    CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegSet, SET0PULS+SET1PULS+SET2PULS+SET3PULS));
+
+    //Pulser A is used to send BUSY signals and VETO the trigger coincidence
+    //Only 1 long pulse is generated so the Period is not set
     Uchar P = 0;   //Period in step units
     Uchar W = 1;   //Width in step units
-    Uchar Np = 0; //Number of pulses to be generated
+    Uchar Np = 1;  //Number of pulses to be generated
 
     CheckStatus(CAENVME_SetPulserConf(Handle, cvPulserA, P, W, cvUnit104ms, Np, cvManualSW, cvManualSW));
+
+    //Pulser B is used to send RANDOM trigger pulses in case of non efficiency scans
+    //An infinite amount of pulses is generated (Np = 0) at a frequency of 100Hz
+    //To achieve 100Hz, only the setting with 400us unit is possible and gives
+    //W = 1 (400us) and P = 25 (0.01s)
+    P = 25;
+    W = 1;
+    Np = 0;
+
+    CheckStatus(CAENVME_SetPulserConf(Handle, cvPulserB, P, W, cvUnit410us, Np, cvManualSW, cvManualSW));
 }
 
 // *************************************************************************************************************
-//Turn ON-OFF output signal - used as BUSY signal for the global DAQ
+//Turn ON-OFF output pulser A - used as BUSY signal for the global DAQ
 
-void v1718::SendBUSY(BusyLevel level) {
+void v1718::SendBUSY(PulserLevel level) {
     if(level == ON)
-        CheckStatus(CAENVME_StartPulser(Handle, cvPulserA));//Turn ON pulser A on output 0 and 1
+        CheckStatus(CAENVME_StartPulser(Handle, cvPulserA));
     else if(level == OFF)
-        CheckStatus(CAENVME_StopPulser(Handle, cvPulserA)); //Turn OFF
+        CheckStatus(CAENVME_StopPulser(Handle, cvPulserA));
+}
+
+// *************************************************************************************************************
+//Turn ON-OFF output pulser B - used as RANDOM TRIGGER for non efficiency scans
+
+void v1718::RDMTriggerPulse(PulserLevel level) {
+    if(level == ON)
+        CheckStatus(CAENVME_StartPulser(Handle, cvPulserB));
+    else if(level == OFF)
+        CheckStatus(CAENVME_StopPulser(Handle, cvPulserB));
 }

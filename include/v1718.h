@@ -37,10 +37,55 @@ using namespace std;
                               //Good example is given in the v1190a
                               //users manual at page 35.
 
-typedef enum _BusyLevel {
+typedef enum{
+    //Clear register
+    CLEAR0 = 0x0403,
+    CLEAR1 = 0x080C,
+    CLEAR2 = 0x1030,
+    CLEAR3 = 0x20C0,
+    CLEAR4 = 0x4300,
+    CLEARALL = 0x7FFF,
+
+    //Set Default : Data Strobe, Address Strobe, Data Acknowledge, Bus Error and Location Monitor
+    SETDEFAULT = 0x0000,
+
+    //Set Input 0 AND Input 0
+    SET0AND = 0x0001,
+    SET1AND = 0x0004,
+    SET2AND = 0x0010,
+    SET3AND = 0x0040,
+    SET4AND = 0x0100,
+    SETALLAND = 0x0155,
+
+    //Set Pulsers and Scaler
+    SET0PULS = 0x0002,
+    SET1PULS = 0x0008,
+    SET2PULS = 0x0020,
+    SET3PULS = 0x0080,
+    SET4SCA = 0x0200,
+    SETALLPULS = 0x02AA,
+
+    //Set output register
+    SET0REG = 0x0003,
+    SET1REG = 0x000C,
+    SET2REG = 0x0030,
+    SET3REG = 0x00C0,
+    SET4REG = 0x0300,
+    SETALLREG = 0x03FF,
+
+    //Set Inverted signals
+    SET0INV = 0x0400,
+    SET1INV = 0x0800,
+    SET2INV = 0x1000,
+    SET3INV = 0x2000,
+    SET4INV = 0x4000,
+    SETALLINV = 0x7C00
+} OUTPUT_MUX_REG_CODES;
+
+typedef enum _PulserLevel {
     ON  = 1,
     OFF = 0
-} BusyLevel;
+} PulserLevel;
 
 class v1718{
 
@@ -70,6 +115,7 @@ class v1718{
         void              CheckStatus(CVErrorCodes status) const;
         bool              CheckIRQ();
         void              SetPulsers();
-        void              SendBUSY(BusyLevel level);
+        void              SendBUSY(PulserLevel level);
+        void              RDMTriggerPulse(PulserLevel level);
 };
 #endif
