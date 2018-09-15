@@ -237,12 +237,14 @@ void DataReader::Run(){
     //Every once in a while read the run file to check for a KILL command
     //Create a check kill clock
     Uint CKill_Clk = 0;
+    Uint CKill_Clk_Cycle = (Uint)CHECKKILLPERIOD/(CHECKIRQPERIOD*1e-6);
+    bool KillReceived = false;
 
     //Read the output buffer until the min number of trigger is achieved
-    while(TriggerCount < GetMaxTriggers()){
+    while(TriggerCount < GetMaxTriggers() && !KillReceived){
         //Check the TDC buffers for data every 100ms
         //If there is data, an interupt request is present
-        usleep(100000);
+        usleep(CHECKIRQPERIOD);
 
         if(VME->CheckIRQ()){
             //Stop data acquisition with BUSY as VETO (the rising time of
@@ -271,9 +273,9 @@ void DataReader::Run(){
         //Increment the kill clock
         CKill_Clk++;
 
-        //check inside the run file for a KILL command every 5s
-        if(CKill_Clk == 50){
-            CheckKILL();
+        //check inside the run file for a KILL command
+        if(CKill_Clk == CKill_Clk_Cycle){
+            KillReceived = CheckKILL();
             CKill_Clk = 0;
         }
     }

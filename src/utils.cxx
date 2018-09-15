@@ -120,14 +120,12 @@ int CtrlRunStatus(string& runStatus){
         return START;
     else if(runStatus == "DAQ_RDY")
         return DAQ_RDY;
-    else if(runStatus == "PROCESSING")
-        return PROCESSING;
     else if(runStatus == "RUNNING")
         return RUNNING;
     else if(runStatus == "STOP")
         return STOP;
     else if(runStatus == "KILL")
-        return FATAL;
+        return KILL;
     else if(runStatus == "DAQ_ERR")
         return DAQ_ERR;
     else if(runStatus == "RD_ERR")
@@ -155,23 +153,23 @@ void SendDAQReady(){
 
 // ****************************************************************************************************
 
-void SendDAQProcess(){
-    string runStatus = "PROCESSING";
+void SendDAQRunning(){
+    string runStatus = "RUNNING";
     SetRunStatus(runStatus);
 
-    if(CtrlRunStatus(runStatus) != PROCESSING){
-        MSG_ERROR("[DAQ-ERROR] PROCESSING not well written ("+runStatus+")");
+    if(CtrlRunStatus(runStatus) != RUNNING){
+        MSG_ERROR("[DAQ-ERROR] RUNNING not well written ("+runStatus+")");
         exit(EXIT_FAILURE);
     }
 }
 
 // ****************************************************************************************************
 
-void SendDAQRunning(){
-    string runStatus = "RUNNING";
+void SendDAQStop(){
+    string runStatus = "STOP";
     SetRunStatus(runStatus);
 
-    if(CtrlRunStatus(runStatus) != RUNNING){
+    if(CtrlRunStatus(runStatus) != STOP){
         MSG_ERROR("[DAQ-ERROR] RUNNING not well written ("+runStatus+")");
         exit(EXIT_FAILURE);
     }
@@ -202,14 +200,11 @@ void WaitDCSSignal(Uint delay){
 
 // ****************************************************************************************************
 
-void CheckKILL(){
+bool CheckKILL(){
     string runStatus = GetRunStatus();
 
-    if(CtrlRunStatus(runStatus) == FATAL){
-        MSG_FATAL("[DAQ-KILL] KILL command received");
-        MSG_FATAL("[DAQ-KILL] DAQ will shut down");
-        exit(EXIT_FAILURE);
-    }
+    if(CtrlRunStatus(runStatus) == KILL) return true;
+    else return false;
 }
 
 // ****************************************************************************************************

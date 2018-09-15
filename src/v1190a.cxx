@@ -54,26 +54,27 @@ v1190a::~v1190a(){}
 // *************************************************************************************************************
 
 Data16 v1190a::read_op_reg(Data32 address, string error){
-    //Before executing the command, check if a KILL has been sent
-    CheckKILL();
+    if(!CheckKILL()){
+        //Checks the Read OK bit
+        int time = 0;
+        Data16 ro_bit;
 
-    //Checks the Read OK bit
-    int time = 0;
-    Data16 ro_bit;
+        do{
+            CAENVME_ReadCycle(Handle,address+ADD_MICRO_HND_V1190A,&ro_bit,AddressModifier,DataWidth);
+            time++;
+        } while(ro_bit != READ_OK && time < TIMEOUT);
 
-    do{
-        CAENVME_ReadCycle(Handle,address+ADD_MICRO_HND_V1190A,&ro_bit,AddressModifier,DataWidth);
-        time++;
-    } while(ro_bit != READ_OK && time < 100000);
-
-    if(time == 100000){
-        MSG_ERROR("[v1190] Read opcode - timeout error - " + error);
-        exit(0);
+        if(time == TIMEOUT){
+            MSG_ERROR("[v1190] Read opcode - timeout error - " + error);
+            exit(0);
+        } else {
+            sleep(1);      /*** delay 12ms, internal delay ***/
+            //Reads opcode
+            CAENVME_ReadCycle(Handle,address+ADD_MICRO_V1190A,&ro_bit,AddressModifier,DataWidth );
+            return ro_bit;
+        }
     } else {
-        sleep(1);      /*** delay 12ms, internal delay ***/
-        //Reads opcode
-        CAENVME_ReadCycle(Handle,address+ADD_MICRO_V1190A,&ro_bit,AddressModifier,DataWidth );
-        return ro_bit;
+        return KILL;
     }
 }
 
@@ -81,25 +82,27 @@ Data16 v1190a::read_op_reg(Data32 address, string error){
 
 Data16 v1190a::write_op_reg(Data32 address, int code, string error){
     //Before executing the command, check if a KILL has been sent
-    CheckKILL();
+    if(!CheckKILL()){
+        //Checks the Write OK bit
+        int time = 0;
+        Data16 wo_bit;
 
-    //Checks the Write OK bit
-    int time = 0;
-    Data16 wo_bit;
+        do{
+            CAENVME_ReadCycle(Handle,address+ADD_MICRO_HND_V1190A,&wo_bit,AddressModifier,DataWidth );
+            time++;
+        } while(wo_bit != WRITE_OK && time < TIMEOUT);
 
-    do{
-        CAENVME_ReadCycle(Handle,address+ADD_MICRO_HND_V1190A,&wo_bit,AddressModifier,DataWidth );
-        time++;
-    } while(wo_bit != WRITE_OK && time < 100000);
-
-    if(time == 100000){
-        MSG_ERROR("[v1190-ERROR] Write opcode - timeout error - " + error);
-        exit(0);
+        if(time == TIMEOUT){
+            MSG_ERROR("[v1190-ERROR] Write opcode - timeout error - " + error);
+            exit(0);
+        } else {
+            sleep(1);      /*** delay 12 msec, internal delay ***/
+            //Writes opcode = code
+            CAENVME_WriteCycle(Handle,address+ADD_MICRO_V1190A,&code,AddressModifier,DataWidth);
+            return 0;
+        }
     } else {
-        sleep(1);      /*** delay 12 msec, internal delay ***/
-        //Writes opcode = code
-        CAENVME_WriteCycle(Handle,address+ADD_MICRO_V1190A,&code,AddressModifier,DataWidth);
-        return 0;
+        return KILL;
     }
 }
 
@@ -159,7 +162,7 @@ void v1190a::CheckCommunication(int ntdcs){//Check the communication with the mi
     for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc],OPCODE_READ_SPARE_V1190A,"CheckCommunication");
         check = read_op_reg(Address[tdc],"CheckCommunication");
-        if(check != 0x5555){
+        if(check != READ_SPARE){
             string tdcnumber = intTostring(tdc);
             MSG_ERROR("[TDC"+tdcnumber+"-ERROR] Communication error");
         }
@@ -250,11 +253,17 @@ void v1190a::GetTrigConfiguration(int ntdcs){ //Read and print trigger configura
         RejectMargin            = read_op_reg(Address[tdc], "GetTrigConfiguration - Step 5");
         TriggerTimeSubtraction  = read_op_reg(Address[tdc], "GetTrigConfiguration - Step 6");
 
-        PrintLogV1190(tdc,"Match Window Width",MatchWindowWidth*25);
-        PrintLogV1190(tdc,"Window Offset",(65536-WindowOffset)*25);
-        PrintLogV1190(tdc,"Extra Search Window Width",ExtraSearchWindowWidth*25);
-        PrintLogV1190(tdc,"Reject Margin",RejectMargin*25);
-        PrintLogV1190(tdc,"Trigger Time Subtraction",TriggerTimeSubtraction*25);
+        string width = intTostring(MatchWindowWidth*CLOCK) + "ns";
+        string offset = intTostring((MAXOFFSET-WindowOffset)*CLOCK) + "ns";
+        string extra = intTostring(ExtraSearchWindowWidth*CLOCK) + "ns";
+        string reject = intTostring(RejectMargin*CLOCK) + "ns";
+        string sub = intTostring(TriggerTimeSubtraction*CLOCK) + "ns";
+
+        PrintLogV1190(tdc,"Match Window Width",width);
+        PrintLogV1190(tdc,"Window Offset",offset);
+        PrintLogV1190(tdc,"Extra Search Window Width",extra);
+        PrintLogV1190(tdc,"Reject Margin",reject);
+        PrintLogV1190(tdc,"Trigger Time Subtraction",sub);
     }
 }
 
@@ -297,7 +306,9 @@ void v1190a::SetTDCDetectionMode(Data16 mode, int ntdcs){
         write_op_reg(Address[tdc],mode, "SetTDCDetectionMode - Step 2");
         write_op_reg(Address[tdc],OPCODE_READ_DETECTION_V1190A, "SetTDCDetectionMode - Step 3"); //Edge detection readout
 
-        PrintLogV1190(tdc,"Edge readout",(read_op_reg(Address[tdc], "SetTDCDetectionMode - Step 4") & 0b11));
+        string edge = EdgeModeMap.at(read_op_reg(Address[tdc], "SetTDCDetectionMode - Step 4") & Check_Edge);
+
+        PrintLogV1190(tdc,"Edge readout",edge);
     }
 }
 
@@ -309,7 +320,9 @@ void v1190a::SetTDCResolution(Data16 lsb, int ntdcs){ //Resolution readout
         write_op_reg(Address[tdc],lsb, "SetTDCResolution - Step 2");
         write_op_reg(Address[tdc],OPCODE_READ_RES_V1190A, "SetTDCResolution - Step 3"); //Resolution readout
 
-        PrintLogV1190(tdc,"Resolution",(read_op_reg(Address[tdc], "SetTDCResolution - Step 4") & 0b11));
+        string resolution = ResolutionMap.at(read_op_reg(Address[tdc], "SetTDCResolution - Step 4") & Check_Res);
+
+        PrintLogV1190(tdc,"Resolution",resolution);
     }
 }
 
@@ -321,17 +334,19 @@ void v1190a::SetTDCDeadTime(Data16 time, int ntdcs){
         write_op_reg(Address[tdc],time, "SetTDCDeadTime - Step 2");
         write_op_reg(Address[tdc],OPCODE_READ_DEAD_TIME_V1190A, "SetTDCDeadTime - Step 3"); //Channel dead time readout
 
-        PrintLogV1190(tdc,"Channel dead time",(read_op_reg(Address[tdc], "SetTDCDeadTime - Step 4") & 0b11));
+        string deadtime = DeadTimeMap.at(read_op_reg(Address[tdc], "SetTDCDeadTime - Step 4") & Check_DT);
+
+        PrintLogV1190(tdc,"Channel dead time",deadtime);
     }
 }
 
 // *************************************************************************************************************
 
 void v1190a::SetTDCHeadTrailer(Data16 mode, int ntdcs){ //Enable/Disable TDC header and trailer
-    if(mode == 1){
+    if(mode == ENABLE){
         for(int tdc=0; tdc < ntdcs; tdc++)
             write_op_reg(Address[tdc],OPCODE_EN_HEAD_TRAILER_V1190A, "SetTDCHeadTrailer - Step 1");
-    } else if(mode == 0){
+    } else if(mode == DISABLE){
         for(int tdc=0; tdc < ntdcs; tdc++)
             write_op_reg(Address[tdc],OPCODE_DIS_HEAD_TRAILER_V1190A, "SetTDCHeadTrailer - Step 2");
     }
@@ -339,7 +354,9 @@ void v1190a::SetTDCHeadTrailer(Data16 mode, int ntdcs){ //Enable/Disable TDC hea
     for(int tdc=0; tdc < ntdcs; tdc++){
         write_op_reg(Address[tdc],OPCODE_READ_HEAD_TRAILER_V1190A, "SetTDCHeadTrailer - Step 3");
 
-        PrintLogV1190(tdc,"TDC header/trailer status (on/off)",(read_op_reg(Address[tdc], "SetTDCHeadTrailer - Step 4") & 0b1));
+        string trailer = SetModeMap.at(read_op_reg(Address[tdc], "SetTDCHeadTrailer - Step 4") & CheckMode);
+
+        PrintLogV1190(tdc,"TDC header/trailer status (on/off)",trailer);
     }
 }
 
@@ -351,7 +368,9 @@ void v1190a::SetTDCEventSize(Data16 size,int ntdcs){ //Maximum number of hits pe
         write_op_reg(Address[tdc],size, "SetTDCEventSize - Step 2");
         write_op_reg(Address[tdc],OPCODE_READ_EVENT_SIZE_V1190A, "SetTDCEventSize - Step 3");
 
-        PrintLogV1190(tdc,"Maximum number of hit/event",(read_op_reg(Address[tdc], "SetTDCEventSize - Step 4") & 0b1111));
+        string maxhits = HitMaxMap.at(read_op_reg(Address[tdc], "SetTDCEventSize - Step 4") & Check_HITS);
+
+        PrintLogV1190(tdc,"Maximum number of hit/event",maxhits);
     }
 }
 
@@ -407,7 +426,13 @@ void v1190a::SwitchChannels(IniFile *inifile, int ntdcs){
                 char tmpname[15];
                 sprintf(tmpname,"%c%02u-%02u",Connectors[c],firstchannel,lastchannel);
                 string name = string(tmpname);
-                PrintLogV1190(tdc,"Status - "+name,(read_op_reg(Address[tdc], "SwitchChannels - Step 4") & 0xFFFF));
+
+                stringstream hex_converter;
+                hex_converter << showbase << internal << setfill('0') << hex << setw(UintHexStringLength)
+                              << (read_op_reg(Address[tdc], "SwitchChannels - Step 4") & Check_Channels);
+                string channelstatus;
+                hex_converter >> channelstatus;
+                PrintLogV1190(tdc,"Status - "+name,channelstatus);
             }
         }
     }

@@ -6,7 +6,6 @@
 
 using namespace std;
 
-#define PROCESSING  4
 #define RUNNING     3
 #define DAQ_RDY     2
 #define START       1
@@ -19,6 +18,12 @@ using namespace std;
 #define WR_OK       5
 #define WR_ERR     -5
 #define RD_ERR     -6
+
+#define KILL       -99
+
+#define CHECKDCSPERIOD  2      //check for DCS signal every 2 s
+#define CHECKIRQPERIOD  100000 //check for interupt request every 100.000us (0.1s)
+#define CHECKKILLPERIOD 1      //check for kill signal every 1 s
 
 const string __nfspath       = "/var/operation/";
 const string __datapath      = __nfspath + "HVSCAN/";
@@ -54,11 +59,11 @@ string    GetRunStatus();
 int       SetRunStatus(string& runStatus);
 int       CtrlRunStatus(string& runStatus);
 void      SendDAQReady();
-void      SendDAQProcess();
 void      SendDAQRunning();
+void      SendDAQStop();
 void      SendDAQError();
 void      WaitDCSSignal(Uint delay);
-void      CheckKILL();
+bool      CheckKILL();
 bool      CheckSTART();
 bool      CheckSTOP();
 long long GetTimeStamp();

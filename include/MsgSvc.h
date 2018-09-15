@@ -30,7 +30,7 @@ void MSG_DEBUG   (string message);
 void MSG_VERBOSE (string message);
 void MSG_ALWAYS  (string message);
 
-void PrintLogV1190(int tdc, string parameter, Data16 value);
+void PrintLogV1190(int tdc, string parameter, string readregister);
 
 #endif
 
