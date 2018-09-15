@@ -73,12 +73,11 @@ int main (int argc ,char *argv[])
 
     //Enter the DAQ Loop only if we got a first START
     //If the DAQ was ready before the ramping, wait until START
-    WaitDCSSignal(2);
+    WaitDCSSignal(CHECKDCSPERIOD);
 
     if(CheckSTART()){
-
         //Stay in the run loop while you don't have STOP
-        while(!CheckSTOP()){
+        while(!CheckSTOP() && !CheckKILL()){
             //Start the run after having updated the configuration file
             MSG_INFO("[DAQ] Run about to start...");
 
@@ -86,25 +85,38 @@ int main (int argc ,char *argv[])
             DR->Update();
             DR->Run();
 
-            MSG_INFO("[DAQ] Run finished. Waiting for the next signal...");
+            if(!CheckKILL()){
+                MSG_INFO("[DAQ] Run finished. Waiting for the next signal...");
 
-            //When run is done, send a DAQ_RDY signal
-            SendDAQReady();
+                //When run is done, send a DAQ_RDY signal unless the
+                //DAQ recieved a KILL signal
+                SendDAQReady();
 
-            //Wait for the WEB DCS to send a new signal and control
-            //that it's START or STOP
-            WaitDCSSignal(2);
+                //Wait for the WEB DCS to send a new signal and control
+                //that it's START or STOP
+                WaitDCSSignal(CHECKDCSPERIOD);
 
-            if(!CheckSTART() && !CheckSTOP()){
-                MSG_ERROR("[DAQ-ERROR] Wrong DCS signal received");
-                MSG_ERROR("[DAQ-ERROR] DAQ will shut down");
-                SendDAQError();
-                exit(EXIT_FAILURE);
+                if(!CheckSTART() && !CheckSTOP()){
+                    MSG_ERROR("[DAQ-ERROR] Wrong DCS signal received - DAQ will shut down");
+                    SendDAQError();
+                    exit(EXIT_FAILURE);
+                }
             }
         }
     }
 
-    MSG_INFO("[DAQ-STOP] DAQ will shut down");
-    return 0;
+    //Check whether the DAQ received a STOP or a KILL command
+    if(CheckKILL()){
+        MSG_FATAL("[DAQ-KILL] KILL command received - DAQ will safely shutting down");
+        SendDAQStop();
+        exit(EXIT_SUCCESS);
+    } else if(CheckSTOP()){
+        MSG_INFO("[DAQ-STOP] STOP command received - DAQ will shutting down");
+        exit(EXIT_SUCCESS);
+    } else {
+        MSG_ERROR("[DAQ-ERROR] Wrong DCS signal received - DAQ will shut down");
+        SendDAQError();
+        exit(EXIT_FAILURE);
+    }
 }
 

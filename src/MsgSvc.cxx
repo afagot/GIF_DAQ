@@ -41,9 +41,9 @@ void MSG_DEBUG(string message)  {MSG(message,DEBUG);}
 void MSG_VERBOSE(string message){MSG(message,VERBOSE);}
 void MSG_ALWAYS(string message) {MSG(message,ALWAYS);}
 
-void PrintLogV1190(int tdc, string parameter, Data16 value){
+void PrintLogV1190(int tdc, string parameter, string readregister){
     string tdcnumber = intTostring(tdc);
-    string readregister = intTostring(value);
+
     MSG_INFO("[TDC"+tdcnumber+"] "+parameter+" : "+readregister);
 }
 

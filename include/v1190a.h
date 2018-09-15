@@ -28,6 +28,7 @@
 #include <TTree.h>
 #include <TString.h>
 #include <string>
+#include <map>
 
 using namespace std;
 
@@ -57,6 +58,8 @@ using namespace std;
 
 // ****************************************************************************************************
 
+#define READ_SPARE                          0x5555
+
 #define STATUS_TDC_V1190A                   0xF8000000
 
 #define GLOBAL_HEADER_V1190A                0x40000000
@@ -72,6 +75,9 @@ using namespace std;
 #define READ_OK                             0X0002
 #define TEST_WR                             0xBEEF
 
+#define CLOCK                               25
+#define MAXOFFSET                           65536
+
 #define TRIG_DEF_WIDTH_V1990A               40
 #define TRIG_DEF_OFFSET_V1190A             -41
 #define TRIG_EFF_WIDTH_V1990A               24
@@ -82,6 +88,8 @@ using namespace std;
 #define TRIG_REJ_MARGIN_V1190A              0x04
 
 #define MAXTRIGGERS_V1190A                  1000
+
+#define TIMEOUT                             100000
 
 #define BLOCK_SIZE                          8
 #define IRQ_BUFFER                          8
@@ -136,22 +144,44 @@ typedef enum _EdgeMode {
     EdgeMode_Pair     = 0b00,
     EdgeMode_Trailing = 0b01,
     EdgeMode_Leading  = 0b10,
-    EdgeMode_Both     = 0b11
-
+    EdgeMode_Both     = 0b11,
+    Check_Edge        = 0b11
 } EdgeMode;
+
+const map<Uint,string> EdgeModeMap{
+    {EdgeMode_Pair,"Pair"},
+    {EdgeMode_Trailing,"Trailing"},
+    {EdgeMode_Leading,"Leading"},
+    {EdgeMode_Both,"Both"}
+};
 
 typedef enum _Resolution {
     Res_800ps = 0b00,
     Res_200ps = 0b01,
-    Res_100ps = 0b10
+    Res_100ps = 0b10,
+    Check_Res = 0b11
 } Resolution;
+
+const map<Uint,string> ResolutionMap{
+    {Res_800ps,"800ps"},
+    {Res_200ps,"200ps"},
+    {Res_100ps,"100ps"}
+};
 
 typedef enum _DeadTime {
     DT_5ns   = 0b00,
     DT_10ns  = 0b01,
     DT_30ns  = 0b10,
-    DT_100ns = 0b11
+    DT_100ns = 0b11,
+    Check_DT = 0b11
 } DeadTime;
+
+const map<Uint,string> DeadTimeMap{
+    {DT_5ns,"5ns"},
+    {DT_10ns,"10ns"},
+    {DT_30ns,"30ns"},
+    {DT_100ns,"100ns"}
+};
 
 typedef enum _HitMax {
     HITS_0         = 0b0000,
@@ -163,18 +193,41 @@ typedef enum _HitMax {
     HITS_32        = 0b0110,
     HITS_64        = 0b0111,
     HITS_128       = 0b1000,
-    HITS_UNLIMITED = 0b1001    /* No limit on hits. */
+    HITS_UNLIMITED = 0b1001,
+    Check_HITS     = 0b1111
 } HitMax;
+
+const map<Uint,string> HitMaxMap{
+    {HITS_0,"0"},
+    {HITS_1,"1"},
+    {HITS_2,"2"},
+    {HITS_4,"4"},
+    {HITS_8,"8"},
+    {HITS_16,"16"},
+    {HITS_32,"32"},
+    {HITS_64,"64"},
+    {HITS_128,"64"},
+    {HITS_UNLIMITED,"Unlimited"}
+};
 
 typedef enum _SetMode {
     ENABLE  = 1,
-    DISABLE = 0
+    DISABLE = 0,
+    CheckMode = 0b1
 } SetMode;
+
+const map<Uint,string> SetModeMap{
+    {ENABLE,"Enabled"},
+    {DISABLE,"Disabled"}
+};
 
 typedef enum _QualityFlag {
     GOOD      = 1,
     CORRUPTED = 0
 } QualityFlag;
+
+const Uint UintHexStringLength = 10;
+const Uint Check_Channels = 0xFFFF;
 
 // ****************************************************************************************************
 
