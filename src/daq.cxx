@@ -107,11 +107,11 @@ int main (int argc ,char *argv[])
 
     //Check whether the DAQ received a STOP or a KILL command
     if(CheckKILL()){
-        MSG_FATAL("[DAQ-KILL] KILL command received - DAQ will safely shutting down");
+        MSG_FATAL("[DAQ-KILL] KILL command received - DAQ will safely shut down");
         SendDAQStop();
         exit(EXIT_SUCCESS);
     } else if(CheckSTOP()){
-        MSG_INFO("[DAQ-STOP] STOP command received - DAQ will shutting down");
+        MSG_INFO("[DAQ-STOP] STOP command received - DAQ will shut down");
         exit(EXIT_SUCCESS);
     } else {
         MSG_ERROR("[DAQ-ERROR] Wrong DCS signal received - DAQ will shut down");
