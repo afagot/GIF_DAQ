@@ -428,7 +428,7 @@ void v1190a::SwitchChannels(IniFile *inifile, int ntdcs){
                 string name = string(tmpname);
 
                 stringstream hex_converter;
-                hex_converter << showbase << internal << setfill('0') << hex << setw(UintHexStringLength)
+                hex_converter << setfill('0') << hex << setw(Data16HexStringLength)
                               << (read_op_reg(Address[tdc], "SwitchChannels - Step 4") & Check_Channels);
                 string channelstatus;
                 hex_converter >> channelstatus;

@@ -226,7 +226,7 @@ typedef enum _QualityFlag {
     CORRUPTED = 0
 } QualityFlag;
 
-const Uint UintHexStringLength = 10;
+const Uint Data16HexStringLength = 4; //16 channels per connector
 const Uint Check_Channels = 0xFFFF;
 
 // ****************************************************************************************************
