@@ -28,14 +28,16 @@ DataReader::DataReader(){
     TDCData.NHitsList = new vector<int>;
     TDCData.QFlagList = new vector<int>;
     TDCData.ChannelList = new vector< vector<int> >;
-    TDCData.TimeStampList = new vector< vector<float> >;
+    TDCData.LeadEdgeTSList = new vector< vector<float> >;
+    TDCData.TrailEdgeTSList = new vector< vector<float> >;
 
     //Cleaning all the vectors
     TDCData.EventList->clear();
     TDCData.NHitsList->clear();
     TDCData.QFlagList->clear();
     TDCData.ChannelList->clear();
-    TDCData.TimeStampList->clear();
+    TDCData.LeadEdgeTSList->clear();
+    TDCData.TrailEdgeTSList->clear();
 
     StopFlag = false;
 }
@@ -199,24 +201,28 @@ void DataReader::Run(){
     int           nHits = -8;       //Number of fired TDC channels in event
     int           qflag = -7;       //Event quality flag (0 = CORRUPTED | 1 = GOOD)
     vector<int>   TDCCh;            //List of fired TDC channels in event
-    vector<float> TDCTS;            //list of fired TDC channels time stamps
+    vector<float> TDClTS;           //list of fired TDC channels leading time stamps
+    vector<float> TDCtTS;           //list of fired TDC channels trailing time stamps
 
     TDCCh.clear();
-    TDCTS.clear();
+    TDClTS.clear();
+    TDCtTS.clear();
 
     //Set the branches that will contain the previously defined variables
     RAWDataTree->Branch("EventNumber",    &EventCount, "EventNumber/I");
     RAWDataTree->Branch("number_of_hits", &nHits,      "number_of_hits/I");
     RAWDataTree->Branch("Quality_flag",   &qflag,      "Quality_flag/I");
     RAWDataTree->Branch("TDC_channel",    &TDCCh);
-    RAWDataTree->Branch("TDC_TimeStamp",  &TDCTS);
+    RAWDataTree->Branch("TDC_leadingTS",  &TDClTS);
+    RAWDataTree->Branch("TDC_trailingTS",  &TDCtTS);
 
     //Cleaning all the vectors that will contain the data
     TDCData.EventList->clear();
     TDCData.NHitsList->clear();
     TDCData.QFlagList->clear();
     TDCData.ChannelList->clear();
-    TDCData.TimeStampList->clear();
+    TDCData.LeadEdgeTSList->clear();
+    TDCData.TrailEdgeTSList->clear();
 
     //Clear all the buffers that can have started to be filled
     //by incoming triggers and start data taking. If non efficiency
@@ -294,7 +300,8 @@ void DataReader::Run(){
         nHits       = TDCData.NHitsList->at(i);
         qflag       = GetQFlag(i);
         TDCCh       = TDCData.ChannelList->at(i);
-        TDCTS       = TDCData.TimeStampList->at(i);
+        TDClTS      = TDCData.LeadEdgeTSList->at(i);
+        TDCtTS      = TDCData.TrailEdgeTSList->at(i);
 
         RAWDataTree->Fill();
     }

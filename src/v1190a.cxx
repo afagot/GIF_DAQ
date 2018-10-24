@@ -574,10 +574,12 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
         int EventCount = -99;
         int nHits = -88;
         vector<int> TDCCh;
-        vector<float> TDCTS;
+        vector<float> TDClTS;
+        vector<float> TDCtTS;
 
         TDCCh.clear();
-        TDCTS.clear();
+        TDClTS.clear();
+        TDCtTS.clear();
 
         //Sometimes, the header is not weel read out in the buffer. To control this, the previous
         //good word having been read out to know when this happens. When this happens, the bool
@@ -619,8 +621,10 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         channel = ((words[w]>>19) & 0x7F) + (tdc+tdc_offset)*1000;
                         TDCCh.push_back(channel);
 
-                        timing = words[w] & 0x7FFFF;
-                        TDCTS.push_back((float)timing/10.);
+                        bool isLeading = (((words[w]>>26) & 0x1) == DISABLE);
+
+                        if(isLeading) TDClTS.push_back((float)timing/10.);
+                        else TDCtTS.push_back((float)timing/10.);
 
                         break;
                     }
@@ -697,13 +701,15 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                                     DataList->NHitsList->push_back(0);
                                     DataList->QFlagList->push_back(qflag_offset*CORRUPTED);
                                     DataList->ChannelList->push_back({});
-                                    DataList->TimeStampList->push_back({});
+                                    DataList->LeadEdgeTSList->push_back({});
+                                    DataList->TrailEdgeTSList->push_back({});
                                 }
                                 DataList->EventList->push_back(EventCount);
                                 DataList->NHitsList->push_back(nHits);
                                 DataList->QFlagList->push_back(qflag_offset*GOOD);
                                 DataList->ChannelList->push_back(TDCCh);
-                                DataList->TimeStampList->push_back(TDCTS);
+                                DataList->LeadEdgeTSList->push_back(TDClTS);
+                                DataList->TrailEdgeTSList->push_back(TDCtTS);
                             } else {
                                 string tdcnumber = intTostring(tdc);
                                 MSG_ERROR("[TDC"+tdcnumber+"-ERROR] Event error Type 1");
@@ -719,7 +725,8 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                                 DataList->NHitsList->at(it) = DataList->NHitsList->at(it) + nHits;
                                 DataList->QFlagList->at(it) = DataList->QFlagList->at(it) + qflag_offset*GOOD;
                                 DataList->ChannelList->at(it).insert(DataList->ChannelList->at(it).end(),TDCCh.begin(),TDCCh.end());
-                                DataList->TimeStampList->at(it).insert(DataList->TimeStampList->at(it).end(),TDCTS.begin(),TDCTS.end());
+                                DataList->LeadEdgeTSList->at(it).insert(DataList->LeadEdgeTSList->at(it).end(),TDClTS.begin(),TDClTS.end());
+                                DataList->TrailEdgeTSList->at(it).insert(DataList->TrailEdgeTSList->at(it).end(),TDCtTS.begin(),TDCtTS.end());
                             } else {
                                 string tdcnumber = intTostring(tdc);
                                 MSG_ERROR("[TDC"+tdcnumber+"-ERROR] Event error Type 2");
@@ -739,7 +746,8 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         EventCount = -99;
                         nHits = -88;
                         TDCCh.clear();
-                        TDCTS.clear();
+                        TDClTS.clear();
+                        TDCtTS.clear();
 
                         break;
                     }

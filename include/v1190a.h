@@ -238,7 +238,8 @@ struct RAWData{
     vector<int>            *NHitsList;
     vector<int>            *QFlagList;
     vector<vector<int> >   *ChannelList;
-    vector<vector<float> > *TimeStampList;
+    vector<vector<float> > *LeadEdgeTSList;
+    vector<vector<float> > *TrailEdgeTSList;
 };
 
 /*** CLASS ***/
