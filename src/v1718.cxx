@@ -36,6 +36,7 @@ using namespace std;
 v1718::v1718(IniFile *inifile){
    //Get the base address from the configuration file
    Data32 baseaddress = inifile->addressType("VMEInterface","BaseAddress",BASEV1718);
+   Uint RDM_Frequency = inifile->intType("VMEInterface","int_trig_freq",RDM_PULSER_FRQ);
 
    //Initialisation of the module. See CAENVMElib.h & CAENVMEtypes.h
    CheckStatus(CAENVME_Init(cvV1718, baseaddress, 0, &Handle));
@@ -44,7 +45,7 @@ v1718::v1718(IniFile *inifile){
    SetAM(cvA24_U_DATA);
    SetDatasize(cvD16);
    SetBaseAddress(baseaddress);
-   SetPulsers();
+   SetPulsers(RDM_Frequency);
 }
 
 // *************************************************************************************************************
@@ -179,7 +180,7 @@ bool v1718::CheckIRQ(){
 // *************************************************************************************************************
 //Set the width of the
 
-void v1718::SetPulsers() {
+void v1718::SetPulsers(Uint RDM_Frequency) {
     //Clear all outputs
     CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegClear, CLEARALL));
 
@@ -187,18 +188,18 @@ void v1718::SetPulsers() {
     CheckStatus(CAENVME_WriteRegister(Handle, cvOutMuxRegSet, SET0PULS+SET1PULS+SET2PULS+SET3PULS));
 
     //Pulser A is used to send BUSY signals and VETO the trigger coincidence
-    //Only 1 long pulse is generated so the Period is not set
-    Uchar P = 0;   //Period in step units
-    Uchar W = 1;   //Width in step units
-    Uchar Np = 1;  //Number of pulses to be generated
+    //Period in step units -> P
+    //Width in step units  -> W
+    //Number of pulses to be generated -> Np
+    Uchar P = 1;
+    Uchar W = (int)BUSY_WIDTH/StepUnitMap.at(cvUnit104ms);
+    Uchar Np = 1;
 
     CheckStatus(CAENVME_SetPulserConf(Handle, cvPulserA, P, W, cvUnit104ms, Np, cvManualSW, cvManualSW));
 
     //Pulser B is used to send RANDOM trigger pulses in case of non efficiency scans
-    //An infinite amount of pulses is generated (Np = 0) at a frequency of 100Hz
-    //To achieve 100Hz, only the setting with 400us unit is possible and gives
-    //W = 1 (400us) and P = 25 (0.01s)
-    P = 25;
+    //An infinite amount of pulses is generated (Np = 0)
+    P = (int)1/(RDM_Frequency*StepUnitMap.at(cvUnit410us));
     W = 1;
     Np = 0;
 
