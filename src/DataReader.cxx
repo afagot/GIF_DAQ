@@ -286,10 +286,21 @@ void DataReader::Run(){
         }
     }
 
+    //Get the stop stamp
+    long long stopstamp = GetTimeStamp();
+
     //Stop random trigger pulses if non efficiency run type
     if(runtype == "rate" || runtype == "noise_reference" || runtype == "test"){
         VME->RDMTriggerPulse(OFF);
         MSG_INFO("[DAQ] Stopping random trigger pulses");
+
+        long long acquisition_time = stopstamp-startstamp;
+        float frequency = (float)TriggerCount/acquisition_time;
+
+        string TC = intTostring(TriggerCount);
+        string AT = intTostring(acquisition_time);
+        string F = floatTostring(frequency);
+        MSG_INFO("[DAQ] A total of " + TC + " events collected in " + AT + "s (" + F + "Hz)");
     }
 
     //Write the data from the RAWData structure to the TTree and
@@ -364,7 +375,7 @@ void DataReader::Run(){
                 value = iniFile->intType(group,Parameter,0);
                 ID->Fill(Parameter.c_str(), value);
                 ID->Fill("Start stamp", startstamp);
-                ID->Fill("Stop stamp", GetTimeStamp());
+                ID->Fill("Stop stamp", stopstamp);
             } else if (Parameter == "HV"){
                 value = iniFile->intType(group,Parameter,0);
                 ID->Fill(Parameter.c_str(), value);
