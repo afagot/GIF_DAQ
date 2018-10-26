@@ -91,8 +91,8 @@ using namespace std;
 
 #define TIMEOUT                             100000
 
-#define BLOCK_SIZE                          100
-#define IRQ_BUFFER                          4096
+#define BLOCK_SIZE                          8
+#define IRQ_BUFFER                          8
 
 // ****************************************************************************************************
 
