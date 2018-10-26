@@ -131,9 +131,6 @@ int IniFile::Read(){
         }
     }
 
-//    for(IniFileDataIter Iter = FileData.begin(); Iter != FileData.end(); Iter++)
-//        MSG_INFO("[IniFile] " + Iter->first + "=" + Iter->second);
-
     return Error;
 }
 

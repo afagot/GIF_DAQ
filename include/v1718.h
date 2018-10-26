@@ -87,6 +87,16 @@ typedef enum _PulserLevel {
     OFF = 0
 } PulserLevel;
 
+const Uint BUSY_WIDTH = 1;
+const Uint RDM_PULSER_FRQ = 100;
+
+const map<CVTimeUnits, float> StepUnitMap{
+    {cvUnit25ns,25e-9},
+    {cvUnit1600ns,1.6e-6},
+    {cvUnit410us,410e-6},
+    {cvUnit104ms,104e-3}
+};
+
 class v1718{
 
     private :
@@ -114,7 +124,7 @@ class v1718{
         Data16            GetBaseAddress(void);
         void              CheckStatus(CVErrorCodes status) const;
         bool              CheckIRQ();
-        void              SetPulsers();
+        void              SetPulsers(Uint RDM_Frequency);
         void              SendBUSY(PulserLevel level);
         void              RDMTriggerPulse(PulserLevel level);
 };
