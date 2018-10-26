@@ -192,14 +192,23 @@ void v1718::SetPulsers(Uint RDM_Frequency) {
     //Width in step units  -> W
     //Number of pulses to be generated -> Np
     Uchar P = 1;
-    Uchar W = (int)BUSY_WIDTH/StepUnitMap.at(cvUnit104ms);
+    Uchar W = (Uchar)BUSY_WIDTH/StepUnitMap.at(cvUnit104ms);
     Uchar Np = 1;
 
     CheckStatus(CAENVME_SetPulserConf(Handle, cvPulserA, P, W, cvUnit104ms, Np, cvManualSW, cvManualSW));
 
     //Pulser B is used to send RANDOM trigger pulses in case of non efficiency scans
     //An infinite amount of pulses is generated (Np = 0)
-    P = (int)1/(RDM_Frequency*StepUnitMap.at(cvUnit410us));
+    if(RDM_Frequency < 10){
+        MSG_WARNING("[v1718-WARNING] RANDOM Trigger pulse frequency is lower than 10Hz -> using 10Hz");
+        P = 255;
+    } else if(RDM_Frequency > 2439){
+        MSG_WARNING("[v1718-WARNING] RANDOM Trigger pulse frequency is greater than 2439Hz -> using 2439Hz");
+        P = 1;
+    } else {
+        MSG_INFO("[v1718] RANDOM Trigger pulse frequency is set to" + intTostring(RDM_Frequency) + "Hz");
+        P = (Uchar)1/(RDM_Frequency*StepUnitMap.at(cvUnit410us));
+    }
     W = 1;
     Np = 0;
 
