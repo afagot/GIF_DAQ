@@ -593,14 +593,13 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
         while(Count > 0){
             int words_read = ReadBlockD32(tdc,ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
 
-            for(int w=0; w<words_read && Count>0 ; w++){
+            for(int w=0; w < words_read && Count > 0 ; w++){
                 Data32 word_type = words[w] & STATUS_TDC_V1190A;
 
                 switch(word_type){
-
                     case GLOBAL_HEADER_V1190A: {
                         //Get the event count from the global header (very first word)
-                        EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
+                        EventCount = (words[w] & GLOBAL_HEADER_EVT_COUNT_V1190A) + 1;
 
                         Header = true;
                         break;
@@ -615,11 +614,9 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //check which TDC are included in the data taking and
                         //adapt using an offset to always write the data at the
                         //right place
-                        int tdc_offset = (Address[0] / 0x11110000);
-                        channel = ((words[w]>>19) & 0x7F) + (tdc+tdc_offset)*1000;
+                        int tdc_offset = (Address[0] / BASEV1190A);
+                        channel = (words[w] & TDC_MEASUR_CHAN_V1190A) + (tdc+tdc_offset)*1000;
                         TDCCh.push_back(channel);
-
-                        timing = words[w] & 0x7FFFF;
                         TDCTS.push_back((float)timing/10.);
 
                         break;
@@ -640,7 +637,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         if(!Header) break;
                         //The global trailer is the very last word of an event. At that
                         //point the number of hits in the event is known.
-                        nHits = TDCCh.size();
+                        nHits = TDCTS.size();
 
                         //Put all the data in the RAWData lists
 
@@ -685,7 +682,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //Finally, contrary to the offline analysis, the DAQ knows how many
                         //TDCs are used and knows how many digits to expect for the QFlag.
 
-                        int tdc_offset = (Address[0] / 0x11110000);
+                        int tdc_offset = (Address[0] / BASEV1190A);
                         int qflag_offset = pow(10,tdc+tdc_offset);
 
                         int Difference = EventCount - LastEventCount;

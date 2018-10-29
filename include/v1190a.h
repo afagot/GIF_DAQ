@@ -37,104 +37,122 @@ using namespace std;
 
 /*** Base address (A32) of the model V1190A ***/
 
-#define MINNTDC                             1
-#define BASEV1190A                          0x00000000
+const Uint MINNTDC = 1;
+const Data32 BASEV1190A = 0x11110000;
+
+// ****************************************************************************************************
+
+/*** Words used to test communications with TDCs ***/
+
+typedef enum _COMMUNICATIONS_V1190A{
+    WRITE_OK   = 0X0001,
+    READ_OK    = 0X0002,
+    TEST_WR    = 0xBEEF,
+    READ_SPARE = 0x5555
+} COMMUNICATIONS_V1190A;
 
 // ****************************************************************************************************
 
 /*** Address map for the model V1190A ***/
 
-#define ADD_OUT_BUFFER_V1190A               0x0000    /* Output buffer */
-#define ADD_STATUS_V1190A                   0x1002    /* Status register */
-#define ADD_INT_LEVEL_V1190A                0x100A    /* Interrupt level register */
-#define ADD_MOD_RESET_V1190A                0x1014    /* Module reset register */
-#define ADD_SW_CLEAR_V1190A                 0x1016    /* Software clear register */
-#define ADD_EVENT_STORED_V1190A             0x1020    /* Event stored register */
-#define ADD_ALMOST_FULL_LVL_V1190A          0x1022    /* Almost full level register */
-#define ADD_BLT_EVENT_NUM_V1190A            0x1024    /* BLT event number register */
-#define ADD_MICRO_V1190A                    0x102E    /* Micro register */
-#define ADD_MICRO_HND_V1190A                0x1030    /* Micro handshake register */
-#define ADD_DUMMY16_V1190A                  0x1204    /* Dummy 16bit */
-
-// ****************************************************************************************************
-
-#define READ_SPARE                          0x5555
-
-#define STATUS_TDC_V1190A                   0xF8000000
-
-#define GLOBAL_HEADER_V1190A                0x40000000
-#define GLOBAL_TRAILER_V1190A               0x80000000
-#define GLOBAL_TRIGGER_TIME_TAG_V1190A      0x88000000
-
-#define TDC_HEADER_V1190A                   0x08000000
-#define TDC_DATA_V1190A                     0x00000000
-#define TDC_ERROR_V1190A                    0x20000000
-#define TDC_TRAILER_V1190A                  0x18000000
-
-#define WRITE_OK                            0X0001
-#define READ_OK                             0X0002
-#define TEST_WR                             0xBEEF
-
-#define CLOCK                               25
-#define MAXOFFSET                           65536
-
-#define TRIG_DEF_WIDTH_V1990A               40
-#define TRIG_DEF_OFFSET_V1190A             -41
-#define TRIG_EFF_WIDTH_V1990A               24
-#define TRIG_EFF_OFFSET_V1190A             -29
-#define TRIG_RATE_WIDTH_V1990A              400
-#define TRIG_RATE_OFFSET_V1190A            -401
-#define TRIG_SRCH_MARGIN_V1190A             0x04
-#define TRIG_REJ_MARGIN_V1190A              0x04
-
-#define MAXTRIGGERS_V1190A                  1000
-
-#define TIMEOUT                             100000
-
-#define BLOCK_SIZE                          8
-#define IRQ_BUFFER                          8
+typedef enum _ADDRESS_MAP_V1190A{
+    ADD_OUT_BUFFER_V1190A      = 0x0000,    /* Output buffer */
+    ADD_STATUS_V1190A          = 0x1002,    /* Status register */
+    ADD_INT_LEVEL_V1190A       = 0x100A,    /* Interrupt level register */
+    ADD_MOD_RESET_V1190A       = 0x1014,    /* Module reset register */
+    ADD_SW_CLEAR_V1190A        = 0x1016,    /* Software clear register */
+    ADD_EVENT_STORED_V1190A    = 0x1020,    /* Event stored register */
+    ADD_ALMOST_FULL_LVL_V1190A = 0x1022,    /* Almost full level register */
+    ADD_BLT_EVENT_NUM_V1190A   = 0x1024,    /* BLT event number register */
+    ADD_MICRO_V1190A           = 0x102E,    /* Micro register */
+    ADD_MICRO_HND_V1190A       = 0x1030,    /* Micro handshake register */
+    ADD_DUMMY16_V1190A         = 0x1204     /* Dummy 16bit */
+} ADDRESS_MAP_V1190A;
 
 // ****************************************************************************************************
 
 /*** Micro register opcodes ***/
 
-typedef enum{
+typedef enum _OPCODES_MICRO_V1190A{
     // Micro register opcodes: ACQUISITION MODE
-     OPCODE_TRG_MATCH_V1190A         = 0x0000,    /* Trigger matching mode */
+    OPCODE_TRG_MATCH_V1190A         = 0x0000,    /* Trigger matching mode */
 
     // Micro register opcodes: TRIGGER
-     OPCODE_SET_WIN_WIDTH_V1190A     = 0x1000,    /* Set window width */
-     OPCODE_SET_WIN_OFFSET_V1190A    = 0x1100,    /* Set window offset */
-     OPCODE_SET_SW_MARGIN_V1190A     = 0x1200,    /* Set extra search margin */
-     OPCODE_SET_REJ_MARGIN_V1190A    = 0x1300,    /* Set reject margin */
-     OPCODE_EN_SUB_TRG_V1190A        = 0x1400,    /* Enable subtraction of trigger time */
-     OPCODE_DIS_SUB_TRG_V1190A       = 0x1500,    /* Disable subtraction of trigger time */
-     OPCODE_READ_TRG_CONF_V1190A     = 0x1600,    /* Read trigger configuration */
+    OPCODE_SET_WIN_WIDTH_V1190A     = 0x1000,    /* Set window width */
+    OPCODE_SET_WIN_OFFSET_V1190A    = 0x1100,    /* Set window offset */
+    OPCODE_SET_SW_MARGIN_V1190A     = 0x1200,    /* Set extra search margin */
+    OPCODE_SET_REJ_MARGIN_V1190A    = 0x1300,    /* Set reject margin */
+    OPCODE_EN_SUB_TRG_V1190A        = 0x1400,    /* Enable subtraction of trigger time */
+    OPCODE_DIS_SUB_TRG_V1190A       = 0x1500,    /* Disable subtraction of trigger time */
+    OPCODE_READ_TRG_CONF_V1190A     = 0x1600,    /* Read trigger configuration */
 
     // Micro register opcodes: TDC EDGE DETECTION & RESOLUTION
-     OPCODE_SET_DETECTION_V1190A     = 0x2200,    /* Enable paired meas. leading/trailing edge */
-     OPCODE_READ_DETECTION_V1190A    = 0x2300,    /* Read edge detection configuration */
-     OPCODE_SET_TR_LEAD_LSB_V1190A   = 0x2400,    /* Set LSB of leading/trailing edge */
-     OPCODE_READ_RES_V1190A          = 0x2600,    /* Read resolution */
-     OPCODE_SET_DEAD_TIME_V1190A     = 0x2800,    /* Set channel dead time between hits */
-     OPCODE_READ_DEAD_TIME_V1190A    = 0x2900,    /* Read channel dead time between hits */
+    OPCODE_SET_DETECTION_V1190A     = 0x2200,    /* Enable paired meas. leading/trailing edge */
+    OPCODE_READ_DETECTION_V1190A    = 0x2300,    /* Read edge detection configuration */
+    OPCODE_SET_TR_LEAD_LSB_V1190A   = 0x2400,    /* Set LSB of leading/trailing edge */
+    OPCODE_READ_RES_V1190A          = 0x2600,    /* Read resolution */
+    OPCODE_SET_DEAD_TIME_V1190A     = 0x2800,    /* Set channel dead time between hits */
+    OPCODE_READ_DEAD_TIME_V1190A    = 0x2900,    /* Read channel dead time between hits */
 
     // Micro register opcodes: TDC READOUT
-     OPCODE_EN_HEAD_TRAILER_V1190A   = 0x3000,    /* Enable TDC header and trailer */
-     OPCODE_DIS_HEAD_TRAILER_V1190A  = 0x3100,    /* Disable TDC header and trailer */
-     OPCODE_READ_HEAD_TRAILER_V1190A = 0x3200,    /* Read status TDC header and trailer */
-     OPCODE_SET_EVENT_SIZE_V1190A    = 0x3300,    /* Set maximum number of hits per event */
-     OPCODE_READ_EVENT_SIZE_V1190A   = 0x3400,    /* Read maximum number of hits per event */
+    OPCODE_EN_HEAD_TRAILER_V1190A   = 0x3000,    /* Enable TDC header and trailer */
+    OPCODE_DIS_HEAD_TRAILER_V1190A  = 0x3100,    /* Disable TDC header and trailer */
+    OPCODE_READ_HEAD_TRAILER_V1190A = 0x3200,    /* Read status TDC header and trailer */
+    OPCODE_SET_EVENT_SIZE_V1190A    = 0x3300,    /* Set maximum number of hits per event */
+    OPCODE_READ_EVENT_SIZE_V1190A   = 0x3400,    /* Read maximum number of hits per event */
 
     // Micro register opcodes: CHANNEL ENABLE
-     OPCODE_WRITE_EN_PATTERN_V1190A  = 0x4400,    /* Write enable pattern for channels */
-     OPCODE_READ_EN_PATTERN_V1190A   = 0x4500,    /* Read enable pattern for channels */
+    OPCODE_WRITE_EN_PATTERN_V1190A  = 0x4400,    /* Write enable pattern for channels */
+    OPCODE_READ_EN_PATTERN_V1190A   = 0x4500,    /* Read enable pattern for channels */
 
     // Micro register opcodes: DEBUG AND TEST
-     OPCODE_READ_SPARE_V1190A        = 0xC400,    /* Read a 16 bit spare variable */
-     OPCODE_EN_TEST_MODE_V1190A      = 0xC500,    /* Enable TDC test mode */
-     OPCODE_DIS_TEST_MODE_V1190A     = 0xC600,    /* Disable TDC test mode */
+    OPCODE_READ_SPARE_V1190A        = 0xC400,    /* Read a 16 bit spare variable */
+    OPCODE_EN_TEST_MODE_V1190A      = 0xC500,    /* Enable TDC test mode */
+    OPCODE_DIS_TEST_MODE_V1190A     = 0xC600     /* Disable TDC test mode */
 }  OPCODES_MICRO_V1190A;
+
+// ****************************************************************************************************
+
+/*** Identifiers for the output buffer headers and trailers ***/
+
+typedef enum _OUTPUT_BUFFER_HEAD_TRAIL_V1190A{
+    STATUS_TDC_V1190A              = 0xF8000000, /* Output buffer header/trailer identifier bits[31,27] */
+    GLOBAL_HEADER_V1190A           = 0x40000000, /* Output buffer global header bits[31,27] = 01000 */
+    GLOBAL_HEADER_EVT_COUNT_V1190A = 0x07FFFFE0, /* Output buffer global header bits event count [26,5] */
+    GLOBAL_TRAILER_V1190A          = 0x80000000, /* Output buffer global trailer bits[31,27] = 10000 */
+    GLOBAL_TRIGGER_TIME_TAG_V1190A = 0x88000000, /* Output buffer global trigger time tag bits[31,27] = 10001 */
+    TDC_DATA_V1190A                = 0x00000000, /* Output buffer TDC data bits[31,27] = 00XXX */
+    TDC_HEADER_V1190A              = 0x08000000, /* Output buffer TDC header bits[29,27] = 001 */
+    TDC_MEASUR_V1190A              = 0x00000000, /* Output buffer TDC measurement bits[29,27] = 000 */
+    TDC_MEASUR_EDGE_V1190A         = 0x04000000, /* Output buffer TDC measurement edge type bit[26] */
+    TDC_MEASUR_CHAN_V1190A         = 0x03F80000, /* Output buffer TDC measurement channel bits[25,19] */
+    TDC_MEASUR_TIME_V1190A         = 0x0007FFFF, /* Output buffer TDC measurement time bit[18,0] */
+    TDC_ERROR_V1190A               = 0x20000000, /* Output buffer TDC error bits[29,27] = 100 */
+    TDC_TRAILER_V1190A             = 0x18000000  /* Output buffer TDC trailer bits[29,27] = 011 */
+} OUTPUT_BUFFER_HEAD_TRAIL_V1190A;
+
+// ****************************************************************************************************
+
+/*** Default TDC trigger settings ***/
+
+const Uint CLOCK = 25;
+const Uint MAXOFFSET = 65536;
+
+typedef enum _TRIGGER_DEFAULT_SETTINGS_V1190A{
+    TRIG_DEF_WIDTH_V1990A   =   40, /* Default window width */
+    TRIG_DEF_OFFSET_V1190A  =  -41, /* Default window offset */
+    TRIG_EFF_WIDTH_V1990A   =   24, /* Default window width in efficiency runs */
+    TRIG_EFF_OFFSET_V1190A  =  -29, /* Default window offset in efficiency runs */
+    TRIG_RATE_WIDTH_V1990A  =  400, /* Default window width in rate runs */
+    TRIG_RATE_OFFSET_V1190A = -401, /* Default window offset in rate runs */
+    TRIG_SRCH_MARGIN_V1190A = 0x04, /* Default extra search margin */
+    TRIG_REJ_MARGIN_V1190A  = 0x04  /* Default reject margin */
+} TRIGGER_DEFAULT_SETTINGS_V1190A;
+
+const Uint MAXTRIGGERS_V1190A = 1000;
+const Uint TIMEOUT = 100000;
+const Uint BLOCK_SIZE = 8;
+const Uint IRQ_BUFFER = 8;
 
 // ****************************************************************************************************
 
@@ -154,6 +172,11 @@ const map<Uint,string> EdgeModeMap{
     {EdgeMode_Leading,"Leading"},
     {EdgeMode_Both,"Both"}
 };
+
+typedef enum _EdgeMeasurement {
+    TRAILING  = 1,
+    LEADING = 0
+} EdgeMeasurement;
 
 typedef enum _Resolution {
     Res_800ps = 0b00,

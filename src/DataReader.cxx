@@ -199,7 +199,8 @@ void DataReader::Run(){
     int           nHits = -8;       //Number of fired TDC channels in event
     int           qflag = -7;       //Event quality flag (0 = CORRUPTED | 1 = GOOD)
     vector<int>   TDCCh;            //List of fired TDC channels in event
-    vector<float> TDCTS;            //list of fired TDC channels time stamps
+    vector<float> TDCTS;           //list of fired TDC channels leading time stamps
+    vector<float> TDCtTS;           //list of fired TDC channels trailing time stamps
 
     TDCCh.clear();
     TDCTS.clear();
