@@ -573,11 +573,13 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
 
         int EventCount = -99;
         int nHits = -88;
-        vector<int> TDCCh;
+        vector<int> TDClCh;
+        vector<int> TDCtCh;
         vector<float> TDClTS;
         vector<float> TDCtTS;
 
-        TDCCh.clear();
+        TDClCh.clear();
+        TDCtCh.clear();
         TDClTS.clear();
         TDCtTS.clear();
 
@@ -618,9 +620,9 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //adapt using an offset to always write the data at the
                         //right place
                         int tdc_offset = (Address[0] / BASEV1190A);
+
                         channel = ((words[w]>>TDC_MEASUR_CHAN_BIT_V1190A)
                                    & TDC_MEASUR_CHAN_V1190A) + (tdc+tdc_offset)*1000;
-                        TDCCh.push_back(channel);
 
                         timing = ((words[w]>>TDC_MEASUR_TIME_BIT_V1190A)
                                  & TDC_MEASUR_TIME_V1190A);
@@ -628,8 +630,13 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         bool isLeading = ((words[w]>>TDC_MEASUR_EDGE_BIT_V1190A)
                                           & TDC_MEASUR_EDGE_V1190A) == LEADING;
 
-                        if(isLeading) TDClTS.push_back((float)timing/10.);
-                        else TDCtTS.push_back((float)timing/10.);
+                        if(isLeading){
+                            TDClTS.push_back((float)timing/10.);
+                            TDClCh.push_back(channel);
+                        } else{
+                            TDCtTS.push_back((float)timing/10.);
+                            TDCtCh.push_back(channel);
+                        }
 
                         break;
                     }
@@ -649,7 +656,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         if(!Header) break;
                         //The global trailer is the very last word of an event. At that
                         //point the number of hits in the event is known.
-                        nHits = TDClTS.size();
+                        nHits = TDClCh.size();
 
                         //Put all the data in the RAWData lists
 
@@ -705,14 +712,16 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                                     DataList->EventList->push_back(EventCount-Difference+i);
                                     DataList->NHitsList->push_back(0);
                                     DataList->QFlagList->push_back(qflag_offset*CORRUPTED);
-                                    DataList->ChannelList->push_back({});
+                                    DataList->LeadEdgeChList->push_back({});
+                                    DataList->TrailEdgeChList->push_back({});
                                     DataList->LeadEdgeTSList->push_back({});
                                     DataList->TrailEdgeTSList->push_back({});
                                 }
                                 DataList->EventList->push_back(EventCount);
                                 DataList->NHitsList->push_back(nHits);
                                 DataList->QFlagList->push_back(qflag_offset*GOOD);
-                                DataList->ChannelList->push_back(TDCCh);
+                                DataList->LeadEdgeChList->push_back(TDClCh);
+                                DataList->TrailEdgeChList->push_back(TDCtCh);
                                 DataList->LeadEdgeTSList->push_back(TDClTS);
                                 DataList->TrailEdgeTSList->push_back(TDCtTS);
                             } else {
@@ -729,7 +738,8 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
 
                                 DataList->NHitsList->at(it) = DataList->NHitsList->at(it) + nHits;
                                 DataList->QFlagList->at(it) = DataList->QFlagList->at(it) + qflag_offset*GOOD;
-                                DataList->ChannelList->at(it).insert(DataList->ChannelList->at(it).end(),TDCCh.begin(),TDCCh.end());
+                                DataList->LeadEdgeChList->at(it).insert(DataList->LeadEdgeChList->at(it).end(),TDClCh.begin(),TDClCh.end());
+                                DataList->TrailEdgeChList->at(it).insert(DataList->TrailEdgeChList->at(it).end(),TDCtCh.begin(),TDCtCh.end());
                                 DataList->LeadEdgeTSList->at(it).insert(DataList->LeadEdgeTSList->at(it).end(),TDClTS.begin(),TDClTS.end());
                                 DataList->TrailEdgeTSList->at(it).insert(DataList->TrailEdgeTSList->at(it).end(),TDCtTS.begin(),TDCtTS.end());
                             } else {
@@ -750,7 +760,8 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //The reinitialise our temporary variables
                         EventCount = -99;
                         nHits = -88;
-                        TDCCh.clear();
+                        TDClCh.clear();
+                        TDCtCh.clear();
                         TDClTS.clear();
                         TDCtTS.clear();
 

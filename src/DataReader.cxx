@@ -27,7 +27,8 @@ DataReader::DataReader(){
     TDCData.EventList = new vector<int>;
     TDCData.NHitsList = new vector<int>;
     TDCData.QFlagList = new vector<int>;
-    TDCData.ChannelList = new vector< vector<int> >;
+    TDCData.LeadEdgeChList = new vector< vector<int> >;
+    TDCData.TrailEdgeChList = new vector< vector<int> >;
     TDCData.LeadEdgeTSList = new vector< vector<float> >;
     TDCData.TrailEdgeTSList = new vector< vector<float> >;
 
@@ -35,7 +36,8 @@ DataReader::DataReader(){
     TDCData.EventList->clear();
     TDCData.NHitsList->clear();
     TDCData.QFlagList->clear();
-    TDCData.ChannelList->clear();
+    TDCData.LeadEdgeChList->clear();
+    TDCData.TrailEdgeChList->clear();
     TDCData.LeadEdgeTSList->clear();
     TDCData.TrailEdgeTSList->clear();
 
@@ -200,11 +202,13 @@ void DataReader::Run(){
     int           EventCount = -9;  //Event tag
     int           nHits = -8;       //Number of fired TDC channels in event
     int           qflag = -7;       //Event quality flag (0 = CORRUPTED | 1 = GOOD)
-    vector<int>   TDCCh;            //List of fired TDC channels in event
+    vector<int>   TDClCh;           //List of fired TDC channels with leading time stamps
+    vector<int>   TDCtCh;           //List of fired TDC channels with trailing time stamps
     vector<float> TDClTS;           //list of fired TDC channels leading time stamps
     vector<float> TDCtTS;           //list of fired TDC channels trailing time stamps
 
-    TDCCh.clear();
+    TDClCh.clear();
+    TDCtCh.clear();
     TDClTS.clear();
     TDCtTS.clear();
 
@@ -212,15 +216,17 @@ void DataReader::Run(){
     RAWDataTree->Branch("EventNumber",    &EventCount, "EventNumber/I");
     RAWDataTree->Branch("number_of_hits", &nHits,      "number_of_hits/I");
     RAWDataTree->Branch("Quality_flag",   &qflag,      "Quality_flag/I");
-    RAWDataTree->Branch("TDC_channel",    &TDCCh);
+    RAWDataTree->Branch("TDC_leadingCh",  &TDClCh);
+    RAWDataTree->Branch("TDC_trailingCh", &TDCtCh);
     RAWDataTree->Branch("TDC_leadingTS",  &TDClTS);
-    RAWDataTree->Branch("TDC_trailingTS",  &TDCtTS);
+    RAWDataTree->Branch("TDC_trailingTS", &TDCtTS);
 
     //Cleaning all the vectors that will contain the data
     TDCData.EventList->clear();
     TDCData.NHitsList->clear();
     TDCData.QFlagList->clear();
-    TDCData.ChannelList->clear();
+    TDCData.LeadEdgeChList->clear();
+    TDCData.TrailEdgeChList->clear();
     TDCData.LeadEdgeTSList->clear();
     TDCData.TrailEdgeTSList->clear();
 
@@ -307,12 +313,13 @@ void DataReader::Run(){
     //change the QFlag digits that are equal to 0, to 2 for later
     //offline analysis.
     for(Uint i=0; i<TDCData.EventList->size(); i++){
-        EventCount  = TDCData.EventList->at(i);
-        nHits       = TDCData.NHitsList->at(i);
-        qflag       = GetQFlag(i);
-        TDCCh       = TDCData.ChannelList->at(i);
-        TDClTS      = TDCData.LeadEdgeTSList->at(i);
-        TDCtTS      = TDCData.TrailEdgeTSList->at(i);
+        EventCount = TDCData.EventList->at(i);
+        nHits      = TDCData.NHitsList->at(i);
+        qflag      = GetQFlag(i);
+        TDClCh     = TDCData.LeadEdgeChList->at(i);
+        TDCtCh     = TDCData.TrailEdgeChList->at(i);
+        TDClTS     = TDCData.LeadEdgeTSList->at(i);
+        TDCtTS     = TDCData.TrailEdgeTSList->at(i);
 
         RAWDataTree->Fill();
     }
