@@ -599,7 +599,8 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                 switch(word_type){
                     case GLOBAL_HEADER_V1190A: {
                         //Get the event count from the global header (very first word)
-                        EventCount = (words[w] & GLOBAL_HEADER_EVT_COUNT_V1190A) + 1;
+                        EventCount = ((words[w]>>GLOBAL_HEADER_EVT_COUNT_BIT_V1190A)
+                                      & GLOBAL_HEADER_EVT_COUNT_V1190A) + 1;
 
                         Header = true;
                         break;
@@ -615,8 +616,12 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //adapt using an offset to always write the data at the
                         //right place
                         int tdc_offset = (Address[0] / BASEV1190A);
-                        channel = (words[w] & TDC_MEASUR_CHAN_V1190A) + (tdc+tdc_offset)*1000;
+                        channel = ((words[w]>>TDC_MEASUR_CHAN_BIT_V1190A)
+                                   & TDC_MEASUR_CHAN_V1190A) + (tdc+tdc_offset)*1000;
                         TDCCh.push_back(channel);
+
+                        timing = ((words[w]>>TDC_MEASUR_TIME_BIT_V1190A)
+                                  & TDC_MEASUR_TIME_V1190A);
                         TDCTS.push_back((float)timing/10.);
 
                         break;
