@@ -644,7 +644,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         if(!Header) break;
                         //The global trailer is the very last word of an event. At that
                         //point the number of hits in the event is known.
-                        nHits = TDCCh.size();
+                        nHits = TDClTS.size();
 
                         //Put all the data in the RAWData lists
 
