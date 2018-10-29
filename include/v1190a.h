@@ -118,18 +118,27 @@ typedef enum _OPCODES_MICRO_V1190A{
 typedef enum _OUTPUT_BUFFER_HEAD_TRAIL_V1190A{
     STATUS_TDC_V1190A              = 0xF8000000, /* Output buffer header/trailer identifier bits[31,27] */
     GLOBAL_HEADER_V1190A           = 0x40000000, /* Output buffer global header bits[31,27] = 01000 */
-    GLOBAL_HEADER_EVT_COUNT_V1190A = 0x07FFFFE0, /* Output buffer global header bits event count [26,5] */
     GLOBAL_TRAILER_V1190A          = 0x80000000, /* Output buffer global trailer bits[31,27] = 10000 */
     GLOBAL_TRIGGER_TIME_TAG_V1190A = 0x88000000, /* Output buffer global trigger time tag bits[31,27] = 10001 */
     TDC_DATA_V1190A                = 0x00000000, /* Output buffer TDC data bits[31,27] = 00XXX */
     TDC_HEADER_V1190A              = 0x08000000, /* Output buffer TDC header bits[29,27] = 001 */
-    TDC_MEASUR_V1190A              = 0x00000000, /* Output buffer TDC measurement bits[29,27] = 000 */
-    TDC_MEASUR_EDGE_V1190A         = 0x04000000, /* Output buffer TDC measurement edge type bit[26] */
-    TDC_MEASUR_CHAN_V1190A         = 0x03F80000, /* Output buffer TDC measurement channel bits[25,19] */
-    TDC_MEASUR_TIME_V1190A         = 0x0007FFFF, /* Output buffer TDC measurement time bit[18,0] */
     TDC_ERROR_V1190A               = 0x20000000, /* Output buffer TDC error bits[29,27] = 100 */
     TDC_TRAILER_V1190A             = 0x18000000  /* Output buffer TDC trailer bits[29,27] = 011 */
 } OUTPUT_BUFFER_HEAD_TRAIL_V1190A;
+
+typedef enum _TEST_GLOBAL_HEADER_EVT_COUNT{
+    GLOBAL_HEADER_EVT_COUNT_V1190A = 0x3FFFFF, /* Output buffer global header event count 22 bits [26,5] */
+    GLOBAL_HEADER_EVT_COUNT_BIT_V1190A = 5     /* First bit for bit shift */
+} TEST_GLOBAL_HEADER_EVT_COUNT;
+
+typedef enum _TEST_TDC_DATA_V1190A{
+    TDC_MEASUR_EDGE_V1190A = 0x1,     /* Output buffer TDC measurement edge type 1 bit[26] */
+    TDC_MEASUR_EDGE_BIT_V1190A = 26,  /* First bit for bit shift */
+    TDC_MEASUR_CHAN_V1190A = 0x7F,    /* Output buffer TDC measurement channel 7 bits[25,19] */
+    TDC_MEASUR_CHAN_BIT_V1190A = 19,  /* First bit for bit shift */
+    TDC_MEASUR_TIME_V1190A = 0x7FFFF, /* Output buffer TDC measurement time 19 bits[18,0] */
+    TDC_MEASUR_TIME_BIT_V1190A = 0,  /* First bit for bit shift */
+} TEST_TDC_DATA_V1190A;
 
 // ****************************************************************************************************
 
@@ -151,8 +160,8 @@ typedef enum _TRIGGER_DEFAULT_SETTINGS_V1190A{
 
 const Uint MAXTRIGGERS_V1190A = 1000;
 const Uint TIMEOUT = 100000;
-const Uint BLOCK_SIZE = 100;
-const Uint IRQ_BUFFER = 4096;
+const Uint BLOCK_SIZE = 20;
+const Uint IRQ_BUFFER = 256;
 
 // ****************************************************************************************************
 
