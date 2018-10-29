@@ -183,8 +183,8 @@ const map<Uint,string> EdgeModeMap{
 };
 
 typedef enum _EdgeMeasurement {
-    TRAILING  = 1,
-    LEADING = 0
+    TRAILING  = 0,
+    LEADING = 1
 } EdgeMeasurement;
 
 typedef enum _Resolution {

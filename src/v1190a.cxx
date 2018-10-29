@@ -622,11 +622,12 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                                    & TDC_MEASUR_CHAN_V1190A) + (tdc+tdc_offset)*1000;
                         TDCCh.push_back(channel);
 
+                        timing = ((words[w]>>TDC_MEASUR_TIME_BIT_V1190A)
+                                 & TDC_MEASUR_TIME_V1190A);
+
                         bool isLeading = ((words[w]>>TDC_MEASUR_EDGE_BIT_V1190A)
                                           & TDC_MEASUR_EDGE_V1190A) == LEADING;
 
-                        timing = ((words[w]>>TDC_MEASUR_TIME_BIT_V1190A)
-                                                          & TDC_MEASUR_TIME_V1190A);
                         if(isLeading) TDClTS.push_back((float)timing/10.);
                         else TDCtTS.push_back((float)timing/10.);
 
