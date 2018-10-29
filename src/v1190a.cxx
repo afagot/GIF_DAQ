@@ -595,14 +595,13 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
         while(Count > 0){
             int words_read = ReadBlockD32(tdc,ADD_OUT_BUFFER_V1190A, words, BLOCK_SIZE, true);
 
-            for(int w=0; w<words_read && Count>0 ; w++){
+            for(int w=0; w < words_read && Count > 0 ; w++){
                 Data32 word_type = words[w] & STATUS_TDC_V1190A;
 
                 switch(word_type){
-
                     case GLOBAL_HEADER_V1190A: {
                         //Get the event count from the global header (very first word)
-                        EventCount = ((words[w]>>5) & 0x3FFFFF) + 1;
+                        EventCount = (words[w] & GLOBAL_HEADER_EVT_COUNT_V1190A) + 1;
 
                         Header = true;
                         break;
@@ -617,11 +616,11 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //check which TDC are included in the data taking and
                         //adapt using an offset to always write the data at the
                         //right place
-                        int tdc_offset = (Address[0] / 0x11110000);
-                        channel = ((words[w]>>19) & 0x7F) + (tdc+tdc_offset)*1000;
+                        int tdc_offset = (Address[0] / BASEV1190A);
+                        channel = (words[w] & TDC_MEASUR_CHAN_V1190A) + (tdc+tdc_offset)*1000;
                         TDCCh.push_back(channel);
 
-                        bool isLeading = (((words[w]>>26) & 0x1) == DISABLE);
+                        bool isLeading = ((words[w] & TDC_MEASUR_EDGE_V1190A) == LEADING);
 
                         if(isLeading) TDClTS.push_back((float)timing/10.);
                         else TDCtTS.push_back((float)timing/10.);
@@ -689,7 +688,7 @@ Uint v1190a::Read(RAWData *DataList, int ntdcs){
                         //Finally, contrary to the offline analysis, the DAQ knows how many
                         //TDCs are used and knows how many digits to expect for the QFlag.
 
-                        int tdc_offset = (Address[0] / 0x11110000);
+                        int tdc_offset = (Address[0] / BASEV1190A);
                         int qflag_offset = pow(10,tdc+tdc_offset);
 
                         int Difference = EventCount - LastEventCount;
