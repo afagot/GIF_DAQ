@@ -262,7 +262,6 @@ void DataReader::Run(){
             //Stop data acquisition with BUSY as VETO (the rising time of
             //the signal is of the order of 1ms)
             VME->SendBUSY(ON);
-            usleep(1000);
 
             //Read the data
             TriggerCount = TDCs->Read(&TDCData,nTDCs);
