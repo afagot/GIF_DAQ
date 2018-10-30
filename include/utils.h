@@ -26,7 +26,7 @@ using namespace std;
 #define CHECKKILLPERIOD 1      //check for kill signal every 1 s
 
 const string __nfspath       = "/var/webdcs/";
-const string __datapath      = __nfspath + "HVSCAN/";
+const string __datapath      = "/var/webdcs/HVSCAN/";
 const string __runpath       = __nfspath + "RUN/";
 const string __logpath       = __runpath + "log-daq";
 const string __runstatuspath = __runpath + "run";

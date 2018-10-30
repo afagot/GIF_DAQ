@@ -21,6 +21,9 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
+#include <iomanip>
+#include <unistd.h>
 
 #include "CAENVMElib.h"
 #include "CAENVMEoslib.h"
@@ -221,8 +224,10 @@ void v1718::SetPulsers(Uint RDM_Frequency) {
 void v1718::SendBUSY(PulserLevel level) {
     if(level == ON)
         CheckStatus(CAENVME_StartPulser(Handle, cvPulserA));
-    else if(level == OFF)
+    else if(level == OFF){
+        usleep(1e6);
         CheckStatus(CAENVME_StopPulser(Handle, cvPulserA));
+    }
 }
 
 // *************************************************************************************************************
