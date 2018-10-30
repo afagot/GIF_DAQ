@@ -200,7 +200,6 @@ void DataReader::Run(){
     int           qflag = -7;       //Event quality flag (0 = CORRUPTED | 1 = GOOD)
     vector<int>   TDCCh;            //List of fired TDC channels in event
     vector<float> TDCTS;           //list of fired TDC channels leading time stamps
-    vector<float> TDCtTS;           //list of fired TDC channels trailing time stamps
 
     TDCCh.clear();
     TDCTS.clear();
@@ -251,7 +250,6 @@ void DataReader::Run(){
             //Stop data acquisition with BUSY as VETO (the rising time of
             //the signal is of the order of 1ms)
             VME->SendBUSY(ON);
-            usleep(1000);
 
             //Read the data
             TriggerCount = TDCs->Read(&TDCData,nTDCs);
