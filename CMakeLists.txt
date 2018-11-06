@@ -2,7 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.4)
 PROJECT(daq)
 
 # Version number
-SET(DAQ_VERSION_MAJOR 4)
+SET(DAQ_VERSION_MAJOR 5)
 SET(DAQ_VERSION_MINOR 0)
 
 # configure a header file to pass some of the CMake settings
