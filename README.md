@@ -1,4 +1,4 @@
-# GIF++ DAQ v4.0
+# GIF++ DAQ v5.0-904a Portable webDCS
 #### Author: Alexis Fagot
 #### email : alexis.fagot@ugent.be
 
